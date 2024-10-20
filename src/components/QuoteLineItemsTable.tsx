@@ -95,6 +95,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ lineItems }) 
       dataSource={lineItems}
       rowKey="foxy_foxyquoterequestlineitemid"
       pagination={false}
+      style={{ margin: '0 -16px' }}
       summary={() => (
         <Table.Summary fixed>
           <Table.Summary.Row>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'react-router-dom';
 import { Table, message, Row, Col, Typography } from 'antd';
 import axios from 'axios';
@@ -37,7 +37,11 @@ interface QuoteRequest {
   foxy_quoteid: string;
 }
 
-const QuotePage = () => {
+interface QuotePageProps {
+  setQuoteRequestId: Dispatch<SetStateAction<string | undefined>>;
+}
+
+const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<QuoteLocation[]>([]);
   const [lineItems, setLineItems] = useState<{ [key: string]: QuoteLineItem[] }>({});
@@ -53,22 +57,19 @@ const QuotePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch quote request data
         const quoteRequestResponse = await axios.get(`http://localhost:7071/api/getQuoteRequestById?id=${id}`);
         const quoteRequestData = quoteRequestResponse.data.value[0] as QuoteRequest;
         setAccountName(quoteRequestData.foxy_Account.name);
         setQuoteId(quoteRequestData.foxy_quoteid);
+        setQuoteRequestId(quoteRequestData.foxy_quoteid);
 
-        // Fetch quote locations
         const locationsResponse = await axios.get(`http://localhost:7071/api/listQuoteLocationRows?id=${id}`);
         const locations = locationsResponse.data.value || [];
         setData(locations);
         setError(null);
 
-        // Set all rows to be expanded by default
         setExpandedRowKeys(locations.map((location: QuoteLocation) => location.foxy_foxyquoterequestlocationid));
 
-        // Fetch line items for each location
         const lineItemsPromises = locations.map(async (location: QuoteLocation) => {
           try {
             const lineItemsResponse = await axios.get(`http://localhost:7071/api/listQuoteLineItemByRow?id=${location.foxy_foxyquoterequestlocationid}`);
@@ -99,8 +100,9 @@ const QuotePage = () => {
       fetchData();
     } else {
       setError('Invalid quote ID. Please provide a valid GUID.');
+      setQuoteRequestId(undefined);
     }
-  }, [id]);
+  }, [id, setQuoteRequestId]);
 
   const columns = [
     {

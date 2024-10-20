@@ -1,13 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Layout } from 'antd';
 import QuotePage from './components/QuotePage';
+import AppHeader from './components/Header';
+
+const { Content } = Layout;
 
 function App() {
+  const [quoteRequestId, setQuoteRequestId] = useState<string | undefined>(undefined);
+
   return (
     <Router>
-      <Routes>
-        <Route path="/quote/:id" element={<QuotePage />} />
-      </Routes>
+      <Layout>
+        <AppHeader quoteRequestId={quoteRequestId} />
+        <Content style={{ padding: '0 50px', marginTop: '20px' }}>
+          <Routes>
+            <Route 
+              path="/quote/:id" 
+              element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} 
+            />
+          </Routes>
+        </Content>
+      </Layout>
     </Router>
   );
 }
