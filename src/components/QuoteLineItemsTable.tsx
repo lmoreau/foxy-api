@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Table, Button, InputNumber, Select, message } from 'antd';
 import { ColumnsType } from 'antd/es/table';
+import './QuoteLineItemsTable.css'; // Import CSS for custom styles
 
 interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
@@ -191,7 +192,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
         dataSource={lineItems}
         rowKey="foxy_foxyquoterequestlineitemid"
         pagination={false}
-        style={{ margin: '0 -16px' }}
+        className="custom-table"
         summary={() => (
           <Table.Summary fixed>
             <Table.Summary.Row>
