@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, message, Row, Col, Typography, Button } from 'antd';
+import { Table, message, Row, Col, Typography, Button, Modal } from 'antd';
 import axios from 'axios';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 
@@ -50,6 +50,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const [error, setError] = useState<string | null>(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [expandAll, setExpandAll] = useState<boolean>(true);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -135,6 +136,18 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     }
   };
 
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
   const columns = [
     {
       title: 'Quote Location',
@@ -155,9 +168,14 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <Title level={2}>{accountName}</Title>
-        <Button onClick={toggleExpandAll}>
-          {expandAll ? 'Collapse All' : 'Expand All'}
-        </Button>
+        <div>
+          <Button type="primary" style={{ marginRight: '10px' }} onClick={showModal}>
+            Add Location
+          </Button>
+          <Button onClick={toggleExpandAll}>
+            {expandAll ? 'Collapse All' : 'Expand All'}
+          </Button>
+        </div>
       </div>
       <Row gutter={[16, 16]}>
         <Col span={6}>
@@ -195,6 +213,9 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         size="small"
         style={{ marginTop: '1rem' }}
       />
+      <Modal title="Add Location" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <p>Add Location dialog content goes here.</p>
+      </Modal>
     </div>
   );
 };
