@@ -23,7 +23,10 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
 
         return { 
             body: JSON.stringify(response.data), 
-            headers: { "Content-Type": "application/json" } 
+            headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*" // Allow all origins for CORS
+            } 
         };
     } catch (error) {
         context.log(`Error retrieving products: ${error.message}`);
@@ -36,7 +39,10 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
                 message: message,
                 details: axios.isAxiosError(error) ? error.response?.data : undefined
             }),
-            headers: { "Content-Type": "application/json" }
+            headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*" // Allow all origins for CORS
+            }
         };
     }
 }

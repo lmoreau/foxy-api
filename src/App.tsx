@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Layout } from 'antd';
 import QuotePage from './components/QuotePage';
+import ProductsPage from './components/ProductsPage';
 import AppHeader from './components/Header';
 
 const { Content } = Layout;
@@ -18,6 +19,10 @@ function App() {
             <Route 
               path="/quote/:id" 
               element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} 
+            />
+            <Route 
+              path="/products" 
+              element={<ProductsPage />} 
             />
           </Routes>
         </Content>
