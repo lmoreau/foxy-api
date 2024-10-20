@@ -15,7 +15,7 @@ export async function getQuoteLineItemById(request: HttpRequest, context: Invoca
 
     try {
         const accessToken = await getAccessToken();
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequestlineitems(${id})`;
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequestlineitems(${id})?$expand=foxy_Product`;
 
         const response = await axios.get(apiUrl, {
             headers: {
@@ -34,10 +34,8 @@ export async function getQuoteLineItemById(request: HttpRequest, context: Invoca
         context.log(`Error retrieving quote line item: ${error.message}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
-        return { 
-            status, 
-            body: `Error retrieving quote line item: ${message}` 
-        };
+
+        return { status, body: message };
     }
 }
 
