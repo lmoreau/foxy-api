@@ -35,9 +35,14 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
       render: (text: string, record: QuoteLocation) => (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <strong>{text}</strong>
-          <Button type="primary" onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}>
-            Add Product
-          </Button>
+          <div>
+            <Button type="default" disabled style={{ marginRight: '8px' }}>
+              Delete Row
+            </Button>
+            <Button type="primary" onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}>
+              Add Product
+            </Button>
+          </div>
         </div>
       ),
     },
