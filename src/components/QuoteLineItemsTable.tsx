@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Table, InputNumber, Select, message } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import './QuoteLineItemsTable.css'; // Import CSS for custom styles
+import { revenueTypeMap, getRevenueTypeLabel } from '../utils/categoryMapper';
 
 interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
@@ -139,15 +140,19 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
       title: 'Revenue Type',
       dataIndex: 'foxy_revenuetype',
       key: 'foxy_revenuetype',
-      render: (type: number) => {
-        switch (type) {
-          case 612100003:
-            return 'Renewal';
-          // Add other cases as needed
-          default:
-            return 'Unknown';
-        }
-      },
+      render: (type: number, record: QuoteLineItem) => (
+        <Select
+          value={type}
+          onChange={(value) => handleInputChange('foxy_revenuetype', value, record)}
+          style={{ width: '100%' }}
+        >
+          {Object.entries(revenueTypeMap).map(([value, label]) => (
+            <Select.Option key={value} value={parseInt(value)}>
+              {label}
+            </Select.Option>
+          ))}
+        </Select>
+      ),
     },
     {
       title: 'Renewal Type',

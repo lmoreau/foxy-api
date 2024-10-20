@@ -45,10 +45,21 @@ export const subcategoryMap: Record<number, string> = {
   // Add more subcategories as needed
 };
 
+export const revenueTypeMap: Record<number, string> = {
+  612100000: 'New',
+  612100001: 'Net New',
+  612100002: 'Upsell',
+  612100003: 'Renewal',
+};
+
 export const getCategoryLabel = (value: number): string => {
   return categoryMap[value] || 'Unknown';
 };
 
 export const getSubcategoryLabel = (value: number): string => {
   return subcategoryMap[value] || 'Unknown';
+};
+
+export const getRevenueTypeLabel = (value: number): string => {
+  return revenueTypeMap[value] || 'Unknown';
 };
