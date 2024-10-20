@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Table } from 'antd';
+import { ColumnsType } from 'antd/es/table';
 
 interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
@@ -21,7 +22,11 @@ interface QuoteLineItemsTableProps {
 }
 
 const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ lineItems }) => {
-  const columns = [
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  };
+
+  const columns: ColumnsType<QuoteLineItem> = [
     {
       title: 'Product',
       dataIndex: ['foxy_Product', 'name'],
@@ -36,19 +41,19 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ lineItems }) 
       title: 'Each',
       dataIndex: 'foxy_each',
       key: 'foxy_each',
-      render: (price: number) => `$${price.toFixed(2)}`,
+      render: (price: number) => formatCurrency(price),
     },
     {
       title: 'MRR',
       dataIndex: 'foxy_mrr',
       key: 'foxy_mrr',
-      render: (mrr: number) => `$${mrr.toFixed(2)}`,
+      render: (mrr: number) => formatCurrency(mrr),
     },
     {
       title: 'TCV',
       dataIndex: 'foxy_linetcv',
       key: 'foxy_linetcv',
-      render: (tcv: number) => `$${tcv.toFixed(2)}`,
+      render: (tcv: number) => formatCurrency(tcv),
     },
     {
       title: 'Term',
@@ -81,12 +86,30 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ lineItems }) 
     },
   ];
 
+  const totalMRR = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_mrr, 0), [lineItems]);
+  const totalTCV = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_linetcv, 0), [lineItems]);
+
   return (
     <Table
       columns={columns}
       dataSource={lineItems}
       rowKey="foxy_foxyquoterequestlineitemid"
       pagination={false}
+      summary={() => (
+        <Table.Summary fixed>
+          <Table.Summary.Row>
+            <Table.Summary.Cell index={0} colSpan={3}>
+              <strong>Total</strong>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={3}>
+              <strong>{formatCurrency(totalMRR)}</strong>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={4}>
+              <strong>{formatCurrency(totalTCV)}</strong>
+            </Table.Summary.Cell>
+          </Table.Summary.Row>
+        </Table.Summary>
+      )}
     />
   );
 };

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, message } from 'antd';
+import { Table, message, Row, Col, Typography } from 'antd';
 import axios from 'axios';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
+
+const { Title, Text } = Typography;
 
 interface QuoteLocation {
   foxy_foxyquoterequestlocationid: string;
@@ -28,20 +30,38 @@ interface QuoteLineItem {
   };
 }
 
+interface QuoteRequest {
+  foxy_Account: {
+    name: string;
+  };
+  foxy_quoteid: string;
+}
+
 const QuotePage = () => {
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<QuoteLocation[]>([]);
   const [lineItems, setLineItems] = useState<{ [key: string]: QuoteLineItem[] }>({});
+  const [accountName, setAccountName] = useState<string>('');
+  const [quoteId, setQuoteId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log(`Fetching data for quote ID: ${id}`);
-        const response = await axios.get(`http://localhost:7071/api/listQuoteLocationRows?id=${id}`);
-        console.log('API response:', JSON.stringify(response.data, null, 2));
-        const locations = response.data.value || [];
+        // Fetch quote request data
+        const quoteRequestResponse = await axios.get(`http://localhost:7071/api/getQuoteRequestById?id=${id}`);
+        const quoteRequestData = quoteRequestResponse.data.value[0] as QuoteRequest;
+        setAccountName(quoteRequestData.foxy_Account.name);
+        setQuoteId(quoteRequestData.foxy_quoteid);
+
+        // Fetch quote locations
+        const locationsResponse = await axios.get(`http://localhost:7071/api/listQuoteLocationRows?id=${id}`);
+        const locations = locationsResponse.data.value || [];
         setData(locations);
         setError(null);
 
@@ -93,7 +113,21 @@ const QuotePage = () => {
 
   return (
     <div>
-      <h1>Quote Locations for Request ID: {id}</h1>
+      <Title level={2}>{accountName}</Title>
+      <Row gutter={[16, 16]}>
+        <Col span={6}>
+          <Text strong>Owner:</Text> Bob Smith
+        </Col>
+        <Col span={6}>
+          <Text strong>Quote Request:</Text> {quoteId}
+        </Col>
+        <Col span={6}>
+          <Text strong>Quote Total MRR:</Text> {formatCurrency(5)}
+        </Col>
+        <Col span={6}>
+          <Text strong>Quote Total TCV:</Text> {formatCurrency(5)}
+        </Col>
+      </Row>
       {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
       <Table
         dataSource={data}
@@ -110,6 +144,8 @@ const QuotePage = () => {
           rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
         }}
         showHeader={false}
+        size="small"
+        style={{ marginTop: '1rem' }}
       />
     </div>
   );
