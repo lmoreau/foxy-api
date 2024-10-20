@@ -49,6 +49,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const [quoteId, setQuoteId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const [expandAll, setExpandAll] = useState<boolean>(true);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -125,6 +126,15 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     }));
   };
 
+  const toggleExpandAll = () => {
+    setExpandAll(!expandAll);
+    if (expandAll) {
+      setExpandedRowKeys([]);
+    } else {
+      setExpandedRowKeys(data.map(location => location.foxy_foxyquoterequestlocationid));
+    }
+  };
+
   const columns = [
     {
       title: 'Quote Location',
@@ -134,7 +144,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <strong>{text}</strong>
           <Button type="primary" onClick={() => handleAddLine(record.foxy_foxyquoterequestlocationid)}>
-            Add Line
+            Add Product
           </Button>
         </div>
       ),
@@ -143,7 +153,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   return (
     <div>
-      <Title level={2}>{accountName}</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <Title level={2}>{accountName}</Title>
+        <Button onClick={toggleExpandAll}>
+          {expandAll ? 'Collapse All' : 'Expand All'}
+        </Button>
+      </div>
       <Row gutter={[16, 16]}>
         <Col span={6}>
           <Text strong>Owner:</Text> Bob Smith
@@ -167,6 +182,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
           expandedRowKeys,
           onExpandedRowsChange: (newExpandedRows) => {
             setExpandedRowKeys(newExpandedRows as string[]);
+            setExpandAll(newExpandedRows.length === data.length);
           },
           expandedRowRender: (record) => (
             <QuoteLineItemsTable
