@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Table, Button, InputNumber, Select, message } from 'antd';
+import { Table, InputNumber, Select, message } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import './QuoteLineItemsTable.css'; // Import CSS for custom styles
 
@@ -47,24 +47,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddLine = () => {
-    const newItem: QuoteLineItem = {
-      foxy_foxyquoterequestlineitemid: `new-${Date.now()}`,
-      foxy_quantity: 0,
-      foxy_each: 0,
-      foxy_mrr: 0,
-      foxy_linetcv: 0,
-      foxy_term: 0,
-      foxy_revenuetype: 0,
-      foxy_renewaltype: '',
-      foxy_renewaldate: '',
-      foxy_Product: {
-        name: '',
-      },
-    };
-    setLineItems([...lineItems, newItem]);
   };
 
   const handleInputChange = (key: keyof QuoteLineItem, value: any, record: QuoteLineItem) => {
@@ -183,37 +165,32 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
   const totalTCV = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_linetcv, 0), [lineItems]);
 
   return (
-    <>
-      <Button type="primary" onClick={handleAddLine} style={{ marginBottom: 16 }}>
-        Add Line
-      </Button>
-      <Table
-        columns={columns}
-        dataSource={lineItems}
-        rowKey="foxy_foxyquoterequestlineitemid"
-        pagination={false}
-        className="custom-table"
-        summary={() => (
-          <Table.Summary fixed>
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={3}>
-                <strong>Total</strong>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={3}>
-                <strong>{formatCurrency(totalMRR)}</strong>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={4}>
-                <strong>{formatCurrency(totalTCV)}</strong>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={5} />
-              <Table.Summary.Cell index={6} />
-              <Table.Summary.Cell index={7} />
-              <Table.Summary.Cell index={8} />
-            </Table.Summary.Row>
-          </Table.Summary>
-        )}
-      />
-    </>
+    <Table
+      columns={columns}
+      dataSource={lineItems}
+      rowKey="foxy_foxyquoterequestlineitemid"
+      pagination={false}
+      className="custom-table"
+      summary={() => (
+        <Table.Summary fixed>
+          <Table.Summary.Row>
+            <Table.Summary.Cell index={0} colSpan={3}>
+              <strong>Total</strong>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={3}>
+              <strong>{formatCurrency(totalMRR)}</strong>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={4}>
+              <strong>{formatCurrency(totalTCV)}</strong>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={5} />
+            <Table.Summary.Cell index={6} />
+            <Table.Summary.Cell index={7} />
+            <Table.Summary.Cell index={8} />
+          </Table.Summary.Row>
+        </Table.Summary>
+      )}
+    />
   );
 };
 

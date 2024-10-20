@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, message, Row, Col, Typography } from 'antd';
+import { Table, message, Row, Col, Typography, Button } from 'antd';
 import axios from 'axios';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 
@@ -104,12 +104,40 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     }
   }, [id, setQuoteRequestId]);
 
+  const handleAddLine = (locationId: string) => {
+    const newItem: QuoteLineItem = {
+      foxy_foxyquoterequestlineitemid: `new-${Date.now()}`,
+      foxy_quantity: 0,
+      foxy_each: 0,
+      foxy_mrr: 0,
+      foxy_linetcv: 0,
+      foxy_term: 0,
+      foxy_revenuetype: 0,
+      foxy_renewaltype: '',
+      foxy_renewaldate: '',
+      foxy_Product: {
+        name: '',
+      },
+    };
+    setLineItems(prevItems => ({
+      ...prevItems,
+      [locationId]: [...(prevItems[locationId] || []), newItem],
+    }));
+  };
+
   const columns = [
     {
       title: 'Quote Location',
       dataIndex: 'fullAddress',
       key: 'fullAddress',
-      render: (text: string) => <strong>{text}</strong>,
+      render: (text: string, record: QuoteLocation) => (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <strong>{text}</strong>
+          <Button type="primary" onClick={() => handleAddLine(record.foxy_foxyquoterequestlocationid)}>
+            Add Line
+          </Button>
+        </div>
+      ),
     },
   ];
 
@@ -141,7 +169,9 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
             setExpandedRowKeys(newExpandedRows as string[]);
           },
           expandedRowRender: (record) => (
-            <QuoteLineItemsTable initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []} />
+            <QuoteLineItemsTable
+              initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []}
+            />
           ),
           rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
         }}
