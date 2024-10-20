@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Table } from 'antd';
 import axios from 'axios';
+import { getCategoryLabel, getSubcategoryLabel } from '../utils/categoryMapper';
 
 interface Product {
   productid: string;
   name: string;
-  foxy_category: string;
+  foxy_category: number;
+  foxy_subcategory: number;
 }
 
 const ProductsPage: React.FC = () => {
@@ -34,6 +36,13 @@ const ProductsPage: React.FC = () => {
       title: 'Foxy Category',
       dataIndex: 'foxy_category',
       key: 'foxy_category',
+      render: (value: number) => getCategoryLabel(value),
+    },
+    {
+      title: 'Foxy Subcategory',
+      dataIndex: 'foxy_subcategory',
+      key: 'foxy_subcategory',
+      render: (value: number) => getSubcategoryLabel(value),
     },
   ];
 
