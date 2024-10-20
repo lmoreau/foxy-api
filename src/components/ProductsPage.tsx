@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Input, Select, Form, Tabs } from 'antd';
 import axios from 'axios';
-import { getCategoryLabel } from '../utils/categoryMapper';
+import { getCategoryLabel, getSubcategoryLabel, categoryMap, subcategoryMap } from '../utils/categoryMapper';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -11,11 +11,13 @@ interface Product {
   name: string;
   foxy_category: number;
   foxy_subcategory: number;
+  description: string;
 }
 
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -31,13 +33,15 @@ const ProductsPage: React.FC = () => {
     fetchProducts();
   }, []);
 
-  const showModal = () => {
+  const showModal = (product: Product | null) => {
+    setSelectedProduct(product);
+    form.setFieldsValue(product || {});
     setIsModalVisible(true);
   };
 
   const handleOk = () => {
     form.validateFields().then(values => {
-      console.log('Product added:', values);
+      console.log('Product updated:', values);
       setIsModalVisible(false);
       form.resetFields();
     }).catch(info => {
@@ -66,7 +70,7 @@ const ProductsPage: React.FC = () => {
       title: 'Subcategory',
       dataIndex: 'foxy_subcategory',
       key: 'foxy_subcategory',
-      render: (value: number) => getCategoryLabel(value),
+      render: (value: number) => getSubcategoryLabel(value),
     },
   ];
 
@@ -90,9 +94,17 @@ const ProductsPage: React.FC = () => {
   return (
     <div>
       <h1>Products</h1>
-      <Button type="primary" onClick={showModal} style={{ marginBottom: '16px' }}>
-        Add Product
-      </Button>
+      <div style={{ marginBottom: '16px' }}>
+        <Button type="primary" onClick={() => showModal(null)} style={{ marginRight: '8px' }}>
+          Add Product
+        </Button>
+        <Button 
+          onClick={() => selectedProduct && showModal(selectedProduct)} 
+          disabled={!selectedProduct}
+        >
+          Edit Product
+        </Button>
+      </div>
       <Tabs defaultActiveKey="1">
         <TabPane tab="Wireline Products" key="1">
           <Table 
@@ -102,6 +114,10 @@ const ProductsPage: React.FC = () => {
             size="small" 
             pagination={{ pageSize: 20 }}
             style={{ marginTop: '1rem' }} 
+            rowSelection={{
+              type: 'radio',
+              onChange: (_, [selected]) => setSelectedProduct(selected as Product),
+            }}
           />
         </TabPane>
         <TabPane tab="Wireless Products" key="2">
@@ -112,26 +128,34 @@ const ProductsPage: React.FC = () => {
             size="small" 
             pagination={{ pageSize: 20 }}
             style={{ marginTop: '1rem' }} 
+            rowSelection={{
+              type: 'radio',
+              onChange: (_, [selected]) => setSelectedProduct(selected as Product),
+            }}
           />
         </TabPane>
       </Tabs>
-      <Modal title="Add Product" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <Form form={form} layout="vertical" name="add_product_form">
-          <Form.Item name="productName" label="Product Name" rules={[{ required: true, message: 'Please enter the product name' }]}>
+      <Modal title={selectedProduct ? "Edit Product" : "Add Product"} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <Form form={form} layout="vertical" name="edit_product_form">
+          <Form.Item name="name" label="Product Name" rules={[{ required: true, message: 'Please enter the product name' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="category" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
+          <Form.Item name="foxy_category" label="Category" rules={[{ required: true, message: 'Please select a category' }]}>
             <Select placeholder="Select a category">
-              <Option value={612100000}>Fibre Based</Option>
-              <Option value={612100001}>Cable Based</Option>
-              <Option value={612100002}>Data Centre</Option>
-              <Option value={612100003}>Microsoft 365</Option>
-              <Option value={612100004}>Wireless</Option>
-              <Option value={612100006}>IoT</Option>
-              <Option value={612100007}>Unison</Option>
-              <Option value={612100008}>Fixed Wireless</Option>
-              <Option value={612100009}>Managed Wifi</Option>
+              {(Object.entries(categoryMap) as [string, string][]).map(([value, label]) => (
+                <Option key={value} value={parseInt(value)}>{label}</Option>
+              ))}
             </Select>
+          </Form.Item>
+          <Form.Item name="foxy_subcategory" label="Subcategory" rules={[{ required: true, message: 'Please select a subcategory' }]}>
+            <Select placeholder="Select a subcategory">
+              {(Object.entries(subcategoryMap) as [string, string][]).map(([value, label]) => (
+                <Option key={value} value={parseInt(value)}>{label}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea />
           </Form.Item>
         </Form>
       </Modal>

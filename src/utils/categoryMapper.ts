@@ -1,4 +1,4 @@
-const categoryMap: Record<number, string> = {
+export const categoryMap: Record<number, string> = {
   612100000: 'Fibre Based',
   612100001: 'Cable Based',
   612100002: 'Data Centre',
@@ -11,7 +11,7 @@ const categoryMap: Record<number, string> = {
   // Add more categories as needed
 };
 
-const subcategoryMap: Record<number, string> = {
+export const subcategoryMap: Record<number, string> = {
   612100000: 'Microsoft 365',
   612100001: 'SIP LD',
   612100029: 'Business Phone',
