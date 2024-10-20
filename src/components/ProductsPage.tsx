@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Input, Select, Form } from 'antd';
+import { Table, Button, Modal, Input, Select, Form, Tabs } from 'antd';
 import axios from 'axios';
 import { getCategoryLabel } from '../utils/categoryMapper';
 
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 interface Product {
   productid: string;
@@ -69,19 +70,51 @@ const ProductsPage: React.FC = () => {
     },
   ];
 
+  const wirelessColumns = [
+    {
+      title: 'Product',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Category',
+      dataIndex: 'foxy_category',
+      key: 'foxy_category',
+      render: (value: number) => getCategoryLabel(value),
+    },
+  ];
+
+  const wirelineProducts = products.filter(product => getCategoryLabel(product.foxy_category) !== 'Wireless');
+  const wirelessProducts = products.filter(product => getCategoryLabel(product.foxy_category) === 'Wireless');
+
   return (
     <div>
       <h1>Products</h1>
       <Button type="primary" onClick={showModal} style={{ marginBottom: '16px' }}>
         Add Product
       </Button>
-      <Table 
-        dataSource={products} 
-        columns={columns} 
-        rowKey="productid" 
-        size="small" 
-        style={{ marginTop: '1rem' }} 
-      />
+      <Tabs defaultActiveKey="1">
+        <TabPane tab="Wireline Products" key="1">
+          <Table 
+            dataSource={wirelineProducts} 
+            columns={columns} 
+            rowKey="productid" 
+            size="small" 
+            pagination={{ pageSize: 20 }}
+            style={{ marginTop: '1rem' }} 
+          />
+        </TabPane>
+        <TabPane tab="Wireless Products" key="2">
+          <Table 
+            dataSource={wirelessProducts} 
+            columns={wirelessColumns} 
+            rowKey="productid" 
+            size="small" 
+            pagination={{ pageSize: 20 }}
+            style={{ marginTop: '1rem' }} 
+          />
+        </TabPane>
+      </Tabs>
       <Modal title="Add Product" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
         <Form form={form} layout="vertical" name="add_product_form">
           <Form.Item name="productName" label="Product Name" rules={[{ required: true, message: 'Please enter the product name' }]}>
