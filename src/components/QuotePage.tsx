@@ -141,7 +141,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
             setExpandedRowKeys(newExpandedRows as string[]);
           },
           expandedRowRender: (record) => (
-            <QuoteLineItemsTable lineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []} />
+            <QuoteLineItemsTable initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []} />
           ),
           rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
         }}
