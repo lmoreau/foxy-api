@@ -14,6 +14,7 @@ interface Location {
   foxy_accountlocationid: string;
   foxy_Building: {
     foxy_fulladdress: string;
+    foxy_buildingid: string;
   };
 }
 
@@ -62,9 +63,26 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
     }
   }, [isVisible, accountId, fetchLocations]);
 
-  const handleOk = () => {
+  const handleOk = async () => {
     if (selectedLocationId) {
-      onOk(selectedLocationId);
+      const selectedLocation = locations.find(location => location.foxy_accountlocationid === selectedLocationId);
+      if (selectedLocation) {
+        try {
+          const response = await axios.post('http://localhost:7071/api/createFoxyQuoteRequestLocation', {
+            buildingId: selectedLocation.foxy_Building.foxy_buildingid,
+            quoteRequestId: quoteRequestId,
+            accountLocationId: selectedLocationId
+          });
+          console.log('createFoxyQuoteRequestLocation response:', response.data);
+          message.success('Location added successfully');
+          onOk(selectedLocationId);
+        } catch (error) {
+          console.error('Error creating quote request location:', error);
+          message.error('Failed to add location. Please try again.');
+        }
+      } else {
+        message.error('Selected location not found');
+      }
     } else {
       message.warning('Please select a location');
     }
