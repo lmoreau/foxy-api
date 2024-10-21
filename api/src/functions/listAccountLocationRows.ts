@@ -11,8 +11,7 @@ export async function listAccountLocationRows(request: HttpRequest, context: Inv
 
     try {
         const accessToken = await getAccessToken();
-        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_accountlocations?$filter=_foxy_account_value eq '${accountId}'`;
-        const query = apiUrl;
+        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_accountlocations?$filter=_foxy_account_value eq '${accountId}'&$expand=foxy_Building`;        const query = apiUrl;
 
         context.log('API query:', query);
 
