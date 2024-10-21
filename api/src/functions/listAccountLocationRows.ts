@@ -3,7 +3,7 @@ import axios from "axios";
 import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
-export async function listAccountLocationRows(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function listAccountLocationRows(request: HttpRequest, context: InvocationContext, accountId: string): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
         return corsResponse;
@@ -11,7 +11,7 @@ export async function listAccountLocationRows(request: HttpRequest, context: Inv
 
     try {
         const accessToken = await getAccessToken();
-        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_accountlocations`;
+        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_accountlocations?$filter=_foxy_account_value eq '${accountId}'`;
         const query = apiUrl;
 
         context.log('API query:', query);
@@ -49,6 +49,20 @@ export async function listAccountLocationRows(request: HttpRequest, context: Inv
 
 app.http('listAccountLocationRows', {
     methods: ['GET', 'OPTIONS'],
-    authLevel: 'anonymous', 
-    handler: listAccountLocationRows
+    authLevel: 'anonymous',
+    handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+        let accountId = request.query.get('accountId');
+        if (!accountId && request.body) {
+            const requestBody = await request.text();
+            const parsedBody = JSON.parse(requestBody);
+            accountId = parsedBody.accountId;
+        }
+        if (!accountId) {
+            return {
+                status: 400,
+                body: "Please pass an accountId on the query string or in the request body"
+            };
+        }
+        return await listAccountLocationRows(request, context, accountId);
+    }
 });
