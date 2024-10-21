@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Typography, Space, Statistic, Row, Col, Modal } from 'antd';
-import { DeleteOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
+import { Table, Button, Typography, Space, Statistic, Row, Col, Modal, Dropdown, Menu } from 'antd';
+import { DeleteOutlined, PlusOutlined, DollarOutlined, EllipsisOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { createNewLineItem, calculateTotals } from '../utils/quoteUtils';
@@ -43,7 +43,6 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
     if (locationToDelete) {
       try {
         await onDeleteLocation(locationToDelete);
-        // Removed success message from here
       } catch (error) {
         // Error handling is done in the parent component
       }
@@ -62,6 +61,15 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
         const { totalMRR, totalTCV } = calculateTotals({ [record.foxy_foxyquoterequestlocationid]: locationLineItems });
         const isExpanded = expandedRowKeys.includes(record.foxy_foxyquoterequestlocationid);
         
+        const menuItems = [
+          {
+            key: 'delete',
+            icon: <DeleteOutlined />,
+            label: 'Delete Row',
+            onClick: () => handleDeleteClick(record.foxy_foxyquoterequestlocationid),
+          },
+        ];
+
         return (
           <Row align="middle" justify="space-between" style={{ width: '100%' }}>
             <Col>
@@ -89,20 +97,16 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
             </Col>
             <Col>
               <Space>
-                <Button 
-                  icon={<DeleteOutlined />} 
-                  type="default"
-                  onClick={() => handleDeleteClick(record.foxy_foxyquoterequestlocationid)}
-                >
-                  Delete Row
-                </Button>
-                <Button 
-                  icon={<PlusOutlined />} 
-                  type="primary"
+                <Button
+                  icon={<PlusOutlined />}
                   onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
+                  type="primary"
                 >
                   Add Product
                 </Button>
+                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+                  <Button icon={<EllipsisOutlined />} />
+                </Dropdown>
               </Space>
             </Col>
           </Row>
