@@ -3,6 +3,13 @@ import axios from 'axios';
 import { message } from 'antd';
 import { QuoteLocation, QuoteLineItem, QuoteRequest } from '../types';
 
+interface OwningUser {
+  fullname: string;
+  internalemailaddress: string;
+  systemuserid: string;
+  ownerid: string;
+}
+
 interface QuoteData {
   accountName: string;
   quoteId: string;
@@ -11,6 +18,7 @@ interface QuoteData {
   error: string | null;
   loading: boolean;
   refetchLocations: () => Promise<void>;
+  owninguser?: OwningUser;
 }
 
 export const useQuoteData = (id: string | undefined): QuoteData => {
@@ -59,6 +67,7 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
         lineItems: lineItemsMap,
         error: null,
         loading: false,
+        owninguser: quoteRequestData.owninguser,
       }));
     } catch (error) {
       console.error('Error fetching data:', error);

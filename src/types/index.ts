@@ -19,9 +19,17 @@ export interface QuoteLineItem {
   };
 }
 
+export interface OwningUser {
+  fullname: string;
+  internalemailaddress: string;
+  systemuserid: string;
+  ownerid: string;
+}
+
 export interface QuoteRequest {
   foxy_Account: {
     name: string;
   };
   foxy_quoteid: string;
+  owninguser?: OwningUser;
 }

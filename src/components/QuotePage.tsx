@@ -85,7 +85,7 @@ const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => 
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
-  const { accountName, quoteId, locations, lineItems, error, loading } = useQuoteData(id);
+  const { accountName, quoteId, locations, lineItems, error, loading, owninguser } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
   const { totalMRR, totalTCV } = calculateTotals(lineItems);
   const [expandAll, setExpandAll] = useState(true);
@@ -114,7 +114,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
             <Text strong style={{ fontSize: '16px' }}>{accountName}</Text>
           </Col>
           <Col span={24}>
-            <QuoteSummary owner="Bob Smith" totalMRR={totalMRR} totalTCV={totalTCV} />
+            <QuoteSummary owner={owninguser?.fullname || ''} totalMRR={totalMRR} totalTCV={totalTCV} />
           </Col>
           <Col span={24}>
             <TableActions onAddLocation={show} onToggleExpand={toggleExpandAll} expandAll={expandAll} />
