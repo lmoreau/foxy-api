@@ -16,7 +16,7 @@ export async function getQuoteRequestById(request: HttpRequest, context: Invocat
 
     try {
         const accessToken = await getAccessToken();
-        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_foxyquoterequests?$filter=foxy_foxyquoterequestid eq ${id}&$expand=foxy_Account`;
+        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_foxyquoterequests?$filter=foxy_foxyquoterequestid eq ${id}&$expand=foxy_Account($select=name,foxy_duns,foxy_basecustomer),owninguser($select=fullname,internalemailaddress)`;
 
         const response = await axios.get(apiUrl, {
             headers: {
