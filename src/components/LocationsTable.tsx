@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Typography, Space, Statistic } from 'antd';
+import { Table, Button, Typography, Space, Statistic, Row, Col } from 'antd';
 import { DeleteOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
@@ -41,42 +41,45 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
         const isExpanded = expandedRowKeys.includes(record.foxy_foxyquoterequestlocationid);
         
         return (
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <Text strong>{text}</Text>
-            <Space size="large" align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
-              {isExpanded ? (
-                <Space>
-                  <Button icon={<DeleteOutlined />} type="default" disabled>
-                    Delete Row
-                  </Button>
-                  <Button 
-                    icon={<PlusOutlined />} 
-                    type="primary"
-                    onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
-                  >
-                    Add Product
-                  </Button>
-                </Space>
-              ) : (
-                <Space size="large">
-                  <Statistic 
-                    title="MRR" 
-                    value={totalMRR} 
-                    prefix={<DollarOutlined />} 
-                    precision={2}
-                    valueStyle={{ color: '#3f8600' }}
-                  />
-                  <Statistic 
-                    title="TCV" 
-                    value={totalTCV} 
-                    prefix={<DollarOutlined />} 
-                    precision={2}
-                    valueStyle={{ color: '#1890ff' }}
-                  />
-                </Space>
-              )}
-            </Space>
-          </Space>
+          <Row align="middle" justify="space-between" style={{ width: '100%' }}>
+            <Col>
+              <Space direction="vertical" size="small">
+                <Text strong>{text}</Text>
+                {!isExpanded && (
+                  <Space size="large">
+                    <Statistic 
+                      title="MRR" 
+                      value={totalMRR} 
+                      prefix={<DollarOutlined />} 
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                    />
+                    <Statistic 
+                      title="TCV" 
+                      value={totalTCV} 
+                      prefix={<DollarOutlined />} 
+                      precision={2}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </Space>
+                )}
+              </Space>
+            </Col>
+            <Col>
+              <Space>
+                <Button icon={<DeleteOutlined />} type="default" disabled>
+                  Delete Row
+                </Button>
+                <Button 
+                  icon={<PlusOutlined />} 
+                  type="primary"
+                  onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
+                >
+                  Add Product
+                </Button>
+              </Space>
+            </Col>
+          </Row>
         );
       },
     },
