@@ -8,6 +8,7 @@ interface AddLocationModalProps {
   onCancel: () => void;
   quoteRequestId: string;
   accountId?: string;
+  onRefresh: () => void; // New prop for refreshing the parent component
 }
 
 interface Location {
@@ -22,7 +23,7 @@ interface ApiResponse {
   value: Location[];
 }
 
-const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, onCancel, quoteRequestId, accountId }) => {
+const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, onCancel, quoteRequestId, accountId, onRefresh }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
@@ -76,6 +77,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
           console.log('createFoxyQuoteRequestLocation response:', response.data);
           message.success('Location added successfully');
           onOk(selectedLocationId);
+          onRefresh(); // Call the refresh function after successfully adding a location
         } catch (error) {
           console.error('Error creating quote request location:', error);
           message.error('Failed to add location. Please try again.');

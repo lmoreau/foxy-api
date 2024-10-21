@@ -85,7 +85,7 @@ const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => 
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
-  const { accountName, quoteId, locations, lineItems, error, loading, owninguser, accountId } = useQuoteData(id);
+  const { accountName, quoteId, locations, lineItems, error, loading, owninguser, accountId, refetchLocations } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
   const { totalMRR, totalTCV } = calculateTotals(lineItems);
   const [expandAll, setExpandAll] = useState(true);
@@ -96,6 +96,11 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   const toggleExpandAll = () => {
     setExpandAll(!expandAll);
+  };
+
+  const handleAddLocationSuccess = () => {
+    hide();
+    refetchLocations();
   };
 
   if (loading) {
@@ -136,10 +141,11 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       </Content>
       <AddLocationModal
         isVisible={isVisible}
-        onOk={hide}
+        onOk={handleAddLocationSuccess}
         onCancel={hide}
         quoteRequestId={id || ''}
         accountId={accountId}
+        onRefresh={refetchLocations}
       />
     </Layout>
   );
