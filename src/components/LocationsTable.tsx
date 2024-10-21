@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Typography, Space, Statistic, Row, Col, Modal, Dropdown, Menu } from 'antd';
-import { DeleteOutlined, PlusOutlined, DollarOutlined, EllipsisOutlined } from '@ant-design/icons';
+import { Table, Button, Typography, Space, Statistic, Row, Col, Modal, Tooltip } from 'antd';
+import { DeleteOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { createNewLineItem, calculateTotals } from '../utils/quoteUtils';
@@ -11,6 +11,8 @@ interface LocationsTableProps {
   data: QuoteLocation[];
   lineItems: { [key: string]: QuoteLineItem[] };
   onAddLine: (locationId: string, newItem: QuoteLineItem) => void;
+  onUpdateLineItem: (locationId: string, updatedItem: QuoteLineItem) => void;
+  onDeleteLineItem: (locationId: string, itemId: string) => void;
   expandAll: boolean;
   onDeleteLocation: (locationId: string) => Promise<void>;
 }
@@ -19,6 +21,8 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   data,
   lineItems,
   onAddLine,
+  onUpdateLineItem,
+  onDeleteLineItem,
   expandAll,
   onDeleteLocation,
 }) => {
@@ -61,18 +65,9 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
         const { totalMRR, totalTCV } = calculateTotals({ [record.foxy_foxyquoterequestlocationid]: locationLineItems });
         const isExpanded = expandedRowKeys.includes(record.foxy_foxyquoterequestlocationid);
         
-        const menuItems = [
-          {
-            key: 'delete',
-            icon: <DeleteOutlined />,
-            label: 'Delete Row',
-            onClick: () => handleDeleteClick(record.foxy_foxyquoterequestlocationid),
-          },
-        ];
-
         return (
           <Row align="middle" justify="space-between" style={{ width: '100%' }}>
-            <Col>
+            <Col flex="auto">
               <Space direction="vertical" size="small">
                 <Text strong>{text}</Text>
                 {!isExpanded && (
@@ -96,17 +91,23 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
               </Space>
             </Col>
             <Col>
-              <Space>
-                <Button
-                  icon={<PlusOutlined />}
-                  onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
-                  type="primary"
-                >
-                  Add Product
-                </Button>
-                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-                  <Button icon={<EllipsisOutlined />} />
-                </Dropdown>
+              <Space size="small">
+                <Tooltip title="Add Product">
+                  <Button
+                    icon={<PlusOutlined />}
+                    onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
+                    type="text"
+                    style={{ color: '#1890ff' }}
+                  />
+                </Tooltip>
+                <Tooltip title="Delete Location">
+                  <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDeleteClick(record.foxy_foxyquoterequestlocationid)}
+                    type="text"
+                    style={{ color: '#ff4d4f' }}
+                  />
+                </Tooltip>
               </Space>
             </Col>
           </Row>
@@ -129,6 +130,8 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
           expandedRowRender: (record) => (
             <QuoteLineItemsTable
               initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []}
+              onUpdateLineItem={(updatedItem) => onUpdateLineItem(record.foxy_foxyquoterequestlocationid, updatedItem)}
+              onDeleteLineItem={(itemId) => onDeleteLineItem(record.foxy_foxyquoterequestlocationid, itemId)}
             />
           ),
           rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,

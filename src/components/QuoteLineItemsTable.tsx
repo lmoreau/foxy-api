@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Table, InputNumber, Select, message } from 'antd';
+import { Table, InputNumber, Select, message, Button, Tooltip, Modal, Form, DatePicker } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import './QuoteLineItemsTable.css'; // Import CSS for custom styles
+import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import './QuoteLineItemsTable.css';
 import { revenueTypeMap } from '../utils/categoryMapper';
+import dayjs from 'dayjs';
 
 interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
@@ -25,12 +27,23 @@ interface Product {
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
+  onUpdateLineItem: (updatedItem: QuoteLineItem) => void;
+  onDeleteLineItem: (itemId: string) => void;
 }
 
-const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineItems }) => {
+const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ 
+  initialLineItems, 
+  onUpdateLineItem, 
+  onDeleteLineItem 
+}) => {
   const [lineItems, setLineItems] = useState<QuoteLineItem[]>(initialLineItems);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [editingKey, setEditingKey] = useState<string>('');
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+
+  const [form] = Form.useForm();
 
   const fetchProducts = async (search: string) => {
     setLoading(true);
@@ -50,17 +63,52 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
     }
   };
 
-  const handleInputChange = (key: keyof QuoteLineItem, value: any, record: QuoteLineItem) => {
-    const updatedItems = lineItems.map(item => {
-      if (item.foxy_foxyquoterequestlineitemid === record.foxy_foxyquoterequestlineitemid) {
-        if (key === 'foxy_Product') {
-          return { ...item, foxy_Product: { name: value } };
-        }
-        return { ...item, [key]: value };
+  const isEditing = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === editingKey;
+
+  const edit = (record: QuoteLineItem) => {
+    form.setFieldsValue({ ...record, foxy_renewaldate: dayjs(record.foxy_renewaldate) });
+    setEditingKey(record.foxy_foxyquoterequestlineitemid);
+  };
+
+  const cancel = () => {
+    setEditingKey('');
+  };
+
+  const save = async (key: string) => {
+    try {
+      const row = await form.validateFields();
+      const newData = [...lineItems];
+      const index = newData.findIndex(item => key === item.foxy_foxyquoterequestlineitemid);
+      if (index > -1) {
+        const item = newData[index];
+        const updatedItem = {
+          ...item,
+          ...row,
+          foxy_renewaldate: row.foxy_renewaldate.format('YYYY-MM-DD'),
+        };
+        newData.splice(index, 1, updatedItem);
+        setLineItems(newData);
+        setEditingKey('');
+        onUpdateLineItem(updatedItem);
       }
-      return item;
-    });
-    setLineItems(updatedItems);
+    } catch (errInfo) {
+      console.log('Validate Failed:', errInfo);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setItemToDelete(id);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
+      setLineItems(newData);
+      onDeleteLineItem(itemToDelete);
+      setDeleteModalVisible(false);
+      setItemToDelete(null);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -72,52 +120,79 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
       title: 'Product',
       dataIndex: ['foxy_Product', 'name'],
       key: 'product',
-      render: (text: string, record: QuoteLineItem) => (
-        <Select
-          showSearch
-          placeholder="Select a product"
-          value={text || undefined}
-          onSearch={fetchProducts}
-          onChange={(value) => handleInputChange('foxy_Product', value, record)}
-          filterOption={false}
-          loading={loading}
-          style={{ width: '100%' }}
-        >
-          {products.map(product => (
-            <Select.Option key={product.name} value={product.name}>
-              {product.name}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
+      render: (text: string, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name={['foxy_Product', 'name']}
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Product is required' }]}
+          >
+            <Select
+              showSearch
+              placeholder="Select a product"
+              onSearch={fetchProducts}
+              filterOption={false}
+              loading={loading}
+              style={{ width: '100%' }}
+            >
+              {products.map(product => (
+                <Select.Option key={product.name} value={product.name}>
+                  {product.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        ) : (
+          text
+        );
+      },
     },
     {
       title: 'Quantity',
       dataIndex: 'foxy_quantity',
       key: 'foxy_quantity',
-      render: (value: number, record: QuoteLineItem) => (
-        <InputNumber
-          min={0}
-          value={value}
-          onChange={(val) => handleInputChange('foxy_quantity', val, record)}
-          style={{ width: '100%' }}
-        />
-      ),
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_quantity"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Quantity is required' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        ) : (
+          value
+        );
+      },
     },
     {
       title: 'Each',
       dataIndex: 'foxy_each',
       key: 'foxy_each',
-      render: (value: number, record: QuoteLineItem) => (
-        <InputNumber
-          min={0}
-          formatter={value => `$${value}`}
-          parser={value => value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0}
-          value={value}
-          onChange={(val) => handleInputChange('foxy_each', val, record)}
-          style={{ width: '100%' }}
-        />
-      ),
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_each"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Each is required' }]}
+          >
+            <InputNumber
+              min={0}
+              formatter={value => `$${value}`}
+              parser={(value: string | undefined) => {
+                const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
+                return isNaN(parsedValue) ? 0 : parsedValue;
+              }}
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+        ) : (
+          formatCurrency(value)
+        );
+      },
     },
     {
       title: 'MRR',
@@ -135,34 +210,132 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
       title: 'Term',
       dataIndex: 'foxy_term',
       key: 'foxy_term',
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_term"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Term is required' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        ) : (
+          value
+        );
+      },
     },
     {
       title: 'Revenue Type',
       dataIndex: 'foxy_revenuetype',
       key: 'foxy_revenuetype',
-      render: (type: number, record: QuoteLineItem) => (
-        <Select
-          value={type}
-          onChange={(value) => handleInputChange('foxy_revenuetype', value, record)}
-          style={{ width: '100%' }}
-        >
-          {Object.entries(revenueTypeMap).map(([value, label]) => (
-            <Select.Option key={value} value={parseInt(value)}>
-              {label}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
+      render: (type: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_revenuetype"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Revenue Type is required' }]}
+          >
+            <Select style={{ width: '100%' }}>
+              {Object.entries(revenueTypeMap).map(([value, label]) => (
+                <Select.Option key={value} value={parseInt(value)}>
+                  {label}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        ) : (
+          revenueTypeMap[type]
+        );
+      },
     },
     {
       title: 'Renewal Type',
       dataIndex: 'foxy_renewaltype',
       key: 'foxy_renewaltype',
+      render: (text: string, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_renewaltype"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Renewal Type is required' }]}
+          >
+            <Select style={{ width: '100%' }}>
+              <Select.Option value="Early Renewal">Early Renewal</Select.Option>
+              <Select.Option value="Within 20% of Contract End">Within 20% of Contract End</Select.Option>
+            </Select>
+          </Form.Item>
+        ) : (
+          text
+        );
+      },
     },
     {
       title: 'Renewal Date',
       dataIndex: 'foxy_renewaldate',
       key: 'foxy_renewaldate',
+      render: (date: string, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_renewaldate"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Renewal Date is required' }]}
+          >
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+        ) : (
+          date
+        );
+      },
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: any, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <span>
+            <Tooltip title="Save">
+              <Button
+                icon={<SaveOutlined />}
+                onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
+                style={{ marginRight: 8 }}
+                type="link"
+              />
+            </Tooltip>
+            <Tooltip title="Cancel">
+              <Button
+                icon={<CloseOutlined />}
+                onClick={cancel}
+                type="link"
+              />
+            </Tooltip>
+          </span>
+        ) : (
+          <span>
+            <Tooltip title="Edit">
+              <Button
+                disabled={editingKey !== ''}
+                onClick={() => edit(record)}
+                icon={<EditOutlined />}
+                type="link"
+                style={{ marginRight: 8 }}
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                onClick={() => handleDelete(record.foxy_foxyquoterequestlineitemid)}
+                icon={<DeleteOutlined />}
+                type="link"
+                style={{ color: '#ff4d4f' }}
+              />
+            </Tooltip>
+          </span>
+        );
+      },
     },
   ];
 
@@ -170,32 +343,45 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ initialLineIt
   const totalTCV = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_linetcv, 0), [lineItems]);
 
   return (
-    <Table
-      columns={columns}
-      dataSource={lineItems}
-      rowKey="foxy_foxyquoterequestlineitemid"
-      pagination={false}
-      className="custom-table"
-      summary={() => (
-        <Table.Summary fixed>
-          <Table.Summary.Row>
-            <Table.Summary.Cell index={0} colSpan={3}>
-              <strong>Total</strong>
-            </Table.Summary.Cell>
-            <Table.Summary.Cell index={3}>
-              <strong>{formatCurrency(totalMRR)}</strong>
-            </Table.Summary.Cell>
-            <Table.Summary.Cell index={4}>
-              <strong>{formatCurrency(totalTCV)}</strong>
-            </Table.Summary.Cell>
-            <Table.Summary.Cell index={5} />
-            <Table.Summary.Cell index={6} />
-            <Table.Summary.Cell index={7} />
-            <Table.Summary.Cell index={8} />
-          </Table.Summary.Row>
-        </Table.Summary>
-      )}
-    />
+    <>
+      <Form form={form} component={false}>
+        <Table
+          columns={columns}
+          dataSource={lineItems}
+          rowKey="foxy_foxyquoterequestlineitemid"
+          pagination={false}
+          className="custom-table"
+          summary={() => (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={3}>
+                  <strong>Total</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={3}>
+                  <strong>{formatCurrency(totalMRR)}</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={4}>
+                  <strong>{formatCurrency(totalTCV)}</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={5} />
+                <Table.Summary.Cell index={6} />
+                <Table.Summary.Cell index={7} />
+                <Table.Summary.Cell index={8} />
+                <Table.Summary.Cell index={9} />
+              </Table.Summary.Row>
+            </Table.Summary>
+          )}
+        />
+      </Form>
+      <Modal
+        title="Confirm Deletion"
+        open={deleteModalVisible}
+        onOk={confirmDelete}
+        onCancel={() => setDeleteModalVisible(false)}
+      >
+        <p>Are you sure you want to delete this line item? This action cannot be undone.</p>
+      </Modal>
+    </>
   );
 };
 
