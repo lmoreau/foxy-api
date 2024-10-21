@@ -7,6 +7,7 @@ import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
 import { handleAddLine, calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
+import { QuoteLineItem } from '../types';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -114,6 +115,22 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     }
   };
 
+  const handleUpdateLineItem = (locationId: string, updatedItem: QuoteLineItem) => {
+    // Implement the logic to update the line item
+    console.log('Updating line item:', locationId, updatedItem);
+    // You might want to call an API to update the line item in the backend
+    // Then update the local state or refetch the data
+    message.success('Line item updated successfully');
+  };
+
+  const handleDeleteLineItem = (locationId: string, itemId: string) => {
+    // Implement the logic to delete the line item
+    console.log('Deleting line item:', locationId, itemId);
+    // You might want to call an API to delete the line item from the backend
+    // Then update the local state or refetch the data
+    message.success('Line item deleted successfully');
+  };
+
   if (loading) {
     return (
       <Layout style={{ minHeight: '100vh', padding: '12px' }}>
@@ -147,6 +164,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
               onAddLine={handleAddLine}
               expandAll={expandAll}
               onDeleteLocation={handleDeleteLocation}
+              onUpdateLineItem={handleUpdateLineItem}
+              onDeleteLineItem={handleDeleteLineItem}
             />
           </Col>
         </Row>

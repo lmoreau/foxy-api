@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { Table, InputNumber, Select, message, Button, Tooltip, Modal, Form, DatePicker } from 'antd';
+import { Table, InputNumber, Select, message, Button, Tooltip, Modal, Form, DatePicker, Space } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined } from '@ant-design/icons';
 import './QuoteLineItemsTable.css';
 import { revenueTypeMap } from '../utils/categoryMapper';
 import dayjs from 'dayjs';
@@ -42,6 +42,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   const [editingKey, setEditingKey] = useState<string>('');
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
 
   const [form] = Form.useForm();
 
@@ -122,29 +123,41 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       key: 'product',
       render: (text: string, record: QuoteLineItem) => {
         const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name={['foxy_Product', 'name']}
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Product is required' }]}
-          >
-            <Select
-              showSearch
-              placeholder="Select a product"
-              onSearch={fetchProducts}
-              filterOption={false}
-              loading={loading}
-              style={{ width: '100%' }}
-            >
-              {products.map(product => (
-                <Select.Option key={product.name} value={product.name}>
-                  {product.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        ) : (
-          text
+        return (
+          <Space>
+            {editable ? (
+              <Form.Item
+                name={['foxy_Product', 'name']}
+                style={{ margin: 0 }}
+                rules={[{ required: true, message: 'Product is required' }]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Select a product"
+                  onSearch={fetchProducts}
+                  filterOption={false}
+                  loading={loading}
+                  style={{ width: '100%' }}
+                >
+                  {products.map(product => (
+                    <Select.Option key={product.name} value={product.name}>
+                      {product.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            ) : (
+              text
+            )}
+            <Tooltip title="Configuration Required">
+              <Button
+                icon={<ToolOutlined />}
+                onClick={() => setConfigModalVisible(true)}
+                type="text"
+                style={{ color: '#52c41a' }}
+              />
+            </Tooltip>
+          </Space>
         );
       },
     },
@@ -380,6 +393,14 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         onCancel={() => setDeleteModalVisible(false)}
       >
         <p>Are you sure you want to delete this line item? This action cannot be undone.</p>
+      </Modal>
+      <Modal
+        title="Configuration Required"
+        open={configModalVisible}
+        onOk={() => setConfigModalVisible(false)}
+        onCancel={() => setConfigModalVisible(false)}
+      >
+        <p>Additional configuration is required for this item. (Placeholder for future implementation)</p>
       </Modal>
     </>
   );

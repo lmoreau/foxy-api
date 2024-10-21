@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Typography, Space, Statistic, Row, Col, Modal, Tooltip } from 'antd';
-import { DeleteOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, AppstoreAddOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { createNewLineItem, calculateTotals } from '../utils/quoteUtils';
@@ -98,6 +98,22 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                     onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
                     type="text"
                     style={{ color: '#1890ff' }}
+                  />
+                </Tooltip>
+                <Tooltip title="Rapid Entry">
+                  <Button
+                    icon={<ThunderboltOutlined />}
+                    onClick={() => {/* Placeholder for Rapid Entry functionality */}}
+                    type="text"
+                    style={{ color: '#faad14' }}
+                  />
+                </Tooltip>
+                <Tooltip title="Add Bundle">
+                  <Button
+                    icon={<AppstoreAddOutlined />}
+                    onClick={() => {/* Placeholder for Add Bundle functionality */}}
+                    type="text"
+                    style={{ color: '#52c41a' }}
                   />
                 </Tooltip>
                 <Tooltip title="Delete Location">
