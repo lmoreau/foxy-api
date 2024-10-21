@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button } from 'antd';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
-import { createNewLineItem } from '../utils/quoteUtils';
+import { createNewLineItem, calculateTotals } from '../utils/quoteUtils';
 
 interface LocationsTableProps {
   data: QuoteLocation[];
@@ -27,26 +27,40 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
     }
   }, [expandAll, data]);
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  };
+
   const columns = [
     {
       title: 'Quote Location',
       dataIndex: 'fullAddress',
       key: 'fullAddress',
-      render: (text: string, record: QuoteLocation) => (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <strong>{text}</strong>
-          {expandedRowKeys.includes(record.foxy_foxyquoterequestlocationid) && (
-            <div>
-              <Button type="default" disabled style={{ marginRight: '8px' }}>
-                Delete Row
-              </Button>
-              <Button type="primary" onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}>
-                Add Product
-              </Button>
-            </div>
-          )}
-        </div>
-      ),
+      render: (text: string, record: QuoteLocation) => {
+        const locationLineItems = lineItems[record.foxy_foxyquoterequestlocationid] || [];
+        const { totalMRR, totalTCV } = calculateTotals({ [record.foxy_foxyquoterequestlocationid]: locationLineItems });
+        
+        return (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <strong>{text}</strong>
+            {expandedRowKeys.includes(record.foxy_foxyquoterequestlocationid) ? (
+              <div>
+                <Button type="default" disabled style={{ marginRight: '8px' }}>
+                  Delete Row
+                </Button>
+                <Button type="primary" onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}>
+                  Add Product
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <span style={{ marginRight: '16px' }}>MRR: {formatCurrency(totalMRR)}</span>
+                <span>TCV: {formatCurrency(totalTCV)}</span>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
