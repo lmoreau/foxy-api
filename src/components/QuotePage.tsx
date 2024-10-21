@@ -1,8 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space } from 'antd';
+import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography } from 'antd';
 import { DollarOutlined, UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined } from '@ant-design/icons';
-import QuoteHeader from './QuoteHeader';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
@@ -10,6 +9,7 @@ import { useModal } from '../hooks/useModal';
 import { handleAddLine, calculateTotals } from '../utils/quoteUtils';
 
 const { Content } = Layout;
+const { Text } = Typography;
 
 interface QuotePageProps {
   setQuoteRequestId: Dispatch<SetStateAction<string | undefined>>;
@@ -59,7 +59,7 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
 
 const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean }> = 
   ({ onAddLocation, onToggleExpand, expandAll }) => (
-  <Space style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+  <Space style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end' }}>
     <Button icon={<PlusOutlined />} onClick={onAddLocation}>
       Add Location
     </Button>
@@ -86,17 +86,19 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   if (loading) {
     return (
-      <Layout style={{ minHeight: '100vh', padding: '24px' }}>
+      <Layout style={{ minHeight: '100vh', padding: '12px' }}>
         <Spin size="large" />
       </Layout>
     );
   }
 
   return (
-    <Layout style={{ minHeight: '100vh', padding: '24px' }}>
-      <QuoteHeader accountName={accountName} />
-      <Content style={{ marginTop: '12px' }}>
-        <Row gutter={[0, 16]}>
+    <Layout style={{ minHeight: '100vh', padding: '12px' }}>
+      <Content>
+        <Row gutter={[0, 4]}>
+          <Col span={24}>
+            <Text strong style={{ fontSize: '16px' }}>{accountName}</Text>
+          </Col>
           <Col span={24}>
             <QuoteSummary owner="Bob Smith" totalMRR={totalMRR} totalTCV={totalTCV} />
           </Col>
