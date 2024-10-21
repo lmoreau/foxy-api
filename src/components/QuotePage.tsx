@@ -15,37 +15,47 @@ interface QuotePageProps {
   setQuoteRequestId: Dispatch<SetStateAction<string | undefined>>;
 }
 
-const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number }> = ({ owner, totalMRR, totalTCV }) => (
-  <Card>
-    <Row gutter={16}>
-      <Col span={8}>
-        <Statistic
-          title="Owner"
-          value={owner}
-          prefix={<UserOutlined />}
-        />
-      </Col>
-      <Col span={8}>
-        <Statistic
-          title="Total MRR"
-          value={totalMRR}
-          precision={2}
-          prefix={<DollarOutlined />}
-          valueStyle={{ color: '#3f8600' }}
-        />
-      </Col>
-      <Col span={8}>
-        <Statistic
-          title="Total TCV"
-          value={totalTCV}
-          precision={2}
-          prefix={<DollarOutlined />}
-          valueStyle={{ color: '#1890ff' }}
-        />
-      </Col>
-    </Row>
-  </Card>
-);
+const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number }> = ({ owner, totalMRR, totalTCV }) => {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  return (
+    <Card size="small">
+      <Row gutter={[8, 8]} align="middle">
+        <Col span={6}>
+          <Statistic
+            title="Owner"
+            value={owner}
+            prefix={<UserOutlined />}
+            valueStyle={{ fontSize: '14px' }}
+          />
+        </Col>
+        <Col span={9}>
+          <Statistic
+            title="Total MRR"
+            value={formatCurrency(totalMRR)}
+            prefix={<DollarOutlined />}
+            valueStyle={{ color: '#3f8600', fontSize: '14px' }}
+          />
+        </Col>
+        <Col span={9}>
+          <Statistic
+            title="Total TCV"
+            value={formatCurrency(totalTCV)}
+            prefix={<DollarOutlined />}
+            valueStyle={{ color: '#1890ff', fontSize: '14px' }}
+          />
+        </Col>
+      </Row>
+    </Card>
+  );
+};
 
 const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean }> = 
   ({ onAddLocation, onToggleExpand, expandAll }) => (

@@ -12,22 +12,39 @@ interface QuoteInfoProps {
 
 const QuoteInfo: React.FC<QuoteInfoProps> = ({ owner, quoteId, totalMRR, totalTCV }) => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
   return (
-    <Row gutter={[16, 16]}>
-      <Col span={6}>
-        <Text strong>Owner:</Text> {owner}
+    <Row gutter={[8, 8]} align="middle">
+      <Col span={5}>
+        <Text type="secondary" style={{ fontSize: '0.9em' }}>Owner:</Text>
       </Col>
-      <Col span={6}>
-        <Text strong>Quote Request:</Text> {quoteId}
+      <Col span={7}>
+        <Text>{owner}</Text>
       </Col>
-      <Col span={6}>
-        <Text strong>Quote Total MRR:</Text> {formatCurrency(totalMRR)}
+      <Col span={5}>
+        <Text type="secondary" style={{ fontSize: '0.9em' }}>Quote Request:</Text>
       </Col>
-      <Col span={6}>
-        <Text strong>Quote Total TCV:</Text> {formatCurrency(totalTCV)}
+      <Col span={7}>
+        <Text>{quoteId}</Text>
+      </Col>
+      <Col span={5}>
+        <Text type="secondary" style={{ fontSize: '0.9em' }}>Total MRR:</Text>
+      </Col>
+      <Col span={7}>
+        <Text>{formatCurrency(totalMRR)}</Text>
+      </Col>
+      <Col span={5}>
+        <Text type="secondary" style={{ fontSize: '0.9em' }}>Total TCV:</Text>
+      </Col>
+      <Col span={7}>
+        <Text>{formatCurrency(totalTCV)}</Text>
       </Col>
     </Row>
   );
