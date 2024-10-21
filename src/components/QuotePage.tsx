@@ -57,6 +57,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         isVisible={isVisible}
         onOk={hide}
         onCancel={hide}
+        quoteRequestId={id || ''}
       />
     </div>
   );
