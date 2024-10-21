@@ -28,7 +28,7 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
   return (
     <Card size="small">
       <Row gutter={[8, 8]} align="middle">
-        <Col span={6}>
+        <Col span={4}>
           <Statistic
             title="Owner"
             value={owner}
@@ -36,7 +36,21 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
             valueStyle={{ fontSize: '14px' }}
           />
         </Col>
-        <Col span={9}>
+        <Col span={4}>
+          <Statistic
+            title="Quote Type"
+            value="Wireline"
+            valueStyle={{ fontSize: '14px' }}
+          />
+        </Col>
+        <Col span={4}>
+          <Statistic
+            title="Quote Stage"
+            value="Draft"
+            valueStyle={{ fontSize: '14px' }}
+          />
+        </Col>
+        <Col span={6}>
           <Statistic
             title="Total MRR"
             value={formatCurrency(totalMRR)}
@@ -44,7 +58,7 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
             valueStyle={{ color: '#3f8600', fontSize: '14px' }}
           />
         </Col>
-        <Col span={9}>
+        <Col span={6}>
           <Statistic
             title="Total TCV"
             value={formatCurrency(totalTCV)}
