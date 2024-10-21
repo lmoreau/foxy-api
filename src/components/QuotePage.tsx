@@ -49,7 +49,7 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
 
 const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean }> = 
   ({ onAddLocation, onToggleExpand, expandAll }) => (
-  <Space style={{ marginBottom: 16 }}>
+  <Space style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
     <Button icon={<PlusOutlined />} onClick={onAddLocation}>
       Add Location
     </Button>
@@ -85,8 +85,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   return (
     <Layout style={{ minHeight: '100vh', padding: '24px' }}>
       <QuoteHeader accountName={accountName} />
-      <Content style={{ marginTop: '24px' }}>
-        <Row gutter={[0, 24]}>
+      <Content style={{ marginTop: '12px' }}>
+        <Row gutter={[0, 16]}>
           <Col span={24}>
             <QuoteSummary owner="Bob Smith" totalMRR={totalMRR} totalTCV={totalTCV} />
           </Col>
