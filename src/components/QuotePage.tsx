@@ -1,12 +1,12 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography } from 'antd';
+import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message } from 'antd';
 import { DollarOutlined, UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
-import { handleAddLine, calculateTotals } from '../utils/quoteUtils';
+import { handleAddLine, calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -103,6 +103,17 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     refetchLocations();
   };
 
+  const handleDeleteLocation = async (locationId: string) => {
+    try {
+      await deleteQuoteLocation(locationId);
+      message.success('Location deleted successfully');
+      refetchLocations();
+    } catch (error) {
+      message.error('Failed to delete location');
+      console.error('Error deleting location:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Layout style={{ minHeight: '100vh', padding: '12px' }}>
@@ -135,6 +146,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
               lineItems={lineItems}
               onAddLine={handleAddLine}
               expandAll={expandAll}
+              onDeleteLocation={handleDeleteLocation}
             />
           </Col>
         </Row>

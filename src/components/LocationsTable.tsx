@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Typography, Space, Statistic, Row, Col } from 'antd';
+import { Table, Button, Typography, Space, Statistic, Row, Col, Modal } from 'antd';
 import { DeleteOutlined, PlusOutlined, DollarOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
@@ -12,6 +12,7 @@ interface LocationsTableProps {
   lineItems: { [key: string]: QuoteLineItem[] };
   onAddLine: (locationId: string, newItem: QuoteLineItem) => void;
   expandAll: boolean;
+  onDeleteLocation: (locationId: string) => Promise<void>;
 }
 
 const LocationsTable: React.FC<LocationsTableProps> = ({
@@ -19,8 +20,11 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   lineItems,
   onAddLine,
   expandAll,
+  onDeleteLocation,
 }) => {
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [locationToDelete, setLocationToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (expandAll) {
@@ -29,6 +33,24 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
       setExpandedRowKeys([]);
     }
   }, [expandAll, data]);
+
+  const handleDeleteClick = (locationId: string) => {
+    setLocationToDelete(locationId);
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (locationToDelete) {
+      try {
+        await onDeleteLocation(locationToDelete);
+        // Removed success message from here
+      } catch (error) {
+        // Error handling is done in the parent component
+      }
+    }
+    setDeleteModalVisible(false);
+    setLocationToDelete(null);
+  };
 
   const columns = [
     {
@@ -67,7 +89,11 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
             </Col>
             <Col>
               <Space>
-                <Button icon={<DeleteOutlined />} type="default" disabled>
+                <Button 
+                  icon={<DeleteOutlined />} 
+                  type="default"
+                  onClick={() => handleDeleteClick(record.foxy_foxyquoterequestlocationid)}
+                >
                   Delete Row
                 </Button>
                 <Button 
@@ -86,25 +112,35 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   ];
 
   return (
-    <Table
-      dataSource={data}
-      columns={columns}
-      rowKey="foxy_foxyquoterequestlocationid"
-      expandable={{
-        expandedRowKeys,
-        onExpandedRowsChange: (newExpandedRows) => {
-          setExpandedRowKeys(newExpandedRows as string[]);
-        },
-        expandedRowRender: (record) => (
-          <QuoteLineItemsTable
-            initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []}
-          />
-        ),
-        rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
-      }}
-      showHeader={false}
-      size="small"
-    />
+    <>
+      <Table
+        dataSource={data}
+        columns={columns}
+        rowKey="foxy_foxyquoterequestlocationid"
+        expandable={{
+          expandedRowKeys,
+          onExpandedRowsChange: (newExpandedRows) => {
+            setExpandedRowKeys(newExpandedRows as string[]);
+          },
+          expandedRowRender: (record) => (
+            <QuoteLineItemsTable
+              initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []}
+            />
+          ),
+          rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
+        }}
+        showHeader={false}
+        size="small"
+      />
+      <Modal
+        title="Confirm Deletion"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={() => setDeleteModalVisible(false)}
+      >
+        <p>Are you sure you want to delete this location? This action cannot be undone.</p>
+      </Modal>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 import { QuoteLineItem } from '../types/index';
+import axios from 'axios';
 
 export const createNewLineItem = (): QuoteLineItem => ({
   foxy_foxyquoterequestlineitemid: `new-${Date.now()}`,
@@ -33,4 +34,15 @@ export const calculateTotals = (lineItems: { [key: string]: QuoteLineItem[] }) =
   });
 
   return { totalMRR, totalTCV };
+};
+
+export const deleteQuoteLocation = async (locationId: string): Promise<void> => {
+  try {
+    await axios.delete(`http://localhost:7071/api/deleteQuoteLocation`, {
+      data: { deleteId: locationId }
+    });
+  } catch (error) {
+    console.error('Error deleting quote location:', error);
+    throw error; // Re-throw the error so it can be handled by the caller
+  }
 };

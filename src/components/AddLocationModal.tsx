@@ -8,7 +8,7 @@ interface AddLocationModalProps {
   onCancel: () => void;
   quoteRequestId: string;
   accountId?: string;
-  onRefresh: () => void; // New prop for refreshing the parent component
+  onRefresh: () => void;
 }
 
 interface Location {
@@ -28,8 +28,6 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
   const [loading, setLoading] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
-  console.log('AddLocationModal props:', { isVisible, quoteRequestId, accountId });
-
   const fetchLocations = useCallback(async () => {
     if (!accountId) {
       console.error('Account ID is not provided');
@@ -40,7 +38,6 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
     setLoading(true);
     try {
       const response = await axios.get<ApiResponse>(`http://localhost:7071/api/listAccountLocationRows?accountId=${accountId}`);
-      console.log('API response:', response.data);
       if (response.data && Array.isArray(response.data.value)) {
         setLocations(response.data.value);
       } else {
@@ -57,10 +54,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
 
   useEffect(() => {
     if (isVisible && accountId) {
-      console.log('Fetching locations for accountId:', accountId);
       fetchLocations();
-    } else {
-      console.log('Not fetching locations. isVisible:', isVisible, 'accountId:', accountId);
     }
   }, [isVisible, accountId, fetchLocations]);
 
@@ -74,10 +68,9 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
             quoteRequestId: quoteRequestId,
             accountLocationId: selectedLocationId
           });
-          console.log('createFoxyQuoteRequestLocation response:', response.data);
           message.success('Location added successfully');
           onOk(selectedLocationId);
-          onRefresh(); // Call the refresh function after successfully adding a location
+          onRefresh();
         } catch (error) {
           console.error('Error creating quote request location:', error);
           message.error('Failed to add location. Please try again.');
