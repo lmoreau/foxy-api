@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Table, InputNumber, Select, message } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import './QuoteLineItemsTable.css'; // Import CSS for custom styles
-import { revenueTypeMap, getRevenueTypeLabel } from '../utils/categoryMapper';
+import { revenueTypeMap } from '../utils/categoryMapper';
 
 interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;

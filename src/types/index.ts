@@ -29,6 +29,7 @@ export interface OwningUser {
 export interface QuoteRequest {
   foxy_Account: {
     name: string;
+    accountid: string; // Added accountid
   };
   foxy_quoteid: string;
   owninguser?: OwningUser;

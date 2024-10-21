@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Select, Spin, message } from 'antd';
 import axios from 'axios';
 
@@ -6,7 +6,8 @@ interface AddLocationModalProps {
   isVisible: boolean;
   onOk: (selectedLocationId: string) => void;
   onCancel: () => void;
-  quoteRequestId: string; // Keep this prop to avoid compilation errors
+  quoteRequestId: string;
+  accountId?: string;
 }
 
 interface Location {
@@ -20,21 +21,22 @@ interface ApiResponse {
   value: Location[];
 }
 
-const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, onCancel, quoteRequestId }) => {
+const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, onCancel, quoteRequestId, accountId }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isVisible) {
-      fetchLocations();
-    }
-  }, [isVisible]);
+  console.log('AddLocationModal props:', { isVisible, quoteRequestId, accountId });
 
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
+    if (!accountId) {
+      console.error('Account ID is not provided');
+      message.error('Unable to fetch locations. Account ID is missing.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const accountId = '9a0a2a91-19b1-ec11-983e-002248ade72c';
       const response = await axios.get<ApiResponse>(`http://localhost:7071/api/listAccountLocationRows?accountId=${accountId}`);
       console.log('API response:', response.data);
       if (response.data && Array.isArray(response.data.value)) {
@@ -49,7 +51,16 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
     } finally {
       setLoading(false);
     }
-  };
+  }, [accountId]);
+
+  useEffect(() => {
+    if (isVisible && accountId) {
+      console.log('Fetching locations for accountId:', accountId);
+      fetchLocations();
+    } else {
+      console.log('Not fetching locations. isVisible:', isVisible, 'accountId:', accountId);
+    }
+  }, [isVisible, accountId, fetchLocations]);
 
   const handleOk = () => {
     if (selectedLocationId) {
@@ -62,18 +73,22 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
   return (
     <Modal title="Add Location" open={isVisible} onOk={handleOk} onCancel={onCancel}>
       <Spin spinning={loading}>
-        <Select
-          style={{ width: '100%' }}
-          placeholder="Select a location"
-          onChange={setSelectedLocationId}
-          value={selectedLocationId}
-        >
-          {locations.map((location) => (
-            <Select.Option key={location.foxy_accountlocationid} value={location.foxy_accountlocationid}>
-              {location.foxy_Building.foxy_fulladdress}
-            </Select.Option>
-          ))}
-        </Select>
+        {accountId ? (
+          <Select
+            style={{ width: '100%' }}
+            placeholder="Select a location"
+            onChange={setSelectedLocationId}
+            value={selectedLocationId}
+          >
+            {locations.map((location) => (
+              <Select.Option key={location.foxy_accountlocationid} value={location.foxy_accountlocationid}>
+                {location.foxy_Building.foxy_fulladdress}
+              </Select.Option>
+            ))}
+          </Select>
+        ) : (
+          <p>Account ID is required to fetch locations.</p>
+        )}
       </Spin>
     </Modal>
   );

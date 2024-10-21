@@ -12,6 +12,7 @@ interface OwningUser {
 
 interface QuoteData {
   accountName: string;
+  accountId: string; // Added accountId
   quoteId: string;
   locations: QuoteLocation[];
   lineItems: { [key: string]: QuoteLineItem[] };
@@ -24,6 +25,7 @@ interface QuoteData {
 export const useQuoteData = (id: string | undefined): QuoteData => {
   const [quoteData, setQuoteData] = useState<QuoteData>({
     accountName: '',
+    accountId: '', // Added accountId
     quoteId: '',
     locations: [],
     lineItems: {},
@@ -62,6 +64,7 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
       setQuoteData(prev => ({
         ...prev,
         accountName: quoteRequestData.foxy_Account.name,
+        accountId: quoteRequestData.foxy_Account.accountid, // Added accountId
         quoteId: quoteRequestData.foxy_quoteid,
         locations,
         lineItems: lineItemsMap,
