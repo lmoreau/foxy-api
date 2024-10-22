@@ -17,28 +17,43 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
 }) => {
   const columns: ColumnsType<any> = [
     {
-      title: 'Service',
-      dataIndex: 'foxyflow_name',
-      key: 'foxyflow_name',
+      title: 'Product',
+      dataIndex: 'foxyflow_product',
+      key: 'foxyflow_product',
+    },
+    {
+      title: 'Rogers Company Name',
+      dataIndex: 'foxyflow_rogerscompanyname',
+      key: 'foxyflow_rogerscompanyname',
+    },
+    {
+      title: 'Charge Item Code',
+      dataIndex: 'foxyflow_charge_item_code',
+      key: 'foxyflow_charge_item_code',
+    },
+    {
+      title: 'Company',
+      dataIndex: '_foxyflow_company_value@OData.Community.Display.V1.FormattedValue',
+      key: 'foxyflow_company',
     },
     {
       title: 'Amount',
-      dataIndex: 'foxyflow_amount',
-      key: 'foxyflow_amount',
+      dataIndex: 'foxyflow_actuals',
+      key: 'foxyflow_actuals',
       render: (value) => {
         const num = parseFloat(value);
         return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
       },
     },
     {
-      title: 'Status',
-      dataIndex: 'foxyflow_status',
-      key: 'foxyflow_status',
+      title: 'Billing Number',
+      dataIndex: 'foxyflow_billingnumber',
+      key: 'foxyflow_billingnumber',
     },
     {
-      title: 'Notes',
-      dataIndex: 'foxyflow_notes',
-      key: 'foxyflow_notes',
+      title: 'Month',
+      dataIndex: 'foxyflow_month',
+      key: 'foxyflow_month',
     }
   ];
 
