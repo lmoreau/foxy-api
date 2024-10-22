@@ -27,24 +27,29 @@ jobs:
 
       - name: 'Use specific npm version'
         run: |
-          npm install -g npm@8.19.2  # Replace with your specific npm version
+          npm install -g npm@8.19.2
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
 
       - name: 'Resolve Project Dependencies Using Npm'
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           npm install
+          npm run clean
           npm run build
-          npm run test --if-present
+          func azure functionapp publish foxyrita --typescript
           popd
 
-      - name: 'Display api directory contents'
+      - name: 'Display dist directory contents'
         run: |
-          echo "Contents of api directory:"
-          ls -R ./api
+          echo "Contents of api/dist directory:"
+          ls -R ./api/dist
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./api
+        run: |
+          pushd './api'
+          zip -r ../release.zip host.json package.json dist/* node_modules
+          popd
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
