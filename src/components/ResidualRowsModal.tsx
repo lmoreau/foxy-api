@@ -10,6 +10,7 @@ interface ResidualRecord {
   foxyflow_month: string;
   foxyflow_actuals: string;
   foxyflow_billingnumber: string;
+  foxyflow_residualserviceid: string;
 }
 
 interface GroupedResidualData {
@@ -54,6 +55,14 @@ interface ResidualRowsModalProps {
   rogersWirelineData?: WirelineRecord[];
   rogersWirelineLoading?: boolean;
 }
+
+const generateUniqueKey = (prefix: string, index: number, ...parts: (string | number | undefined)[]): string => {
+  const validParts = parts
+    .map(part => part?.toString() || '')
+    .filter(Boolean)
+    .join('-');
+  return `${prefix}-${index}-${validParts || 'empty'}`;
+};
 
 const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
   isVisible,
@@ -110,7 +119,7 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
   ];
 
   const formatDescription = (record: WirelineRecord): string => {
-    let desc = record.foxy_description;
+    let desc = record.foxy_description || 'No Description';
     if (record.foxy_quantity > 1) {
       desc += ` x ${record.foxy_quantity}`;
     }
@@ -198,11 +207,11 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
   const processedResidualData = React.useMemo(() => {
     if (!data) return [];
     
-    const groupedByBilling = data.reduce<Record<string, GroupedResidualData>>((acc, item) => {
+    const groupedByBilling = data.reduce<Record<string, GroupedResidualData>>((acc, item, index) => {
       const billingNumber = item.foxyflow_billingnumber || 'No Billing Number';
       if (!acc[billingNumber]) {
         acc[billingNumber] = {
-          key: billingNumber,
+          key: generateUniqueKey('billing', index, billingNumber),
           billingNumber,
           children: [],
           totalAmount: 0
@@ -210,7 +219,7 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       }
       acc[billingNumber].children.push({
         ...item,
-        key: `${billingNumber}-${item.foxyflow_product}`
+        key: generateUniqueKey('residual', index, billingNumber, item.foxyflow_product, item.foxyflow_residualserviceid)
       });
       acc[billingNumber].totalAmount += parseFloat(item.foxyflow_actuals || '0');
       return acc;
@@ -222,11 +231,11 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
   const processedRogersWirelineData = React.useMemo(() => {
     if (!rogersWirelineData) return [];
     
-    const groupedBySignAcct = rogersWirelineData.reduce<Record<string, GroupedWirelineData>>((acc, item) => {
+    const groupedBySignAcct = rogersWirelineData.reduce<Record<string, GroupedWirelineData>>((acc, item, index) => {
       const signAcct = item.foxy_signacct || 'No Account';
       if (!acc[signAcct]) {
         acc[signAcct] = {
-          key: signAcct,
+          key: generateUniqueKey('account', index, signAcct),
           foxy_signacct: signAcct,
           children: [],
           totalCharges: 0
@@ -234,7 +243,7 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       }
       acc[signAcct].children.push({
         ...item,
-        key: `${item.foxy_serviceid}-${item.foxy_description}`
+        key: generateUniqueKey('wireline', index, signAcct, item.foxy_serviceid, item.foxy_description)
       });
       acc[signAcct].totalCharges += parseFloat(item.foxy_charges || '0');
       return acc;
@@ -243,9 +252,9 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
     return Object.values(groupedBySignAcct).map(group => ({
       ...group,
       children: [...group.children].sort((a, b) => {
-        const serviceIdCompare = a.foxy_serviceid.localeCompare(b.foxy_serviceid);
+        const serviceIdCompare = (a.foxy_serviceid || '').localeCompare(b.foxy_serviceid || '');
         if (serviceIdCompare !== 0) return serviceIdCompare;
-        return a.foxy_description.localeCompare(b.foxy_description);
+        return (a.foxy_description || '').localeCompare(b.foxy_description || '');
       })
     }));
   }, [rogersWirelineData]);
