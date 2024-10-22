@@ -1,9 +1,9 @@
+*.js.map
+*.ts
+!dist/**/*.js
 .git*
 .vscode
 local.settings.json
 test
 node_modules
-*.ts
-!*.d.ts
 npm-debug.log
-**/*.js.map

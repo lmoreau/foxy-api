@@ -28,7 +28,6 @@ jobs:
       - name: 'Use specific npm version'
         run: |
           npm install -g npm@8.19.2
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
 
       - name: 'Resolve Project Dependencies Using Npm'
         shell: bash
@@ -37,10 +36,22 @@ jobs:
           npm install
           npm run clean
           npm run build
-          # Generate function.json files
-          for f in dist/src/functions/*.js; do
-            func new --template "HTTP trigger" --name $(basename "$f" .js) --typescript
-          done
+          popd
+
+      - name: 'Create function app files'
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          # Ensure dist/src/functions exists
+          mkdir -p dist/src/functions
+          # Copy necessary files to dist
+          cp package.json dist/
+          cp host.json dist/
+          # Create a new package.json for production
+          node -e "const pkg=require('./package.json'); delete pkg.devDependencies; delete pkg.scripts; require('fs').writeFileSync('dist/package.json', JSON.stringify(pkg, null, 2))"
+          # Install production dependencies in dist
+          cd dist
+          npm install --production
           popd
 
       - name: 'Display dist directory contents'
@@ -52,11 +63,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: |
-            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dist
-            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/host.json
-            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package.json
-            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/node_modules
+          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dist
 
   deploy:
     runs-on: ubuntu-latest

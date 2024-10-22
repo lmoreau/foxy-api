@@ -9,7 +9,8 @@
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "postbuild": "cp package.json dist/"
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
@@ -19,7 +20,7 @@
   "devDependencies": {
     "azure-functions-core-tools": "^4.x",
     "@types/node": "18.x",
-    "typescript": "^4.0.0",
+    "typescript": "^4.9.0",
     "rimraf": "^5.0.0",
     "@types/axios": "^0.14.0"
   }
