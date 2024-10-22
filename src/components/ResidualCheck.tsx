@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Table, Tag, Tooltip, Select } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { FileTextOutlined } from '@ant-design/icons';
+import ResidualRowsModal from './ResidualRowsModal';
 import './ResidualCheck.css';
 
 const { Option } = Select;
@@ -89,6 +90,9 @@ const ResidualCheck: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalData, setModalData] = useState<any[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -119,6 +123,19 @@ const ResidualCheck: React.FC = () => {
 
   const handleServiceChange = (value: string[]) => {
     setSelectedServices(value);
+  };
+
+  const handleRowClick = async (record: Account) => {
+    setIsModalVisible(true);
+    setModalLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:7071/api/listWirelineResidualRows?companyId=${record.accountid}`);
+      setModalData(response.data.value);
+    } catch (err) {
+      console.error('Error fetching residual rows:', err);
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   const columns: ColumnsType<Account> = [
@@ -234,6 +251,16 @@ const ResidualCheck: React.FC = () => {
         scroll={{ x: true }}
         pagination={{ pageSize: 50 }}
         size="small"
+        onRow={(record) => ({
+          onClick: () => handleRowClick(record),
+          style: { cursor: 'pointer' }
+        })}
+      />
+      <ResidualRowsModal
+        isVisible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        data={modalData}
+        loading={modalLoading}
       />
     </div>
   );
