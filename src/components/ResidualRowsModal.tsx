@@ -20,21 +20,29 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       title: 'Product',
       dataIndex: 'foxyflow_product',
       key: 'foxyflow_product',
+      width: '25%', // Large field for product info
+      ellipsis: true,
     },
     {
       title: 'Rogers Company Name',
       dataIndex: 'foxyflow_rogerscompanyname',
       key: 'foxyflow_rogerscompanyname',
+      width: '25%', // Large field for company names
+      ellipsis: true,
     },
     {
       title: 'Charge Item Code',
       dataIndex: 'foxyflow_charge_item_code',
       key: 'foxyflow_charge_item_code',
+      width: '15%', // Medium width, slightly wider than header
+      ellipsis: true,
     },
     {
       title: 'Amount',
       dataIndex: 'foxyflow_actuals',
       key: 'foxyflow_actuals',
+      width: '10%', // Smaller width for amounts
+      ellipsis: true,
       render: (value) => {
         const num = parseFloat(value);
         return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -44,11 +52,15 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       title: 'Billing Number',
       dataIndex: 'foxyflow_billingnumber',
       key: 'foxyflow_billingnumber',
+      width: '15%', // Width matching or slightly wider than header
+      ellipsis: true,
     },
     {
       title: 'Month',
       dataIndex: 'foxyflow_month',
       key: 'foxyflow_month',
+      width: '10%', // Smaller width for month
+      ellipsis: true,
     }
   ];
 
@@ -66,7 +78,8 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
         loading={loading}
         rowKey="foxyflow_residualserviceid"
         pagination={false}
-        scroll={{ y: 400 }}
+        scroll={{ y: 400, x: 1500 }}
+        size="middle"
       />
     </Modal>
   );
