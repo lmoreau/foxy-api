@@ -1,8 +1,6 @@
 import React from 'react';
-import { Modal, Table, Input } from 'antd';
+import { Modal, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-
-const { TextArea } = Input;
 
 interface ResidualRowsModalProps {
   isVisible: boolean;
@@ -21,7 +19,7 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
   rogersWirelineData,
   rogersWirelineLoading
 }) => {
-  const columns: ColumnsType<any> = [
+  const residualColumns: ColumnsType<any> = [
     {
       title: 'Product',
       dataIndex: 'foxyflow_product',
@@ -70,16 +68,110 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
     }
   ];
 
-  const formatRogersWirelineData = (data: any[]) => {
-    if (!data || data.length === 0) return 'No Rogers Wireline records found.';
-    return data.map((record, index) => {
-      const fields = Object.entries(record)
-        .filter(([key]) => !key.startsWith('@'))
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('\n');
-      return `Record ${index + 1}:\n${fields}\n`;
-    }).join('\n');
-  };
+  const rogersWirelineColumns: ColumnsType<any> = [
+    {
+      title: 'Province',
+      dataIndex: 'foxy_province',
+      key: 'foxy_province',
+      ellipsis: true,
+    },
+    {
+      title: 'Postal Code',
+      dataIndex: 'foxy_postalcode',
+      key: 'foxy_postalcode',
+      ellipsis: true,
+    },
+    {
+      title: 'Service ID',
+      dataIndex: 'foxy_serviceid',
+      key: 'foxy_serviceid',
+      ellipsis: true,
+    },
+    {
+      title: 'Est. Renewal Date',
+      dataIndex: 'foxyflow_estrenewaldtgible',
+      key: 'foxyflow_estrenewaldtgible',
+      ellipsis: true,
+    },
+    {
+      title: 'Est. End Date',
+      dataIndex: 'foxy_estimatedenddate',
+      key: 'foxy_estimatedenddate',
+      ellipsis: true,
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'foxy_quantity',
+      key: 'foxy_quantity',
+      ellipsis: true,
+    },
+    {
+      title: 'Base Charges',
+      dataIndex: 'foxy_charges_base',
+      key: 'foxy_charges_base',
+      ellipsis: true,
+    },
+    {
+      title: 'Service ID',
+      dataIndex: 'foxy_serviceid',
+      key: 'foxy_serviceid',
+      ellipsis: true,
+    },
+    {
+      title: 'Billing Effect Date',
+      dataIndex: 'foxy_billingeffectivedate',
+      key: 'foxy_billingeffectivedate',
+      ellipsis: true,
+    },
+    {
+      title: 'City',
+      dataIndex: 'foxy_city',
+      key: 'foxy_city',
+      ellipsis: true,
+    },
+    {
+      title: 'Address',
+      dataIndex: 'foxy_addressline1',
+      key: 'foxy_addressline1',
+      ellipsis: true,
+    },
+    {
+      title: 'Description',
+      dataIndex: 'foxy_description',
+      key: 'foxy_description',
+      ellipsis: true,
+    },
+    {
+      title: 'Company Name',
+      dataIndex: 'foxy_companyname',
+      key: 'foxy_companyname',
+      ellipsis: true,
+    },
+    {
+      title: 'Account Owner',
+      dataIndex: 'foxy_accountowner',
+      key: 'foxy_accountowner',
+      ellipsis: true,
+    },
+    {
+      title: 'Contract Term',
+      dataIndex: 'foxy_contractterm',
+      key: 'foxy_contractterm',
+      ellipsis: true,
+    },
+    {
+      title: 'Site Name',
+      dataIndex: 'foxy_sitename',
+      key: 'foxy_sitename',
+      ellipsis: true,
+    },
+    {
+      title: 'Charges',
+      dataIndex: 'foxy_charges',
+      key: 'foxy_charges',
+      ellipsis: true,
+    }
+  ];
 
   return (
     <Modal
@@ -90,7 +182,7 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       footer={null}
     >
       <Table
-        columns={columns}
+        columns={residualColumns}
         dataSource={data}
         loading={loading}
         rowKey="foxyflow_residualserviceid"
@@ -100,10 +192,14 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       />
       <div style={{ marginTop: '20px' }}>
         <h3>Rogers Wireline Records</h3>
-        <TextArea
-          value={rogersWirelineLoading ? 'Loading...' : formatRogersWirelineData(rogersWirelineData || [])}
-          readOnly
-          style={{ width: '100%', minHeight: '200px', marginTop: '10px' }}
+        <Table
+          columns={rogersWirelineColumns}
+          dataSource={rogersWirelineData}
+          loading={rogersWirelineLoading}
+          rowKey={(record) => record.foxy_serviceid || Math.random().toString()}
+          pagination={false}
+          scroll={{ y: 400, x: 2000 }}
+          size="middle"
         />
       </div>
     </Modal>
