@@ -37,7 +37,10 @@ jobs:
           npm install
           npm run clean
           npm run build
-          func pack --build
+          # Generate function.json files
+          for f in dist/src/functions/*.js; do
+            func new --template "HTTP trigger" --name $(basename "$f" .js) --typescript
+          done
           popd
 
       - name: 'Display dist directory contents'
@@ -49,7 +52,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          path: |
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dist
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/host.json
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package.json
+            ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/node_modules
 
   deploy:
     runs-on: ubuntu-latest
