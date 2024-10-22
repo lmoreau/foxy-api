@@ -63,7 +63,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
       const selectedLocation = locations.find(location => location.foxy_accountlocationid === selectedLocationId);
       if (selectedLocation) {
         try {
-          const response = await axios.post('http://localhost:7071/api/createFoxyQuoteRequestLocation', {
+          await axios.post('http://localhost:7071/api/createFoxyQuoteRequestLocation', {
             buildingId: selectedLocation.foxy_Building.foxy_buildingid,
             quoteRequestId: quoteRequestId,
             accountLocationId: selectedLocationId

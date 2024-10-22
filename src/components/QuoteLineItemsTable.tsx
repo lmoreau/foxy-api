@@ -1,29 +1,13 @@
-import React, { useMemo, useState } from 'react';
-import { Table, InputNumber, Select, message, Button, Tooltip, Modal, Form, DatePicker, Space, Input, Card, Row, Col } from 'antd';
-import { ColumnsType } from 'antd/es/table';
-import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined, CalendarOutlined, TagOutlined, NumberOutlined, DollarOutlined, FileTextOutlined } from '@ant-design/icons';
-import './QuoteLineItemsTable.css';
-import { revenueTypeMap } from '../utils/categoryMapper';
-import dayjs from 'dayjs';
-
-interface QuoteLineItem {
-  foxy_foxyquoterequestlineitemid: string;
-  foxy_quantity: number;
-  foxy_each: number;
-  foxy_mrr: number;
-  foxy_linetcv: number;
-  foxy_term: number;
-  foxy_revenuetype: number;
-  foxy_renewaltype: string;
-  foxy_renewaldate: string;
-  foxy_Product: {
-    name: string;
-  };
-}
-
-interface Product {
-  name: string;
-}
+import React, { useMemo } from 'react';
+import { Table, Form } from 'antd';
+import { QuoteLineItem, Product } from 'types';
+import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
+import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
+import ConfigurationModal from 'components/ConfigurationModal';
+import RevenueTypeModal from 'components/RevenueTypeModal';
+import { formatCurrency } from 'utils/formatters';
+import { fetchProducts } from 'utils/api';
+import useQuoteLineItems from 'hooks/useQuoteLineItems';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
@@ -31,366 +15,63 @@ interface QuoteLineItemsTableProps {
   onDeleteLineItem: (itemId: string) => void;
 }
 
-const { TextArea } = Input;
-
-const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ 
-  initialLineItems, 
-  onUpdateLineItem, 
-  onDeleteLineItem 
+const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
+  initialLineItems,
+  onUpdateLineItem,
+  onDeleteLineItem,
 }) => {
-  const [lineItems, setLineItems] = useState<QuoteLineItem[]>(initialLineItems);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [editingKey, setEditingKey] = useState<string>('');
-  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
-  const [revenueTypeModalVisible, setRevenueTypeModalVisible] = useState<boolean>(false);
+  const {
+    lineItems,
+    editingKey,
+    deleteModalVisible,
+    configModalVisible,
+    revenueTypeModalVisible,
+    products,
+    loading,
+    form,
+    isEditing,
+    edit,
+    cancel,
+    save,
+    handleDelete,
+    confirmDelete,
+    setConfigModalVisible,
+    setRevenueTypeModalVisible,
+    setDeleteModalVisible,
+    setProducts,
+    setLoading,
+  } = useQuoteLineItems(initialLineItems, onUpdateLineItem, onDeleteLineItem);
 
-  const [form] = Form.useForm();
-  const [revenueTypeForm] = Form.useForm();
-
-  const fetchProducts = async (search: string) => {
+  const fetchProductsWrapper = async (search: string): Promise<Product[]> => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/listProductByRow?search=${encodeURIComponent(search)}`);
-      if (response.ok) {
-        const data: Product[] = await response.json();
-        setProducts(data);
-      } else {
-        message.error('Failed to fetch products.');
-      }
+      const fetchedProducts = await fetchProducts(search);
+      setProducts(fetchedProducts);
+      return fetchedProducts;
     } catch (error) {
       console.error('Error fetching products:', error);
-      message.error('An error occurred while fetching products.');
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  const isEditing = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === editingKey;
+  const columns = getQuoteLineItemsColumns(
+    isEditing,
+    edit,
+    save,
+    cancel,
+    handleDelete,
+    editingKey,
+    setConfigModalVisible,
+    setRevenueTypeModalVisible,
+    fetchProductsWrapper,
+    products,
+    loading
+  );
 
-  const edit = (record: QuoteLineItem) => {
-    form.setFieldsValue({ ...record, foxy_renewaldate: dayjs(record.foxy_renewaldate) });
-    setEditingKey(record.foxy_foxyquoterequestlineitemid);
-  };
-
-  const cancel = () => {
-    setEditingKey('');
-  };
-
-  const save = async (key: string) => {
-    try {
-      const row = await form.validateFields();
-      const newData = [...lineItems];
-      const index = newData.findIndex(item => key === item.foxy_foxyquoterequestlineitemid);
-      if (index > -1) {
-        const item = newData[index];
-        const updatedItem = {
-          ...item,
-          ...row,
-          foxy_renewaldate: row.foxy_renewaldate.format('YYYY-MM-DD'),
-        };
-        newData.splice(index, 1, updatedItem);
-        setLineItems(newData);
-        setEditingKey('');
-        onUpdateLineItem(updatedItem);
-      }
-    } catch (errInfo) {
-      console.log('Validate Failed:', errInfo);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    setItemToDelete(id);
-    setDeleteModalVisible(true);
-  };
-
-  const confirmDelete = () => {
-    if (itemToDelete) {
-      const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
-      setLineItems(newData);
-      onDeleteLineItem(itemToDelete);
-      setDeleteModalVisible(false);
-      setItemToDelete(null);
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-  };
-
-  const columns: ColumnsType<QuoteLineItem> = [
-    {
-      title: 'Product',
-      dataIndex: ['foxy_Product', 'name'],
-      key: 'product',
-      render: (text: string, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return (
-          <Space>
-            {editable ? (
-              <Form.Item
-                name={['foxy_Product', 'name']}
-                style={{ margin: 0 }}
-                rules={[{ required: true, message: 'Product is required' }]}
-              >
-                <Select
-                  showSearch
-                  placeholder="Select a product"
-                  onSearch={fetchProducts}
-                  filterOption={false}
-                  loading={loading}
-                  style={{ width: '100%' }}
-                >
-                  {products.map(product => (
-                    <Select.Option key={product.name} value={product.name}>
-                      {product.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            ) : (
-              text
-            )}
-            <Tooltip title="Configuration Required">
-              <Button
-                icon={<ToolOutlined />}
-                onClick={() => setConfigModalVisible(true)}
-                type="text"
-                style={{ color: '#52c41a' }}
-              />
-            </Tooltip>
-          </Space>
-        );
-      },
-    },
-    {
-      title: 'Quantity',
-      dataIndex: 'foxy_quantity',
-      key: 'foxy_quantity',
-      render: (value: number, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name="foxy_quantity"
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Quantity is required' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-        ) : (
-          value
-        );
-      },
-    },
-    {
-      title: 'Each',
-      dataIndex: 'foxy_each',
-      key: 'foxy_each',
-      render: (value: number, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name="foxy_each"
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Each is required' }]}
-          >
-            <InputNumber
-              min={0}
-              formatter={value => `$${value}`}
-              parser={(value: string | undefined) => {
-                const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
-                return isNaN(parsedValue) ? 0 : parsedValue;
-              }}
-              style={{ width: '100%' }}
-            />
-          </Form.Item>
-        ) : (
-          formatCurrency(value)
-        );
-      },
-    },
-    {
-      title: 'MRR',
-      dataIndex: 'foxy_mrr',
-      key: 'foxy_mrr',
-      render: (mrr: number) => formatCurrency(mrr),
-    },
-    {
-      title: 'TCV',
-      dataIndex: 'foxy_linetcv',
-      key: 'foxy_linetcv',
-      render: (tcv: number) => formatCurrency(tcv),
-    },
-    {
-      title: 'Term',
-      dataIndex: 'foxy_term',
-      key: 'foxy_term',
-      render: (value: number, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name="foxy_term"
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Term is required' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-        ) : (
-          value
-        );
-      },
-    },
-    {
-      title: 'Revenue Type',
-      dataIndex: 'foxy_revenuetype',
-      key: 'foxy_revenuetype',
-      render: (type: number, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        const revenueType = revenueTypeMap[type];
-        const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
-        
-        return (
-          <Space>
-            {editable ? (
-              <Form.Item
-                name="foxy_revenuetype"
-                style={{ margin: 0 }}
-                rules={[{ required: true, message: 'Revenue Type is required' }]}
-              >
-                <Select style={{ width: '100%' }}>
-                  {Object.entries(revenueTypeMap).map(([value, label]) => (
-                    <Select.Option key={value} value={parseInt(value)}>
-                      {label}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            ) : (
-              revenueType
-            )}
-            {showIcon && (
-              <Tooltip title="Configuration Required">
-                <Button
-                  icon={<ToolOutlined />}
-                  onClick={() => setRevenueTypeModalVisible(true)}
-                  type="text"
-                  style={{ color: '#52c41a' }}
-                />
-              </Tooltip>
-            )}
-          </Space>
-        );
-      },
-    },
-    {
-      title: 'Renewal Type',
-      dataIndex: 'foxy_renewaltype',
-      key: 'foxy_renewaltype',
-      render: (text: string, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name="foxy_renewaltype"
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Renewal Type is required' }]}
-          >
-            <Select style={{ width: '100%' }}>
-              <Select.Option value="Early Renewal">Early Renewal</Select.Option>
-              <Select.Option value="Within 20% of Contract End">Within 20% of Contract End</Select.Option>
-            </Select>
-          </Form.Item>
-        ) : (
-          text
-        );
-      },
-    },
-    {
-      title: 'Renewal Date',
-      dataIndex: 'foxy_renewaldate',
-      key: 'foxy_renewaldate',
-      render: (date: string, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name="foxy_renewaldate"
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Renewal Date is required' }]}
-          >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-        ) : (
-          date
-        );
-      },
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_: any, record: QuoteLineItem) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <Tooltip title="Save">
-              <Button
-                icon={<SaveOutlined />}
-                onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
-                style={{ marginRight: 8 }}
-                type="link"
-              />
-            </Tooltip>
-            <Tooltip title="Cancel">
-              <Button
-                icon={<CloseOutlined />}
-                onClick={cancel}
-                type="link"
-              />
-            </Tooltip>
-          </span>
-        ) : (
-          <span>
-            <Tooltip title="Edit">
-              <Button
-                disabled={editingKey !== ''}
-                onClick={() => edit(record)}
-                icon={<EditOutlined />}
-                type="link"
-                style={{ marginRight: 8 }}
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                onClick={() => handleDelete(record.foxy_foxyquoterequestlineitemid)}
-                icon={<DeleteOutlined />}
-                type="link"
-                style={{ color: '#ff4d4f' }}
-              />
-            </Tooltip>
-          </span>
-        );
-      },
-    },
-  ];
-
-  const totalMRR = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_mrr, 0), [lineItems]);
-  const totalTCV = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_linetcv, 0), [lineItems]);
-
-  const revenueTypeModalStyle = {
-    content: {
-      borderRadius: '15px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    },
-    header: {
-      borderBottom: 'none',
-      paddingBottom: '0',
-    },
-    body: {
-      padding: '24px',
-    },
-  };
-
-  // ... (keep all the existing columns and other functions)
+  const totalMRR = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_mrr, 0), [lineItems]);
+  const totalTCV = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_linetcv, 0), [lineItems]);
 
   return (
     <>
@@ -423,109 +104,21 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           )}
         />
       </Form>
-      <Modal
-        title="Confirm Deletion"
-        open={deleteModalVisible}
-        onOk={confirmDelete}
+      <DeleteConfirmationModal
+        visible={deleteModalVisible}
+        onConfirm={confirmDelete}
         onCancel={() => setDeleteModalVisible(false)}
-      >
-        <p>Are you sure you want to delete this line item? This action cannot be undone.</p>
-      </Modal>
-      <Modal
-        title="Configuration Required"
-        open={configModalVisible}
+      />
+      <ConfigurationModal
+        visible={configModalVisible}
         onOk={() => setConfigModalVisible(false)}
         onCancel={() => setConfigModalVisible(false)}
-      >
-        <p>Additional configuration is required for this item. (Placeholder for future implementation)</p>
-      </Modal>
-      <Modal
-        title="Revenue Type Configuration"
-        open={revenueTypeModalVisible}
-        onOk={() => {
-          revenueTypeForm.validateFields().then(() => {
-            setRevenueTypeModalVisible(false);
-          });
-        }}
+      />
+      <RevenueTypeModal
+        visible={revenueTypeModalVisible}
+        onOk={() => setRevenueTypeModalVisible(false)}
         onCancel={() => setRevenueTypeModalVisible(false)}
-        width={700}
-        styles={revenueTypeModalStyle}
-      >
-        <Form form={revenueTypeForm} layout="vertical">
-          <Row gutter={16}>
-            <Col span={12}>
-              <Card title="Renewal Information" bordered={false}>
-                <Form.Item
-                  name="renewalDate"
-                  label="Renewal Date"
-                  rules={[{ required: true, message: 'Please select a renewal date' }]}
-                >
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    suffixIcon={<CalendarOutlined />}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="renewalType"
-                  label="Renewal Type"
-                  rules={[{ required: true, message: 'Please select a renewal type' }]}
-                >
-                  <Select suffixIcon={<TagOutlined />}>
-                    <Select.Option value="Renewal Eligible">Renewal Eligible</Select.Option>
-                    <Select.Option value="Early Renewal">Early Renewal</Select.Option>
-                    <Select.Option value="Mid-Contract Upgrade">Mid-Contract Upgrade</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Existing Contract Details" bordered={false}>
-                <Form.Item
-                  name="existingQuantity"
-                  label="Existing Quantity"
-                  rules={[{ required: true, message: 'Please enter the existing quantity' }]}
-                >
-                  <InputNumber
-                    min={0}
-                    style={{ width: '100%' }}
-                    prefix={<NumberOutlined />}
-                  />
-                </Form.Item>
-                <Form.Item
-                  name="existingMrrEach"
-                  label="Existing MRR Each"
-                  rules={[{ required: true, message: 'Please enter the existing MRR each' }]}
-                >
-                  <InputNumber
-                    min={0}
-                    formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value: string | undefined) => {
-                      const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
-                      return isNaN(parsedValue) ? 0 : parsedValue;
-                    }}
-                    style={{ width: '100%' }}
-                    prefix={<DollarOutlined />}
-                  />
-                </Form.Item>
-              </Card>
-            </Col>
-          </Row>
-          <Card title="Additional Information" bordered={false}>
-            <Form.Item
-              name="additionalDetails"
-              label="Additional Details"
-            >
-              <Input.Group compact>
-                <Input
-                  style={{ width: '30px', pointerEvents: 'none', backgroundColor: '#fff' }}
-                  prefix={<FileTextOutlined />}
-                />
-                <TextArea rows={4} style={{ width: 'calc(100% - 30px)' }} />
-              </Input.Group>
-            </Form.Item>
-          </Card>
-        </Form>
-      </Modal>
+      />
     </>
   );
 };

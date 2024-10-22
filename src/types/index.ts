@@ -1,9 +1,3 @@
-export interface QuoteLocation {
-  foxy_foxyquoterequestlocationid: string;
-  foxy_locationid: string;
-  fullAddress: string;
-}
-
 export interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
   foxy_quantity: number;
@@ -19,18 +13,26 @@ export interface QuoteLineItem {
   };
 }
 
-export interface OwningUser {
-  fullname: string;
-  internalemailaddress: string;
-  systemuserid: string;
-  ownerid: string;
+export interface Product {
+  name: string;
+}
+
+export interface QuoteLocation {
+  foxy_foxyquoterequestlocationid: string;
+  foxy_locationid: string;
+  fullAddress: string;
 }
 
 export interface QuoteRequest {
   foxy_Account: {
     name: string;
-    accountid: string; // Added accountid
+    accountid: string;
   };
   foxy_quoteid: string;
-  owninguser?: OwningUser;
+  owninguser: {
+    fullname: string;
+    internalemailaddress: string;
+    systemuserid: string;
+    ownerid: string;
+  };
 }
