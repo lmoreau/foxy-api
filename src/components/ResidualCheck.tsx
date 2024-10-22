@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table, Tag, Tooltip } from 'antd';
+import { Table, Tag, Tooltip, Select } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { FileTextOutlined } from '@ant-design/icons';
 import './ResidualCheck.css';
+
+const { Option } = Select;
 
 interface Account {
   accountid: string;
@@ -26,13 +28,13 @@ interface Account {
 
 const serviceColors = {
   Cable: 'blue',
-  Fibre: 'green',
+  'Fibre Internet': 'green',
   GPON: 'cyan',
-  MS365: 'purple',
+  'Microsoft 365': 'purple',
   RES: 'magenta',
   SIP: 'orange',
   Unison: 'geekblue',
-  DataCentre: 'volcano',
+  'Data Centre': 'volcano',
 };
 
 const wirelineResidualOptions = [
@@ -47,6 +49,29 @@ const wirelineResidualOptions = [
   { value: '755280008', label: 'Issue - Disputed to Comp' },
 ];
 
+type WirelineResidualLabel = 
+  | 'Active'
+  | 'Pending Start'
+  | 'Not Eligible'
+  | 'Status Unknown'
+  | 'Issue - None Paying'
+  | 'Issue - Some Paying'
+  | 'Issue - Ready to Submit'
+  | 'Issue - Clarification Needed'
+  | 'Issue - Disputed to Comp';
+
+const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
+  'Active': 'green',
+  'Pending Start': 'blue',
+  'Not Eligible': 'blue',
+  'Status Unknown': 'red',
+  'Issue - None Paying': 'red',
+  'Issue - Some Paying': 'red',
+  'Issue - Ready to Submit': 'red',
+  'Issue - Clarification Needed': 'red',
+  'Issue - Disputed to Comp': 'red',
+};
+
 const formatCurrency = (value: string) => {
   const num = parseFloat(value);
   return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -54,22 +79,23 @@ const formatCurrency = (value: string) => {
 
 const mapWirelineResiduals = (value: string) => {
   const stringValue = value.toString();
-  console.log('Mapping value:', stringValue);
   const option = wirelineResidualOptions.find(opt => opt.value === stringValue);
-  console.log('Mapped label:', option ? option.label : stringValue);
   return option ? option.label : stringValue;
 };
 
 const ResidualCheck: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
         const response = await axios.get('http://localhost:7071/api/listAccountsForResidualCheck');
         setAccounts(response.data.value);
+        setFilteredAccounts(response.data.value);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching accounts:', err);
@@ -80,6 +106,20 @@ const ResidualCheck: React.FC = () => {
 
     fetchAccounts();
   }, []);
+
+  useEffect(() => {
+    if (selectedServices.length === 0) {
+      setFilteredAccounts(accounts);
+    } else {
+      setFilteredAccounts(accounts.filter(account => 
+        selectedServices.some(service => account[`foxy_${service.replace(' ', '').toLowerCase()}` as keyof Account])
+      ));
+    }
+  }, [selectedServices, accounts]);
+
+  const handleServiceChange = (value: string[]) => {
+    setSelectedServices(value);
+  };
 
   const columns: ColumnsType<Account> = [
     {
@@ -104,10 +144,10 @@ const ResidualCheck: React.FC = () => {
       render: (_, record) => (
         <>
           {record.foxy_cable && <Tag color={serviceColors.Cable}>Cable</Tag>}
-          {record.foxy_datacentre && <Tag color={serviceColors.DataCentre}>DataCentre</Tag>}
-          {record.foxy_fibreinternet && <Tag color={serviceColors.Fibre}>Fibre</Tag>}
+          {record.foxy_datacentre && <Tag color={serviceColors['Data Centre']}>Data Centre</Tag>}
+          {record.foxy_fibreinternet && <Tag color={serviceColors['Fibre Internet']}>Fibre Internet</Tag>}
           {record.foxy_gpon && <Tag color={serviceColors.GPON}>GPON</Tag>}
-          {record.foxy_microsoft365 && <Tag color={serviceColors.MS365}>MS365</Tag>}
+          {record.foxy_microsoft365 && <Tag color={serviceColors['Microsoft 365']}>Microsoft 365</Tag>}
           {record.foxy_res && <Tag color={serviceColors.RES}>RES</Tag>}
           {record.foxy_sip && <Tag color={serviceColors.SIP}>SIP</Tag>}
           {record.foxy_unison && <Tag color={serviceColors.Unison}>Unison</Tag>}
@@ -162,7 +202,11 @@ const ResidualCheck: React.FC = () => {
       key: 'foxyflow_wirelineresiduals',
       width: '15%',
       ellipsis: true,
-      render: (value) => mapWirelineResiduals(value),
+      render: (value) => {
+        const label = mapWirelineResiduals(value) as WirelineResidualLabel;
+        const color = wirelineResidualColors[label] || 'red';
+        return <Tag color={color}>{label}</Tag>;
+      },
     },
   ];
 
@@ -172,9 +216,20 @@ const ResidualCheck: React.FC = () => {
   return (
     <div className="residual-check-container">
       <h2>Accounts for Residual Check</h2>
+      <Select
+        mode="multiple"
+        style={{ width: '100%', marginBottom: '16px' }}
+        placeholder="Filter by Services"
+        onChange={handleServiceChange}
+        allowClear
+      >
+        {Object.keys(serviceColors).map(service => (
+          <Option key={service} value={service}>{service}</Option>
+        ))}
+      </Select>
       <Table 
         columns={columns} 
-        dataSource={accounts} 
+        dataSource={filteredAccounts} 
         rowKey="accountid"
         scroll={{ x: true }}
         pagination={{ pageSize: 50 }}
