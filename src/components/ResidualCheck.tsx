@@ -93,6 +93,8 @@ const ResidualCheck: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalData, setModalData] = useState<any[]>([]);
   const [modalLoading, setModalLoading] = useState(false);
+  const [rogersWirelineData, setRogersWirelineData] = useState<any[]>([]);
+  const [rogersWirelineLoading, setRogersWirelineLoading] = useState(false);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -128,13 +130,21 @@ const ResidualCheck: React.FC = () => {
   const handleRowClick = async (record: Account) => {
     setIsModalVisible(true);
     setModalLoading(true);
+    setRogersWirelineLoading(true);
+    
     try {
-      const response = await axios.get(`http://localhost:7071/api/listWirelineResidualRows?companyId=${record.accountid}`);
-      setModalData(response.data.value);
+      // Fetch residual rows
+      const residualResponse = await axios.get(`http://localhost:7071/api/listWirelineResidualRows?companyId=${record.accountid}`);
+      setModalData(residualResponse.data.value);
+      
+      // Fetch Rogers Wireline records
+      const rogersWirelineResponse = await axios.get(`http://localhost:7071/api/listRogersWirelineRecords?accountId=${record.accountid}`);
+      setRogersWirelineData(rogersWirelineResponse.data.value);
     } catch (err) {
-      console.error('Error fetching residual rows:', err);
+      console.error('Error fetching data:', err);
     } finally {
       setModalLoading(false);
+      setRogersWirelineLoading(false);
     }
   };
 
@@ -261,6 +271,8 @@ const ResidualCheck: React.FC = () => {
         onCancel={() => setIsModalVisible(false)}
         data={modalData}
         loading={modalLoading}
+        rogersWirelineData={rogersWirelineData}
+        rogersWirelineLoading={rogersWirelineLoading}
       />
     </div>
   );
