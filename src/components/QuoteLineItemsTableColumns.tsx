@@ -153,6 +153,13 @@ const getQuoteLineItemsColumns = (
       const revenueType = revenueTypeMap[type];
       const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
       
+      const isDataComplete = record.foxy_mrr && 
+                             record.foxy_quantity && 
+                             record.foxy_renewaldate && 
+                             record.foxy_renewaltype;
+      
+      const iconColor = isDataComplete ? '#52c41a' : '#ff4d4f';
+      
       return (
         <Space>
           {editable ? (
@@ -178,7 +185,7 @@ const getQuoteLineItemsColumns = (
                 icon={<ToolOutlined />}
                 onClick={() => setRevenueTypeModalVisible(true)}
                 type="text"
-                style={{ color: '#52c41a' }}
+                style={{ color: iconColor }}
               />
             </Tooltip>
           )}
