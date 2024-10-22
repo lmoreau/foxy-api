@@ -70,106 +70,75 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
 
   const rogersWirelineColumns: ColumnsType<any> = [
     {
-      title: 'Province',
-      dataIndex: 'foxy_province',
-      key: 'foxy_province',
-      ellipsis: true,
-    },
-    {
-      title: 'Postal Code',
-      dataIndex: 'foxy_postalcode',
-      key: 'foxy_postalcode',
-      ellipsis: true,
-    },
-    {
-      title: 'Service ID',
-      dataIndex: 'foxy_serviceid',
-      key: 'foxy_serviceid',
-      ellipsis: true,
-    },
-    {
-      title: 'Est. Renewal Date',
-      dataIndex: 'foxyflow_estrenewaldtgible',
-      key: 'foxyflow_estrenewaldtgible',
-      ellipsis: true,
-    },
-    {
-      title: 'Est. End Date',
-      dataIndex: 'foxy_estimatedenddate',
-      key: 'foxy_estimatedenddate',
-      ellipsis: true,
-    },
-    {
-      title: 'Quantity',
-      dataIndex: 'foxy_quantity',
-      key: 'foxy_quantity',
-      ellipsis: true,
-    },
-    {
-      title: 'Base Charges',
-      dataIndex: 'foxy_charges_base',
-      key: 'foxy_charges_base',
-      ellipsis: true,
-    },
-    {
-      title: 'Service ID',
-      dataIndex: 'foxy_serviceid',
-      key: 'foxy_serviceid',
-      ellipsis: true,
-    },
-    {
-      title: 'Billing Effect Date',
-      dataIndex: 'foxy_billingeffectivedate',
-      key: 'foxy_billingeffectivedate',
-      ellipsis: true,
-    },
-    {
-      title: 'City',
-      dataIndex: 'foxy_city',
-      key: 'foxy_city',
-      ellipsis: true,
-    },
-    {
-      title: 'Address',
-      dataIndex: 'foxy_addressline1',
-      key: 'foxy_addressline1',
-      ellipsis: true,
-    },
-    {
       title: 'Description',
       dataIndex: 'foxy_description',
       key: 'foxy_description',
+      fixed: 'left',
+      width: 250,
       ellipsis: true,
     },
     {
-      title: 'Company Name',
-      dataIndex: 'foxy_companyname',
-      key: 'foxy_companyname',
+      title: 'Service ID',
+      dataIndex: 'foxy_serviceid',
+      key: 'foxy_serviceid',
+      width: 120,
       ellipsis: true,
     },
     {
-      title: 'Account Owner',
-      dataIndex: 'foxy_accountowner',
-      key: 'foxy_accountowner',
-      ellipsis: true,
+      title: 'Location',
+      key: 'location',
+      width: 300,
+      render: (_, record) => (
+        <>
+          {record.foxy_addressline1}<br />
+          {record.foxy_city}, {record.foxy_province} {record.foxy_postalcode}
+        </>
+      ),
     },
     {
-      title: 'Contract Term',
-      dataIndex: 'foxy_contractterm',
-      key: 'foxy_contractterm',
-      ellipsis: true,
+      title: 'Contract Details',
+      key: 'contract',
+      width: 200,
+      render: (_, record) => (
+        <>
+          Term: {record.foxy_contractterm} months<br />
+          Qty: {record.foxy_quantity}
+        </>
+      ),
     },
     {
-      title: 'Site Name',
-      dataIndex: 'foxy_sitename',
-      key: 'foxy_sitename',
-      ellipsis: true,
+      title: 'Dates',
+      key: 'dates',
+      width: 200,
+      render: (_, record) => (
+        <>
+          Renewal: {record.foxyflow_estrenewaldtgible}<br />
+          End: {record.foxy_estimatedenddate}<br />
+          Billing: {record.foxy_billingeffectivedate}
+        </>
+      ),
+    },
+    {
+      title: 'Company Info',
+      key: 'company',
+      width: 200,
+      render: (_, record) => (
+        <>
+          {record.foxy_companyname}<br />
+          Owner: {record.foxy_accountowner}<br />
+          Site: {record.foxy_sitename}
+        </>
+      ),
     },
     {
       title: 'Charges',
       dataIndex: 'foxy_charges',
       key: 'foxy_charges',
-      ellipsis: true,
+      width: 120,
+      render: (value) => {
+        const num = parseFloat(value);
+        return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+      },
     }
   ];
 
@@ -198,8 +167,9 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
           loading={rogersWirelineLoading}
           rowKey={(record) => record.foxy_serviceid || Math.random().toString()}
           pagination={false}
-          scroll={{ y: 400, x: 2000 }}
+          scroll={{ y: 400, x: 1500 }}
           size="middle"
+          groupBy="foxy_serviceid"
         />
       </div>
     </Modal>
