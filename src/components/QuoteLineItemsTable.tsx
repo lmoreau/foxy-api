@@ -244,22 +244,39 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       key: 'foxy_revenuetype',
       render: (type: number, record: QuoteLineItem) => {
         const editable = isEditing(record);
-        return editable ? (
-          <Form.Item
-            name="foxy_revenuetype"
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: 'Revenue Type is required' }]}
-          >
-            <Select style={{ width: '100%' }}>
-              {Object.entries(revenueTypeMap).map(([value, label]) => (
-                <Select.Option key={value} value={parseInt(value)}>
-                  {label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        ) : (
-          revenueTypeMap[type]
+        const revenueType = revenueTypeMap[type];
+        const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
+        
+        return (
+          <Space>
+            {editable ? (
+              <Form.Item
+                name="foxy_revenuetype"
+                style={{ margin: 0 }}
+                rules={[{ required: true, message: 'Revenue Type is required' }]}
+              >
+                <Select style={{ width: '100%' }}>
+                  {Object.entries(revenueTypeMap).map(([value, label]) => (
+                    <Select.Option key={value} value={parseInt(value)}>
+                      {label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            ) : (
+              revenueType
+            )}
+            {showIcon && (
+              <Tooltip title="Configuration Required">
+                <Button
+                  icon={<ToolOutlined />}
+                  onClick={() => setConfigModalVisible(true)}
+                  type="text"
+                  style={{ color: '#52c41a' }}
+                />
+              </Tooltip>
+            )}
+          </Space>
         );
       },
     },
