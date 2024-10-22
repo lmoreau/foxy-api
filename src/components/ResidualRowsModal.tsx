@@ -32,11 +32,6 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       key: 'foxyflow_charge_item_code',
     },
     {
-      title: 'Company',
-      dataIndex: '_foxyflow_company_value@OData.Community.Display.V1.FormattedValue',
-      key: 'foxyflow_company',
-    },
-    {
       title: 'Amount',
       dataIndex: 'foxyflow_actuals',
       key: 'foxyflow_actuals',
@@ -62,7 +57,7 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
       title="Residual Service Details"
       open={isVisible}
       onCancel={onCancel}
-      width={1000}
+      width={1600}
       footer={null}
     >
       <Table
