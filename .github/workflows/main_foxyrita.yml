@@ -38,32 +38,18 @@ jobs:
           npm run build
           popd
 
-      - name: 'Create function app files'
+      - name: 'Create deployment package'
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          # Ensure dist/src/functions exists
-          mkdir -p dist/src/functions
-          # Copy necessary files to dist
-          cp package.json dist/
-          cp host.json dist/
-          # Create a new package.json for production
-          node -e "const pkg=require('./package.json'); delete pkg.devDependencies; delete pkg.scripts; require('fs').writeFileSync('dist/package.json', JSON.stringify(pkg, null, 2))"
-          # Install production dependencies in dist
-          cd dist
-          npm install --production
+          zip -r ../../function-app.zip . -x "node_modules/@types/*" "node_modules/typescript/*" "node_modules/azure-functions-core-tools/*" ".funcignore" ".gitignore" "local.settings.json" "test/*" "dist/test/*" "**/*.ts"
           popd
-
-      - name: 'Display dist directory contents'
-        run: |
-          echo "Contents of api/dist directory:"
-          ls -R ./api/dist
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/dist
+          path: function-app.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -77,7 +63,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -91,4 +77,4 @@ jobs:
         with:
           app-name: 'foxyrita'
           slot-name: 'Production'
-          package: .
+          package: function-app.zip

@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2019",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "sourceMap": true,
     "strict": false,
     "esModuleInterop": true,
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "types": ["node"],
-    "skipLibCheck": true
+    "lib": ["es2019"]
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
   ]
 }
