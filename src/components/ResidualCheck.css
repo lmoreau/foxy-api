@@ -1,0 +1,21 @@
+.residual-check-container {
+  padding: 20px;
+}
+
+.residual-check-container h2 {
+  margin-bottom: 20px;
+}
+
+.ant-table-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f0f2f5;
+}
+
+.ant-tag {
+  margin: 2px;
+}

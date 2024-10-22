@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Layout } from 'antd';
 import QuotePage from './components/QuotePage';
 import ProductsPage from './components/ProductsPage';
+import ResidualCheck from './components/ResidualCheck';
 import AppHeader from './components/Header';
 
 const { Content } = Layout;
@@ -23,6 +24,10 @@ function App() {
             <Route 
               path="/products" 
               element={<ProductsPage />} 
+            />
+            <Route 
+              path="/residual-check" 
+              element={<ResidualCheck />} 
             />
           </Routes>
         </Content>
