@@ -37,7 +37,7 @@ jobs:
           npm install
           npm run clean
           npm run build
-          func azure functionapp publish foxyrita --typescript
+          func pack --build
           popd
 
       - name: 'Display dist directory contents'
@@ -45,17 +45,11 @@ jobs:
           echo "Contents of api/dist directory:"
           ls -R ./api/dist
 
-      - name: Zip artifact for deployment
-        run: |
-          pushd './api'
-          zip -r ../release.zip host.json package.json dist/* node_modules
-          popd
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -69,9 +63,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -86,4 +77,4 @@ jobs:
         with:
           app-name: 'foxyrita'
           slot-name: 'Production'
-          package: release.zip
+          package: .
