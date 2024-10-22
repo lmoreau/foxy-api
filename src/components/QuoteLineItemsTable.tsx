@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { Table, InputNumber, Select, message, Button, Tooltip, Modal, Form, DatePicker, Space } from 'antd';
+import { Table, InputNumber, Select, message, Button, Tooltip, Modal, Form, DatePicker, Space, Input, Card, Row, Col } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined, CalendarOutlined, TagOutlined, NumberOutlined, DollarOutlined, FileTextOutlined } from '@ant-design/icons';
 import './QuoteLineItemsTable.css';
 import { revenueTypeMap } from '../utils/categoryMapper';
 import dayjs from 'dayjs';
@@ -31,6 +31,8 @@ interface QuoteLineItemsTableProps {
   onDeleteLineItem: (itemId: string) => void;
 }
 
+const { TextArea } = Input;
+
 const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({ 
   initialLineItems, 
   onUpdateLineItem, 
@@ -43,8 +45,10 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
+  const [revenueTypeModalVisible, setRevenueTypeModalVisible] = useState<boolean>(false);
 
   const [form] = Form.useForm();
+  const [revenueTypeForm] = Form.useForm();
 
   const fetchProducts = async (search: string) => {
     setLoading(true);
@@ -270,7 +274,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
               <Tooltip title="Configuration Required">
                 <Button
                   icon={<ToolOutlined />}
-                  onClick={() => setConfigModalVisible(true)}
+                  onClick={() => setRevenueTypeModalVisible(true)}
                   type="text"
                   style={{ color: '#52c41a' }}
                 />
@@ -372,6 +376,22 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   const totalMRR = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_mrr, 0), [lineItems]);
   const totalTCV = useMemo(() => lineItems.reduce((sum, item) => sum + item.foxy_linetcv, 0), [lineItems]);
 
+  const revenueTypeModalStyle = {
+    content: {
+      borderRadius: '15px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+    header: {
+      borderBottom: 'none',
+      paddingBottom: '0',
+    },
+    body: {
+      padding: '24px',
+    },
+  };
+
+  // ... (keep all the existing columns and other functions)
+
   return (
     <>
       <Form form={form} component={false}>
@@ -418,6 +438,93 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         onCancel={() => setConfigModalVisible(false)}
       >
         <p>Additional configuration is required for this item. (Placeholder for future implementation)</p>
+      </Modal>
+      <Modal
+        title="Revenue Type Configuration"
+        open={revenueTypeModalVisible}
+        onOk={() => {
+          revenueTypeForm.validateFields().then(() => {
+            setRevenueTypeModalVisible(false);
+          });
+        }}
+        onCancel={() => setRevenueTypeModalVisible(false)}
+        width={700}
+        styles={revenueTypeModalStyle}
+      >
+        <Form form={revenueTypeForm} layout="vertical">
+          <Row gutter={16}>
+            <Col span={12}>
+              <Card title="Renewal Information" bordered={false}>
+                <Form.Item
+                  name="renewalDate"
+                  label="Renewal Date"
+                  rules={[{ required: true, message: 'Please select a renewal date' }]}
+                >
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    suffixIcon={<CalendarOutlined />}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="renewalType"
+                  label="Renewal Type"
+                  rules={[{ required: true, message: 'Please select a renewal type' }]}
+                >
+                  <Select suffixIcon={<TagOutlined />}>
+                    <Select.Option value="Renewal Eligible">Renewal Eligible</Select.Option>
+                    <Select.Option value="Early Renewal">Early Renewal</Select.Option>
+                    <Select.Option value="Mid-Contract Upgrade">Mid-Contract Upgrade</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card title="Existing Contract Details" bordered={false}>
+                <Form.Item
+                  name="existingQuantity"
+                  label="Existing Quantity"
+                  rules={[{ required: true, message: 'Please enter the existing quantity' }]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: '100%' }}
+                    prefix={<NumberOutlined />}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="existingMrrEach"
+                  label="Existing MRR Each"
+                  rules={[{ required: true, message: 'Please enter the existing MRR each' }]}
+                >
+                  <InputNumber
+                    min={0}
+                    formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value: string | undefined) => {
+                      const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
+                      return isNaN(parsedValue) ? 0 : parsedValue;
+                    }}
+                    style={{ width: '100%' }}
+                    prefix={<DollarOutlined />}
+                  />
+                </Form.Item>
+              </Card>
+            </Col>
+          </Row>
+          <Card title="Additional Information" bordered={false}>
+            <Form.Item
+              name="additionalDetails"
+              label="Additional Details"
+            >
+              <Input.Group compact>
+                <Input
+                  style={{ width: '30px', pointerEvents: 'none', backgroundColor: '#fff' }}
+                  prefix={<FileTextOutlined />}
+                />
+                <TextArea rows={4} style={{ width: 'calc(100% - 30px)' }} />
+              </Input.Group>
+            </Form.Item>
+          </Card>
+        </Form>
       </Modal>
     </>
   );
