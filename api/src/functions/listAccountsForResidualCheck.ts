@@ -10,7 +10,7 @@ export async function listAccountsForResidualCheck(request: HttpRequest, context
     }
 
     // Get authorization header from request
-    const authHeader = request.headers['authorization'];
+    const authHeader = request.headers.get('authorization');
     if (!authHeader) {
         return { 
             ...corsResponse,
@@ -21,7 +21,8 @@ export async function listAccountsForResidualCheck(request: HttpRequest, context
 
     try {
         const headers = getDataverseHeaders(authHeader);
-        const apiUrl = `${dataverseUrl}/api/data/v9.1/accounts?$filter=foxy_basecustomer eq 612100001&$select=accountid,name,foxy_basecheck,foxy_basechecknotes,foxy_basecustomer,foxy_cable,foxy_datacentre,foxy_duns,foxy_fibreinternet,foxy_gpon,foxy_microsoft365,foxy_res,foxyflow_residualstotal,foxyflow_residualsnotes,foxy_ritaresidualnotes,foxy_sip,foxy_unison,foxy_wirelinemrr,foxyflow_wirelineresiduals`;
+        // Use proper OData query for Dataverse
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts?$select=accountid,name,foxyflow_wirelineresiduals&$filter=statecode eq 0`;
 
         context.log('Using auth header:', authHeader.substring(0, 50) + '...');
         context.log('Calling URL:', apiUrl);
@@ -37,16 +38,24 @@ export async function listAccountsForResidualCheck(request: HttpRequest, context
             }
         };
     } catch (error) {
-        context.log(`Error retrieving accounts for residual check: ${error}`);
-        if (axios.isAxiosError(error) && error.response) {
-            context.log('Error response:', error.response.data);
+        context.error('Error in listAccountsForResidualCheck:', error);
+        if (axios.isAxiosError(error)) {
+            context.log('Axios error response:', error.response?.data);
+            return {
+                ...corsResponse,
+                status: error.response?.status || 500,
+                body: JSON.stringify({
+                    error: error.response?.data?.error?.message || error.message
+                })
+            };
         }
-        const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        
         return { 
             ...corsResponse,
-            status, 
-            body: `Error retrieving accounts for residual check: ${message}`
+            status: 500, 
+            body: JSON.stringify({
+                error: (error as Error).message
+            })
         };
     }
 }

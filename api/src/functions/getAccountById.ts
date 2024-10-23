@@ -1,18 +1,17 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl, getDataverseHeaders, getAuthToken } from "../shared/dataverseAuth";
+import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
 export async function getAccountById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log('Processing getAccountById request');
-    
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
         return corsResponse;
     }
 
-    const authToken = getAuthToken(request);
-    if (!authToken) {
+    // Get authorization header from request
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
         return { 
             ...corsResponse,
             status: 401, 
@@ -31,14 +30,14 @@ export async function getAccountById(request: HttpRequest, context: InvocationCo
     }
 
     try {
-        if (!dataverseUrl) {
-            throw new Error('DATAVERSE_URL environment variable is not set');
-        }
+        // Format the GUID properly for Dataverse
+        const formattedId = id.replace(/[{}]/g, '');
+        const headers = getDataverseHeaders(authHeader);
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts(${formattedId})`;
 
-        const headers = getDataverseHeaders(authToken);
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts(${id})`;
+        context.log('Using auth header:', authHeader.substring(0, 50) + '...');
+        context.log('Calling URL:', apiUrl);
 
-        context.log('Calling Dataverse API:', apiUrl);
         const response = await axios.get(apiUrl, { headers });
 
         return { 

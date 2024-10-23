@@ -19,6 +19,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        if (inProgress !== InteractionStatus.None) {
+          return;
+        }
+
         // Store the current path for after login
         sessionStorage.setItem('loginRedirect', location.pathname + location.search);
 
@@ -28,12 +32,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         } else {
           // If we don't have an auth result and we're not in the middle of acquiring one,
           // redirect to login
-          if (inProgress === InteractionStatus.None) {
-            instance.loginRedirect({
-              ...loginRequest,
-              redirectStartPage: location.pathname + location.search
-            });
-          }
+          instance.loginRedirect({
+            ...loginRequest,
+            redirectStartPage: location.pathname + location.search
+          });
         }
       } catch (error) {
         console.error('Auth check failed:', error);
