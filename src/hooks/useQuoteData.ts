@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import { message } from 'antd';
 import { QuoteLocation, QuoteLineItem, QuoteRequest } from '../types';
+import { getQuoteRequestById, listQuoteLocationRows, listQuoteLineItemByRow } from '../utils/api';
 
 interface OwningUser {
   fullname: string;
@@ -12,7 +12,7 @@ interface OwningUser {
 
 interface QuoteData {
   accountName: string;
-  accountId: string; // Added accountId
+  accountId: string;
   quoteId: string;
   locations: QuoteLocation[];
   lineItems: { [key: string]: QuoteLineItem[] };
@@ -25,7 +25,7 @@ interface QuoteData {
 export const useQuoteData = (id: string | undefined): QuoteData => {
   const [quoteData, setQuoteData] = useState<QuoteData>({
     accountName: '',
-    accountId: '', // Added accountId
+    accountId: '',
     quoteId: '',
     locations: [],
     lineItems: {},
@@ -41,30 +41,30 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
     }
 
     try {
-      const quoteRequestResponse = await axios.get(`http://localhost:7071/api/getQuoteRequestById?id=${id}`);
-      const quoteRequestData = quoteRequestResponse.data.value[0] as QuoteRequest;
+      // Get quote request data
+      const quoteRequestData = await getQuoteRequestById(id);
 
-      const locationsResponse = await axios.get(`http://localhost:7071/api/listQuoteLocationRows?id=${id}`);
-      const locations = locationsResponse.data.value || [];
+      // Get locations
+      const locationsResponse = await listQuoteLocationRows(id);
+      const locations = locationsResponse.value || [];
 
-      const lineItemsPromises = locations.map(async (location: QuoteLocation) => {
+      // Get line items for each location sequentially instead of in parallel
+      const lineItemsMap: { [key: string]: QuoteLineItem[] } = {};
+      for (const location of locations) {
         try {
-          const lineItemsResponse = await axios.get(`http://localhost:7071/api/listQuoteLineItemByRow?id=${location.foxy_foxyquoterequestlocationid}`);
-          return { [location.foxy_foxyquoterequestlocationid]: lineItemsResponse.data.value };
+          const lineItemsResponse = await listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid);
+          lineItemsMap[location.foxy_foxyquoterequestlocationid] = lineItemsResponse.value || [];
         } catch (error) {
           console.error(`Error fetching line items for location ${location.foxy_foxyquoterequestlocationid}:`, error);
           message.error(`Failed to load line items for location ${location.foxy_locationid}`);
-          return { [location.foxy_foxyquoterequestlocationid]: [] };
+          lineItemsMap[location.foxy_foxyquoterequestlocationid] = [];
         }
-      });
-
-      const lineItemsResults = await Promise.all(lineItemsPromises);
-      const lineItemsMap = Object.assign({}, ...lineItemsResults);
+      }
 
       setQuoteData(prev => ({
         ...prev,
         accountName: quoteRequestData.foxy_Account.name,
-        accountId: quoteRequestData.foxy_Account.accountid, // Added accountId
+        accountId: quoteRequestData.foxy_Account.accountid,
         quoteId: quoteRequestData.foxy_quoteid,
         locations,
         lineItems: lineItemsMap,
@@ -75,9 +75,7 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
     } catch (error) {
       console.error('Error fetching data:', error);
       let errorMessage = 'An unknown error occurred';
-      if (axios.isAxiosError(error)) {
-        errorMessage = `Error: ${error.response?.data?.message || error.message}`;
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         errorMessage = `Error: ${error.message}`;
       }
       setQuoteData(prev => ({ ...prev, error: errorMessage, loading: false }));
@@ -88,20 +86,31 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
     if (!id) return;
 
     try {
-      const locationsResponse = await axios.get(`http://localhost:7071/api/listQuoteLocationRows?id=${id}`);
-      const locations = locationsResponse.data.value || [];
+      const locationsResponse = await listQuoteLocationRows(id);
+      const locations = locationsResponse.value || [];
+
+      // Get line items for each location sequentially
+      const lineItemsMap: { [key: string]: QuoteLineItem[] } = {};
+      for (const location of locations) {
+        try {
+          const lineItemsResponse = await listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid);
+          lineItemsMap[location.foxy_foxyquoterequestlocationid] = lineItemsResponse.value || [];
+        } catch (error) {
+          console.error(`Error fetching line items for location ${location.foxy_foxyquoterequestlocationid}:`, error);
+          lineItemsMap[location.foxy_foxyquoterequestlocationid] = [];
+        }
+      }
 
       setQuoteData(prev => ({
         ...prev,
         locations,
+        lineItems: lineItemsMap,
         error: null,
       }));
     } catch (error) {
       console.error('Error refetching locations:', error);
       let errorMessage = 'An unknown error occurred while refetching locations';
-      if (axios.isAxiosError(error)) {
-        errorMessage = `Error: ${error.response?.data?.message || error.message}`;
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         errorMessage = `Error: ${error.message}`;
       }
       setQuoteData(prev => ({ ...prev, error: errorMessage }));

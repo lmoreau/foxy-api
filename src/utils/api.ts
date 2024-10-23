@@ -17,8 +17,11 @@ const getAuthHeaders = async () => {
     console.log('Token received (first 20 chars):', token.substring(0, 20) + '...');
     console.log('Token length:', token.length);
     
+    // Always ensure token has 'Bearer ' prefix
+    const bearerToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    
     const headers = {
-      Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+      Authorization: bearerToken,
       'Content-Type': 'application/json',
     };
     
@@ -75,6 +78,42 @@ export const getQuoteRequestById = async (id: string) => {
     'Content-Type': headers['Content-Type']
   });
 
+  try {
+    const response = await axios.get(url, { headers });
+    console.log('Response status:', response.status);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching quote request:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+      console.error('Response headers:', error.response?.headers);
+    }
+    throw error;
+  }
+};
+
+export const listQuoteLocationRows = async (id: string) => {
+  console.log('=== Listing quote location rows ===');
+  console.log('Quote ID:', id);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listQuoteLocationRows?id=${id}`;
+  
+  console.log('Request URL:', url);
+  const response = await axios.get(url, { headers });
+  console.log('Response status:', response.status);
+  return response.data;
+};
+
+export const listQuoteLineItemByRow = async (locationId: string) => {
+  console.log('=== Listing quote line items by row ===');
+  console.log('Location ID:', locationId);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listQuoteLineItemByRow?id=${locationId}`;
+  
+  console.log('Request URL:', url);
   const response = await axios.get(url, { headers });
   console.log('Response status:', response.status);
   return response.data;
