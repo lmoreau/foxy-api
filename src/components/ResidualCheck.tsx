@@ -48,6 +48,7 @@ const wirelineResidualOptions = [
   { value: '755280006', label: 'Issue - Ready to Submit' },
   { value: '755280007', label: 'Issue - Clarification Needed' },
   { value: '755280008', label: 'Issue - Disputed to Comp' },
+  { value: '947760001', label: 'Legacy Issue' },
 ];
 
 type WirelineResidualLabel = 
@@ -59,7 +60,8 @@ type WirelineResidualLabel =
   | 'Issue - Some Paying'
   | 'Issue - Ready to Submit'
   | 'Issue - Clarification Needed'
-  | 'Issue - Disputed to Comp';
+  | 'Issue - Disputed to Comp'
+  | 'Legacy Issue';
 
 const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
   'Active': 'green',
@@ -71,6 +73,7 @@ const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
   'Issue - Ready to Submit': 'red',
   'Issue - Clarification Needed': 'red',
   'Issue - Disputed to Comp': 'red',
+  'Legacy Issue': 'red',
 };
 
 const formatCurrency = (value: string) => {

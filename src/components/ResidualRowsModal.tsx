@@ -89,7 +89,11 @@ const ResidualRowsModal: React.FC<ResidualRowsModalProps> = ({
         if ('children' in record) {
           return (
             <div>
-              <strong>{record.companyName}</strong>
+              <div style={{ fontWeight: 'bold' }}>
+                <span style={{ color: '#1890ff' }}>{record.accountId}</span>
+                {' - '}
+                <span>{record.companyName}</span>
+              </div>
               <div style={{ marginTop: 4 }}>
                 <Tag color="blue">Residual Total: {record.totalResidualAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
                 <Tag color="green">Wireline Total: {record.totalWirelineCharges.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
