@@ -4,6 +4,7 @@ import { Layout } from 'antd';
 import QuotePage from './components/QuotePage';
 import ProductsPage from './components/ProductsPage';
 import ResidualCheck from './components/ResidualCheck';
+import { ResidualDetails } from './components/ResidualDetails';
 import AppHeader from './components/Header';
 
 const { Content } = Layout;
@@ -28,6 +29,10 @@ function App() {
             <Route 
               path="/residual-check" 
               element={<ResidualCheck />} 
+            />
+            <Route 
+              path="/residual-details/:id" 
+              element={<ResidualDetails />} 
             />
           </Routes>
         </Content>
