@@ -23,3 +23,11 @@ export const listRogersWirelineRecords = async (accountId: string) => {
   const response = await axios.get(`${API_BASE_URL}/listRogersWirelineRecords?accountId=${accountId}`);
   return response.data.value;
 };
+
+export const updateAccountWirelineResiduals = async (accountId: string, value: string) => {
+  const response = await axios.patch(
+    `${API_BASE_URL}/updateAccountWirelineResiduals?accountId=${accountId}`,
+    { foxyflow_wirelineresiduals: value }
+  );
+  return response.data;
+};

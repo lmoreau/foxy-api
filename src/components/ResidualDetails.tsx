@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, Tag, Tooltip } from 'antd';
+import { Table, Tag, Tooltip, Button, Modal, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
-import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords } from '../utils/api';
+import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals } from '../utils/api';
+import wirelineResidualsMap from '../utils/wirelineResidualsMapper';
 
 interface AccountData {
   name: string;
   foxyflow_wirelineresiduals: number;
+  accountid: string;
 }
 
 interface ResidualRecord {
@@ -52,6 +54,8 @@ interface GroupedAccountData {
   children: (ResidualRecord | WirelineRecord)[];
 }
 
+type TableRecord = GroupedAccountData | ResidualRecord | WirelineRecord;
+
 const generateUniqueKey = (prefix: string, index: number, ...parts: (string | number | undefined)[]): string => {
   const validParts = parts
     .map(part => part?.toString() || '')
@@ -67,6 +71,9 @@ export const ResidualDetails: React.FC = () => {
   const [wirelineData, setWirelineData] = useState<WirelineRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<string>('');
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,6 +103,30 @@ export const ResidualDetails: React.FC = () => {
     }
   }, [id]);
 
+  const handleEdit = () => {
+    if (accountData) {
+      setSelectedValue(accountData.foxyflow_wirelineresiduals.toString());
+      setIsModalVisible(true);
+    }
+  };
+
+  const handleModalOk = async () => {
+    if (!accountData || !selectedValue) return;
+
+    setUpdating(true);
+    try {
+      await updateAccountWirelineResiduals(accountData.accountid, selectedValue);
+      // Refresh account data
+      const updatedAccount = await getAccountById(accountData.accountid);
+      setAccountData(updatedAccount);
+      setIsModalVisible(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const formatDescription = (record: WirelineRecord): string => {
     let desc = record.foxy_description || 'No Description';
     if (record.foxy_quantity > 1) {
@@ -107,7 +138,7 @@ export const ResidualDetails: React.FC = () => {
     return desc;
   };
 
-  const columns: ColumnsType<GroupedAccountData | ResidualRecord | WirelineRecord> = [
+  const columns: ColumnsType<TableRecord> = [
     {
       title: 'Description/Product',
       key: 'description',
@@ -303,7 +334,12 @@ export const ResidualDetails: React.FC = () => {
 
   return (
     <div>
-      <h1>{accountData.name}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+        <h1 style={{ margin: 0 }}>{accountData.name}</h1>
+        <Button type="primary" onClick={handleEdit}>
+          Edit Status
+        </Button>
+      </div>
       <p>Wireline Residuals: {getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</p>
       <div style={{ marginTop: '20px' }}>
         <Table
@@ -318,6 +354,23 @@ export const ResidualDetails: React.FC = () => {
           }}
         />
       </div>
+      <Modal
+        title="Update Wireline Residuals Status"
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={() => setIsModalVisible(false)}
+        confirmLoading={updating}
+      >
+        <Select
+          style={{ width: '100%' }}
+          value={selectedValue}
+          onChange={setSelectedValue}
+          options={wirelineResidualsMap.map(({ value, label }) => ({
+            value,
+            label
+          }))}
+        />
+      </Modal>
       <style>
         {`
           .ant-table-row-expand-icon-cell {
