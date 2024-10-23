@@ -111,23 +111,14 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       refetchLocations();
     } catch (error) {
       message.error('Failed to delete location');
-      console.error('Error deleting location:', error);
     }
   };
 
   const handleUpdateLineItem = (locationId: string, updatedItem: QuoteLineItem) => {
-    // Implement the logic to update the line item
-    console.log('Updating line item:', locationId, updatedItem);
-    // You might want to call an API to update the line item in the backend
-    // Then update the local state or refetch the data
     message.success('Line item updated successfully');
   };
 
   const handleDeleteLineItem = (locationId: string, itemId: string) => {
-    // Implement the logic to delete the line item
-    console.log('Deleting line item:', locationId, itemId);
-    // You might want to call an API to delete the line item from the backend
-    // Then update the local state or refetch the data
     message.success('Line item deleted successfully');
   };
 

@@ -49,7 +49,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       setProducts(fetchedProducts);
       return fetchedProducts;
     } catch (error) {
-      console.error('Error fetching products:', error);
       return [];
     } finally {
       setLoading(false);

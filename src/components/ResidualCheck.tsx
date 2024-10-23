@@ -103,8 +103,7 @@ const ResidualCheck: React.FC = () => {
         setFilteredAccounts(response.value);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching accounts:', err);
-        setError('Error fetching accounts. Please check the console for more details.');
+        setError('Error fetching accounts. Please try again later.');
         setLoading(false);
       }
     };
