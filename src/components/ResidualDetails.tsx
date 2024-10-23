@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 
 interface AccountData {
   name: string;
@@ -41,7 +42,7 @@ export const ResidualDetails: React.FC = () => {
   return (
     <div>
       <h1>{accountData.name}</h1>
-      <p>Wireline Residuals: {accountData.foxyflow_wirelineresiduals}</p>
+      <p>Wireline Residuals: {getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</p>
     </div>
   );
 };
