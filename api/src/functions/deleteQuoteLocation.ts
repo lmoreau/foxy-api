@@ -1,60 +1,67 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl } from "../shared/dataverseAuth";
+import { corsHandler } from "../shared/cors";
 
-interface DeleteQuoteLocationRequest {
-    deleteId: string;
-}
-
-/**
- * Azure Function to delete a quote location by ID from Dataverse
- */
 export async function deleteQuoteLocation(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`Http function processed request for url "${request.url}"`);
+    const corsResponse = corsHandler(request, context);
+    if (corsResponse && request.method === 'OPTIONS') {
+        return corsResponse;
+    }
 
-    const requestBody = await request.json() as DeleteQuoteLocationRequest;
-    const deleteId = requestBody.deleteId;
+    // Get authorization header from request
+    const userToken = request.headers.get('authorization');
+    if (!userToken) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
 
+    const deleteId = request.query.get('id');
     if (!deleteId) {
-        return { status: 400, body: JSON.stringify({ error: "Please provide a GUID for the quote location to delete" }) };
+        return { 
+            ...corsResponse,
+            status: 400, 
+            body: "Please provide a location ID to delete" 
+        };
     }
 
     try {
-        context.log(`Attempting to delete quote location with ID: ${deleteId}`);
-        const startTime = Date.now();
-
-        const accessToken = await getAccessToken();
+        // Use the user's token directly
+        const accessToken = userToken.replace('Bearer ', '');
         const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_foxyquoterequestlocations(${deleteId})`;
 
         await axios.delete(apiUrl, {
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Accept": "application/json",
-                "OData-MaxVersion": "4.0",
-                "OData-Version": "4.0"
+                'Authorization': `Bearer ${accessToken}`,
+                'OData-MaxVersion': '4.0',
+                'OData-Version': '4.0',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8'
             }
         });
 
-        const endTime = Date.now();
-        context.log(`Quote location deleted successfully. Time taken: ${endTime - startTime}ms`);
-
         return { 
-            status: 204
+            ...corsResponse,
+            status: 204,
+            headers: corsResponse?.headers
         };
     } catch (error) {
-        context.log(`Error deleting quote location: ${error.message}`);
+        context.log(`Error deleting quote location: ${error}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
         return { 
-            status,
-            body: JSON.stringify({ error: `Error deleting quote location: ${message}` })
+            ...corsResponse,
+            status, 
+            body: `Error deleting quote location: ${message}`
         };
     }
 }
 
-// Register the HTTP trigger
 app.http('deleteQuoteLocation', {
-    methods: ['DELETE'],
+    methods: ['DELETE', 'OPTIONS'],
     authLevel: 'anonymous',
     handler: deleteQuoteLocation
 });

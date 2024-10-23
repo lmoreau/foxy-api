@@ -1,49 +1,61 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
+import { corsHandler } from "../shared/cors";
 
-/**
- * Azure Function to get a quote location by ID from Dataverse
- */
 export async function getQuoteLocationById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`Http function processed request for url "${request.url}"`);
+    const corsResponse = corsHandler(request, context);
+    if (corsResponse && request.method === 'OPTIONS') {
+        return corsResponse;
+    }
+
+    // Get authorization header from request
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
 
     const id = request.query.get('id') || await request.text();
     if (!id) {
-        return { status: 400, body: "Please provide a GUID for the quote location" };
+        return { 
+            ...corsResponse,
+            status: 400, 
+            body: "Please provide a GUID for the quote location" 
+        };
     }
 
     try {
-        const accessToken = await getAccessToken();
+        const headers = await getDataverseHeaders(authHeader);
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequestlocations(${id})`;
 
-        const response = await axios.get(apiUrl, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Accept": "application/json",
-                "OData-MaxVersion": "4.0",
-                "OData-Version": "4.0"
-            }
-        });
+        const response = await axios.get(apiUrl, { headers });
 
         return { 
-            body: JSON.stringify(response.data), 
-            headers: { "Content-Type": "application/json" } 
+            ...corsResponse,
+            body: JSON.stringify(response.data),
+            headers: { 
+                "Content-Type": "application/json",
+                ...corsResponse?.headers
+            }
         };
     } catch (error) {
         context.log(`Error retrieving quote location: ${error.message}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
         return { 
+            ...corsResponse,
             status, 
-            body: `Error retrieving quote location: ${message}` 
+            body: `Error retrieving quote location: ${message}`
         };
     }
 }
 
-// Register the HTTP trigger
 app.http('getQuoteLocationById', {
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'OPTIONS'],
     authLevel: 'anonymous',
     handler: getQuoteLocationById
 });

@@ -1,0 +1,29 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "TENANT_ID": "1a20f967-e6ba-43f9-96e5-374fee668eca",
+    "CLIENT_ID": "ba25e11f-f889-42a7-a3b1-d8e282fe5cc0",
+    "AUTH_LEVEL": "anonymous", 
+    "CLIENT_SECRET": "bLw8Q~_9J4VHVSetBH9X4ofx9-QK8-fqJmoLRci-",
+    "DATAVERSE_URL": "https://foxy.crm3.dynamics.com",
+    "OPENROUTER_API_KEY": "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",
+    "GOOGLE_PLACES_API_KEY": "AIzaSyDmvC5OQSDol8a47nGASLC3FraNcWLjdGg",
+    "AZURE_MAPS_SUBSCRIPTION_KEY": "8InG48pPl4EJY6b6o8H5Ub60Xo1UqDT2DKb3n1SS8QdcpA7cLdHuJQQJ99AJACYeBjF2o13wAAAgAZMPoAwG",
+    "FUNCTION_APP_URL": "foxyai.azurewebsites.net",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "GET_GOOGLE_PLACES_URL": "http://localhost:7071/api/GetGooglePlaces",
+    "GETGOOGLEPLACES_FUNCTION_KEY": "YVMr_teg_p3-ZW-mLPgRoD0QluVtCcJ9Y1pd20eOqQ-CAzFu7gUO1Q==",
+    "GET_AZURE_PLACES_URL": "http://localhost:7071/api/GetAzurePlaces",
+    "FUNCTIONS_ENVIRONMENT": "Development",
+    "FUNCTION_BASE_URL": "http://127.0.0.1:7071",
+    "OPENROUTER_FUNCTION_KEY": "RWPBaUkfJRotjEC1o_UAlVQ83ghugMA8Fvt-HuAb46ETAzFuSguXLQ%3D%3D",
+    "GETAZUREPLACES_FUNCTION_KEY": "pxSeE41vxvJ-oWC-zFC49UdjQEPCuQ0KvF-_-cGVm3GDAzFucg5rxg==",
+    "OPENAISTRUCTUREDRESPONSE_FUNCTION_KEY": "v7nkqOAkza1JoiUCT_4p_m7GtAU7VoHK_iHqCwMtZcf3AzFuh1aETA==",
+    "OPENAI_API_KEY": "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"
+  },
+"Host": {
+    "CORS": "http://localhost:3000",
+    "CORSCredentials": true
+}
+}

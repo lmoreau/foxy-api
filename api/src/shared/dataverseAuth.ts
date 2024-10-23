@@ -1,20 +1,45 @@
-import { ClientSecretCredential } from "@azure/identity";
+import { HttpRequest } from "@azure/functions";
 
-// Environment variables
-const tenantId = process.env.TENANT_ID;
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
 export const dataverseUrl = process.env.DATAVERSE_URL;
 
-// Create a credential using Azure AD app registration
-const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+export interface DataverseHeaders {
+    'Authorization': string;
+    'OData-MaxVersion': string;
+    'OData-Version': string;
+    'Accept': string;
+    'Content-Type': string;
+    'Prefer': string;
+}
 
 /**
- * Get an access token for Dataverse API
- * @returns {Promise<string>} The access token
+ * Get headers for Dataverse API using user's token
+ * @param authHeader The Authorization header from the request
+ * @returns {DataverseHeaders} The headers object
  */
-export async function getAccessToken(): Promise<string> {
-    const scope = `${dataverseUrl}/.default`;
-    const token = await credential.getToken(scope);
-    return token.token;
+export function getDataverseHeaders(authHeader: string): DataverseHeaders {
+    if (!authHeader) {
+        throw new Error('Authorization header is required');
+    }
+
+    return {
+        'Authorization': authHeader,
+        'OData-MaxVersion': '4.0',
+        'OData-Version': '4.0',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Prefer': 'return=representation'
+    };
+}
+
+/**
+ * Extract token from request
+ * @param req The HTTP request
+ * @returns {string | null} The authorization token or null if not found
+ */
+export function getAuthToken(req: HttpRequest): string | null {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+        return null;
+    }
+    return authHeader;
 }

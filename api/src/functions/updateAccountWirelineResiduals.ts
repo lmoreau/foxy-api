@@ -1,9 +1,9 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
-interface UpdateRequest {
+interface UpdateWirelineResidualRequest {
     foxyflow_wirelineresiduals: string;
 }
 
@@ -13,53 +13,70 @@ export async function updateAccountWirelineResiduals(request: HttpRequest, conte
         return corsResponse;
     }
 
-    try {
-        const accountId = request.query.get('accountId');
-        const body = await request.json() as UpdateRequest;
-        const { foxyflow_wirelineresiduals } = body;
+    // Get authorization header from request
+    const userToken = request.headers.get('authorization');
+    if (!userToken) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
 
-        if (!accountId || foxyflow_wirelineresiduals === undefined) {
-            return {
+    const accountId = request.query.get('accountId');
+    if (!accountId) {
+        return { 
+            ...corsResponse,
+            status: 400, 
+            body: "Please provide an accountId"
+        };
+    }
+
+    try {
+        const requestBody = await request.json() as UpdateWirelineResidualRequest;
+        if (!requestBody.foxyflow_wirelineresiduals) {
+            return { 
                 ...corsResponse,
-                status: 400,
-                body: "Account ID and wireline residuals value are required"
+                status: 400, 
+                body: "Please provide foxyflow_wirelineresiduals in the request body"
             };
         }
 
-        const accessToken = await getAccessToken();
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts(${accountId})`;
+        // Use the user's token directly
+        const accessToken = userToken.replace('Bearer ', '');
+        const formattedAccountId = accountId.replace(/[{}]/g, '');
+        const apiUrl = `${dataverseUrl}/api/data/v9.1/accounts(${formattedAccountId})`;
 
-        await axios.patch(apiUrl, 
-            { foxyflow_wirelineresiduals },
-            {
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "OData-MaxVersion": "4.0",
-                    "OData-Version": "4.0",
-                    "If-Match": "*"
-                }
+        await axios.patch(apiUrl, {
+            foxyflow_wirelineresiduals: requestBody.foxyflow_wirelineresiduals
+        }, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'OData-MaxVersion': '4.0',
+                'OData-Version': '4.0',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+                'Prefer': 'return=representation'
             }
-        );
+        });
 
-        return {
+        return { 
             ...corsResponse,
             status: 200,
-            body: JSON.stringify({ success: true }),
-            headers: {
+            body: JSON.stringify({ message: "Successfully updated wireline residuals" }),
+            headers: { 
                 "Content-Type": "application/json",
                 ...corsResponse?.headers
             }
         };
     } catch (error) {
-        context.log(`Error updating account wireline residuals: ${error.message}`);
+        context.log(`Error updating wireline residuals: ${error}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
-        return {
+        return { 
             ...corsResponse,
-            status,
-            body: `Error updating account wireline residuals: ${message}`
+            status, 
+            body: `Error updating wireline residuals: ${message}`
         };
     }
 }

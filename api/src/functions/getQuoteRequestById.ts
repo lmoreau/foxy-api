@@ -1,6 +1,6 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
 export async function getQuoteRequestById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -9,21 +9,38 @@ export async function getQuoteRequestById(request: HttpRequest, context: Invocat
         return corsResponse;
     }
 
+    // Get authorization header from request
+    const userToken = request.headers.get('authorization');
+    if (!userToken) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
+
     const id = request.query.get('id') || await request.text();
     if (!id) {
-        return { status: 400, body: "Please provide a GUID for the quote request" };
+        return { 
+            ...corsResponse,
+            status: 400, 
+            body: "Please provide a GUID for the quote request" 
+        };
     }
 
     try {
-        const accessToken = await getAccessToken();
+        // Use the user's token directly
+        const accessToken = userToken.replace('Bearer ', '');
         const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_foxyquoterequests?$filter=foxy_foxyquoterequestid eq ${id}&$expand=foxy_Account($select=name,foxy_duns,foxy_basecustomer),owninguser($select=fullname,internalemailaddress)`;
 
         const response = await axios.get(apiUrl, {
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Accept": "application/json",
-                "OData-MaxVersion": "4.0",
-                "OData-Version": "4.0"
+                'Authorization': `Bearer ${accessToken}`,
+                'OData-MaxVersion': '4.0',
+                'OData-Version': '4.0',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+                'Prefer': 'return=representation'
             }
         });
 
@@ -36,7 +53,7 @@ export async function getQuoteRequestById(request: HttpRequest, context: Invocat
             }
         };
     } catch (error) {
-        context.log(`Error retrieving quote request: ${error.message}`);
+        context.log(`Error retrieving quote request: ${error}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
         return { 

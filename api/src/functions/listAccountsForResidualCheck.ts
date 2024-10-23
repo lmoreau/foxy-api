@@ -1,6 +1,6 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
 export async function listAccountsForResidualCheck(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -9,18 +9,24 @@ export async function listAccountsForResidualCheck(request: HttpRequest, context
         return corsResponse;
     }
 
+    // Get authorization header from request
+    const authHeader = request.headers['authorization'];
+    if (!authHeader) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
+
     try {
-        const accessToken = await getAccessToken();
+        const headers = getDataverseHeaders(authHeader);
         const apiUrl = `${dataverseUrl}/api/data/v9.1/accounts?$filter=foxy_basecustomer eq 612100001&$select=accountid,name,foxy_basecheck,foxy_basechecknotes,foxy_basecustomer,foxy_cable,foxy_datacentre,foxy_duns,foxy_fibreinternet,foxy_gpon,foxy_microsoft365,foxy_res,foxyflow_residualstotal,foxyflow_residualsnotes,foxy_ritaresidualnotes,foxy_sip,foxy_unison,foxy_wirelinemrr,foxyflow_wirelineresiduals`;
 
-        const response = await axios.get(apiUrl, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Accept": "application/json",
-                "OData-MaxVersion": "4.0",
-                "OData-Version": "4.0"
-            }
-        });
+        context.log('Using auth header:', authHeader.substring(0, 50) + '...');
+        context.log('Calling URL:', apiUrl);
+
+        const response = await axios.get(apiUrl, { headers });
 
         return { 
             ...corsResponse,
@@ -31,7 +37,10 @@ export async function listAccountsForResidualCheck(request: HttpRequest, context
             }
         };
     } catch (error) {
-        context.log(`Error retrieving accounts for residual check: ${error.message}`);
+        context.log(`Error retrieving accounts for residual check: ${error}`);
+        if (axios.isAxiosError(error) && error.response) {
+            context.log('Error response:', error.response.data);
+        }
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
         return { 

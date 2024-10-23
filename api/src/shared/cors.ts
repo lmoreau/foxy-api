@@ -6,7 +6,7 @@ export function corsHandler(req: HttpRequest, context: InvocationContext): HttpR
   const headers = {
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Origin': 'http://localhost:3000',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PATCH',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
   };
 

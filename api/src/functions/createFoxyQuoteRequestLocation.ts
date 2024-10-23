@@ -1,12 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import axios from "axios";
+import { dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
-
-interface RequestBody {
-    buildingId: string;
-    quoteRequestId: string;
-    accountLocationId: string;
-}
 
 export async function createFoxyQuoteRequestLocation(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
@@ -14,63 +9,58 @@ export async function createFoxyQuoteRequestLocation(request: HttpRequest, conte
         return corsResponse;
     }
 
-    try {
-        const requestBody = await request.json() as RequestBody;
-        const { buildingId, quoteRequestId, accountLocationId } = requestBody;
+    // Get authorization header from request
+    const userToken = request.headers.get('authorization');
+    if (!userToken) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
 
-        if (!buildingId || !quoteRequestId || !accountLocationId) {
-            return {
-                status: 400,
-                body: "Please provide buildingId, quoteRequestId, and accountLocationId in the request body"
+    try {
+        const requestBody = await request.json();
+        if (!requestBody) {
+            return { 
+                ...corsResponse,
+                status: 400, 
+                body: "Please provide request body" 
             };
         }
 
-        const accessToken = await getAccessToken();
-        const url = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequestlocations`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
+        // Use the user's token directly
+        const accessToken = userToken.replace('Bearer ', '');
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequestlocations`;
+
+        const response = await axios.post(apiUrl, requestBody, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
+                'OData-MaxVersion': '4.0',
+                'OData-Version': '4.0',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
                 'Prefer': 'return=representation'
-            },
-            body: JSON.stringify({
-                "foxy_Building@odata.bind": `/foxy_buildings(${buildingId})`,
-                "foxy_FoxyQuoteRequest@odata.bind": `/foxy_foxyquoterequests(${quoteRequestId})`,
-                "foxy_CompanyLocation@odata.bind": `/foxy_accountlocations(${accountLocationId})`
-            })
+            }
         });
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
-        }
-
-        const result = await response.json();
-
-        return {
+        return { 
             ...corsResponse,
-            status: 200,
-            body: JSON.stringify(result),
-            headers: {
+            status: 201,
+            body: JSON.stringify(response.data),
+            headers: { 
                 "Content-Type": "application/json",
                 ...corsResponse?.headers
             }
         };
     } catch (error) {
-        context.error('Error creating Foxy Quote Request Location:', error);
-        return {
+        context.log(`Error creating quote request location: ${error}`);
+        const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
+        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        return { 
             ...corsResponse,
-            status: 500,
-            body: JSON.stringify({
-                message: "An error occurred while creating the Foxy Quote Request Location",
-                error: error instanceof Error ? error.message : String(error)
-            }),
-            headers: {
-                "Content-Type": "application/json",
-                ...corsResponse?.headers
-            }
+            status, 
+            body: `Error creating quote request location: ${message}`
         };
     }
 }

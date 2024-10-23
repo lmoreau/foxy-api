@@ -15,19 +15,14 @@ export const msalConfig: Configuration = {
 };
 
 export const loginRequest = {
-  scopes: ['User.Read', 'https://org.crm.dynamics.com/user_impersonation']
+  scopes: [`${process.env.REACT_APP_DYNAMICS_URI}/.default`]
 };
 
-const msalInstance = new PublicClientApplication(msalConfig);
+export const msalInstance = new PublicClientApplication(msalConfig);
 
-// Initialize MSAL
-msalInstance.initialize().catch(error => {
-  console.error('Error initializing MSAL:', error);
-});
-
-// Handle redirect promise on page load
-msalInstance.handleRedirectPromise().catch(error => {
-  console.error('Error handling redirect:', error);
-});
-
-export { msalInstance };
+export const initializeMsal = async () => {
+  await msalInstance.initialize();
+  return msalInstance.handleRedirectPromise().catch(error => {
+    console.error('Error handling redirect:', error);
+  });
+};

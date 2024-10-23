@@ -1,55 +1,62 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl } from "../shared/dataverseAuth";
+import { corsHandler } from "../shared/cors";
 
-/**
- * Azure Function to list all products from Dataverse
- */
 export async function listProductByRow(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`Http function processed request for url "${request.url}"`);
+    const corsResponse = corsHandler(request, context);
+    if (corsResponse && request.method === 'OPTIONS') {
+        return corsResponse;
+    }
+
+    // Get authorization header from request
+    const userToken = request.headers.get('authorization');
+    if (!userToken) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
 
     try {
-        const accessToken = await getAccessToken();
+        // Use the user's token directly
+        const accessToken = userToken.replace('Bearer ', '');
         const apiUrl = `${dataverseUrl}/api/data/v9.2/products`;
 
         const response = await axios.get(apiUrl, {
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Accept": "application/json",
-                "OData-MaxVersion": "4.0",
-                "OData-Version": "4.0"
+                'Authorization': `Bearer ${accessToken}`,
+                'OData-MaxVersion': '4.0',
+                'OData-Version': '4.0',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+                'Prefer': 'return=representation'
             }
         });
 
         return { 
-            body: JSON.stringify(response.data), 
+            ...corsResponse,
+            body: JSON.stringify(response.data),
             headers: { 
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*" // Allow all origins for CORS
-            } 
+                ...corsResponse?.headers
+            }
         };
     } catch (error) {
-        context.log(`Error retrieving products: ${error.message}`);
+        context.log(`Error retrieving products: ${error}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
         return { 
+            ...corsResponse,
             status, 
-            body: JSON.stringify({
-                error: "Failed to retrieve products",
-                message: message,
-                details: axios.isAxiosError(error) ? error.response?.data : undefined
-            }),
-            headers: { 
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*" // Allow all origins for CORS
-            }
+            body: `Error retrieving products: ${message}`
         };
     }
 }
 
-// Register the HTTP trigger
 app.http('listProductByRow', {
-    methods: ['GET'],
+    methods: ['GET', 'OPTIONS'],
     authLevel: 'anonymous',
     handler: listProductByRow
 });

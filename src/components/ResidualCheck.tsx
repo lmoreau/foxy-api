@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Table, Tag, Tooltip, Select } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { FileTextOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { listAccountsForResidualCheck } from '../utils/api';
 import './ResidualCheck.css';
 
 const { Option } = Select;
@@ -98,9 +98,9 @@ const ResidualCheck: React.FC = () => {
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
-        const response = await axios.get('http://localhost:7071/api/listAccountsForResidualCheck');
-        setAccounts(response.data.value);
-        setFilteredAccounts(response.data.value);
+        const response = await listAccountsForResidualCheck();
+        setAccounts(response.value);
+        setFilteredAccounts(response.value);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching accounts:', err);

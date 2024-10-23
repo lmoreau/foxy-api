@@ -1,46 +1,65 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getAccessToken, dataverseUrl } from "../shared/dataverseAuth";
+import { dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
-export async function listAccountLocationRows(request: HttpRequest, context: InvocationContext, accountId: string): Promise<HttpResponseInit> {
+export async function listAccountLocationRows(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
         return corsResponse;
     }
 
+    // Get authorization header from request
+    const userToken = request.headers.get('authorization');
+    if (!userToken) {
+        return { 
+            ...corsResponse,
+            status: 401, 
+            body: "Authorization header is required"
+        };
+    }
+
+    const accountId = request.query.get('accountId');
+    if (!accountId) {
+        return { 
+            ...corsResponse,
+            status: 400, 
+            body: "Please provide an account ID" 
+        };
+    }
+
     try {
-        const accessToken = await getAccessToken();
-        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_accountlocations?$filter=_foxy_account_value eq '${accountId}'&$expand=foxy_Building`;        const query = apiUrl;
+        // Use the user's token directly
+        const accessToken = userToken.replace('Bearer ', '');
+        const formattedAccountId = accountId.replace(/[{}]/g, '');
+        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_accountlocations?$filter=_foxy_account_value eq '${formattedAccountId}'&$expand=foxy_Building`;
 
-        context.log('API query:', query);
-
-        const response = await axios.get(query, {
+        const response = await axios.get(apiUrl, {
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
-                "Accept": "application/json",
-                "OData-MaxVersion": "4.0",
-                "OData-Version": "4.0"
+                'Authorization': `Bearer ${accessToken}`,
+                'OData-MaxVersion': '4.0',
+                'OData-Version': '4.0',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=utf-8',
+                'Prefer': 'return=representation'
             }
         });
 
-        context.log('API response:', JSON.stringify(response.data, null, 2));
-
-        return {
+        return { 
             ...corsResponse,
             body: JSON.stringify(response.data),
-            headers: {
+            headers: { 
                 "Content-Type": "application/json",
                 ...corsResponse?.headers
             }
         };
     } catch (error) {
-        context.log(`Error retrieving account locations: ${error.message}`);
+        context.log(`Error retrieving account locations: ${error}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
-        return {
+        return { 
             ...corsResponse,
-            status,
+            status, 
             body: `Error retrieving account locations: ${message}`
         };
     }
@@ -49,19 +68,5 @@ export async function listAccountLocationRows(request: HttpRequest, context: Inv
 app.http('listAccountLocationRows', {
     methods: ['GET', 'OPTIONS'],
     authLevel: 'anonymous',
-    handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-        let accountId = request.query.get('accountId');
-        if (!accountId && request.body) {
-            const requestBody = await request.text();
-            const parsedBody = JSON.parse(requestBody);
-            accountId = parsedBody.accountId;
-        }
-        if (!accountId) {
-            return {
-                status: 400,
-                body: "Please pass an accountId on the query string or in the request body"
-            };
-        }
-        return await listAccountLocationRows(request, context, accountId);
-    }
+    handler: listAccountLocationRows
 });

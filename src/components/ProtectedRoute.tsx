@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { InteractionStatus, InteractionRequiredAuthError } from '@azure/msal-browser';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
+import { InteractionStatus } from '@azure/msal-browser';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ensureAuth } from '../auth/authService';
 import { loginRequest } from '../auth/authConfig';
 
 interface ProtectedRouteProps {
@@ -10,68 +11,46 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { instance, inProgress } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
-  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleAuth = async () => {
-      if (!isAuthenticated && inProgress === InteractionStatus.None) {
-        try {
-          // Store the current location before redirecting
-          sessionStorage.setItem('redirectPath', location.pathname + location.search);
-          
-          // Attempt silent token acquisition first
-          await instance.acquireTokenSilent(loginRequest);
-          setIsChecking(false);
-        } catch (error) {
-          if (error instanceof InteractionRequiredAuthError) {
-            try {
-              // If silent acquisition fails, try redirect
-              await instance.loginRedirect({
-                ...loginRequest,
-                redirectStartPage: location.pathname + location.search
-              });
-            } catch (redirectError) {
-              setAuthError('Failed to initiate login');
-              setIsChecking(false);
-            }
-          } else {
-            setAuthError('Authentication failed');
-            setIsChecking(false);
+    const checkAuth = async () => {
+      try {
+        // Store the current path for after login
+        sessionStorage.setItem('loginRedirect', location.pathname + location.search);
+
+        const authResult = await ensureAuth();
+        if (authResult) {
+          setIsAuthorized(true);
+        } else {
+          // If we don't have an auth result and we're not in the middle of acquiring one,
+          // redirect to login
+          if (inProgress === InteractionStatus.None) {
+            instance.loginRedirect({
+              ...loginRequest,
+              redirectStartPage: location.pathname + location.search
+            });
           }
         }
-      } else {
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        navigate('/');
+      } finally {
         setIsChecking(false);
       }
     };
 
-    handleAuth();
-  }, [isAuthenticated, inProgress, instance, location]);
+    checkAuth();
+  }, [instance, inProgress, location, navigate]);
 
-  useEffect(() => {
-    // After successful authentication, check for stored redirect path
-    if (isAuthenticated && !isChecking) {
-      const redirectPath = sessionStorage.getItem('redirectPath');
-      if (redirectPath && location.pathname === '/') {
-        sessionStorage.removeItem('redirectPath');
-        window.location.href = redirectPath;
-      }
-    }
-  }, [isAuthenticated, isChecking, location.pathname]);
-
+  // Handle the loading state
   if (isChecking || inProgress !== InteractionStatus.None) {
-    return <div>Loading...</div>;
+    return <div>Checking authentication...</div>;
   }
 
-  if (authError) {
-    return <div>Error: {authError}</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
-
-  return children;
+  // If authorized, render the protected content
+  return isAuthorized ? children : <div>Redirecting to login...</div>;
 };
