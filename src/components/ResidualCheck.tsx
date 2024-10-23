@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Table, Tag, Tooltip, Select } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { FileTextOutlined } from '@ant-design/icons';
-import ResidualRowsModal from './ResidualRowsModal';
+import { useNavigate } from 'react-router-dom';
 import './ResidualCheck.css';
 
 const { Option } = Select;
@@ -88,16 +88,12 @@ const mapWirelineResiduals = (value: string) => {
 };
 
 const ResidualCheck: React.FC = () => {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalData, setModalData] = useState<any[]>([]);
-  const [modalLoading, setModalLoading] = useState(false);
-  const [rogersWirelineData, setRogersWirelineData] = useState<any[]>([]);
-  const [rogersWirelineLoading, setRogersWirelineLoading] = useState(false);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -130,25 +126,8 @@ const ResidualCheck: React.FC = () => {
     setSelectedServices(value);
   };
 
-  const handleRowClick = async (record: Account) => {
-    setIsModalVisible(true);
-    setModalLoading(true);
-    setRogersWirelineLoading(true);
-    
-    try {
-      // Fetch residual rows
-      const residualResponse = await axios.get(`http://localhost:7071/api/listWirelineResidualRows?companyId=${record.accountid}`);
-      setModalData(residualResponse.data.value);
-      
-      // Fetch Rogers Wireline records
-      const rogersWirelineResponse = await axios.get(`http://localhost:7071/api/listRogersWirelineRecords?accountId=${record.accountid}`);
-      setRogersWirelineData(rogersWirelineResponse.data.value);
-    } catch (err) {
-      console.error('Error fetching data:', err);
-    } finally {
-      setModalLoading(false);
-      setRogersWirelineLoading(false);
-    }
+  const handleRowClick = (record: Account) => {
+    navigate(`/residual-details/${record.accountid}`);
   };
 
   const columns: ColumnsType<Account> = [
@@ -268,14 +247,6 @@ const ResidualCheck: React.FC = () => {
           onClick: () => handleRowClick(record),
           style: { cursor: 'pointer' }
         })}
-      />
-      <ResidualRowsModal
-        isVisible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        data={modalData}
-        loading={modalLoading}
-        rogersWirelineData={rogersWirelineData}
-        rogersWirelineLoading={rogersWirelineLoading}
       />
     </div>
   );

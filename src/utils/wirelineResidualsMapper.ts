@@ -19,7 +19,7 @@ const wirelineResidualsMap: MapItem[] = [
 export const getWirelineResidualsLabel = (value: string | number): string => {
   const stringValue = value.toString();
   const found = wirelineResidualsMap.find(item => item.value === stringValue);
-  return found ? found.label : 'Unknown';
+  return found ? found.label : stringValue;
 };
 
 export default wirelineResidualsMap;
