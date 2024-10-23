@@ -21,8 +21,8 @@ export async function listAccountsForResidualCheck(request: HttpRequest, context
 
     try {
         const headers = getDataverseHeaders(authHeader);
-        // Use proper OData query for Dataverse
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts?$select=accountid,name,foxyflow_wirelineresiduals&$filter=statecode eq 0`;
+        // Use proper OData query for Dataverse with all required fields
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts?$select=accountid,name,foxy_duns,foxy_cable,foxy_datacentre,foxy_fibreinternet,foxy_gpon,foxy_microsoft365,foxy_res,foxy_sip,foxy_unison,foxyflow_residualstotal,foxyflow_residualsnotes,foxy_ritaresidualnotes,foxy_wirelinemrr,foxyflow_wirelineresiduals&$filter=statecode eq 0`;
 
         context.log('Using auth header:', authHeader.substring(0, 50) + '...');
         context.log('Calling URL:', apiUrl);

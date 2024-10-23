@@ -62,6 +62,24 @@ export const getAccountById = async (id: string) => {
   return response.data;
 };
 
+export const getQuoteRequestById = async (id: string) => {
+  console.log('=== Getting quote request by ID ===');
+  console.log('Quote Request ID:', id);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/getQuoteRequestById?id=${id}`;
+  
+  console.log('Request URL:', url);
+  console.log('Request headers:', {
+    Authorization: headers.Authorization.substring(0, 20) + '...',
+    'Content-Type': headers['Content-Type']
+  });
+
+  const response = await axios.get(url, { headers });
+  console.log('Response status:', response.status);
+  return response.data;
+};
+
 export const listWirelineResidualRows = async (companyId: string) => {
   console.log('=== Listing wireline residual rows ===');
   console.log('Company ID:', companyId);
