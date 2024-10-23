@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 
 interface AccountData {
   name: string;
+  foxyflow_wirelineresiduals: number;
 }
 
 export const ResidualDetails: React.FC = () => {
@@ -40,6 +41,7 @@ export const ResidualDetails: React.FC = () => {
   return (
     <div>
       <h1>{accountData.name}</h1>
+      <p>Wireline Residuals: {accountData.foxyflow_wirelineresiduals}</p>
     </div>
   );
 };
