@@ -195,3 +195,52 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
     throw error;
   }
 };
+
+// New authenticated API functions for location management
+export const listAccountLocationRows = async (accountId: string) => {
+  console.log('=== Listing account location rows ===');
+  console.log('Account ID:', accountId);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listAccountLocationRows?accountId=${accountId}`;
+  
+  console.log('Request URL:', url);
+  const response = await axios.get(url, { headers });
+  console.log('Response status:', response.status);
+  return response.data;
+};
+
+export const createFoxyQuoteRequestLocation = async (buildingId: string, quoteRequestId: string, accountLocationId: string) => {
+  console.log('=== Creating quote request location ===');
+  console.log('Building ID:', buildingId);
+  console.log('Quote Request ID:', quoteRequestId);
+  console.log('Account Location ID:', accountLocationId);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/createFoxyQuoteRequestLocation`;
+  
+  // Format the request body according to Dataverse API requirements
+  const requestBody = {
+    "_foxy_building_value": buildingId,
+    "_foxy_quoterequest_value": quoteRequestId,
+    "_foxy_accountlocation_value": accountLocationId
+  };
+  
+  console.log('Request URL:', url);
+  console.log('Request body:', requestBody);
+  
+  const response = await axios.post(url, requestBody, { headers });
+  console.log('Response status:', response.status);
+  return response.data;
+};
+
+export const deleteQuoteLocation = async (locationId: string): Promise<void> => {
+  console.log('=== Deleting quote location ===');
+  console.log('Location ID:', locationId);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/deleteQuoteLocation?id=${locationId}`;
+  
+  console.log('Request URL:', url);
+  await axios.delete(url, { headers });
+};

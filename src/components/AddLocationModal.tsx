@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Select, Spin, message } from 'antd';
-import axios from 'axios';
+import { listAccountLocationRows, createFoxyQuoteRequestLocation } from '../utils/api';
 
 interface AddLocationModalProps {
   isVisible: boolean;
@@ -37,11 +37,11 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
 
     setLoading(true);
     try {
-      const response = await axios.get<ApiResponse>(`http://localhost:7071/api/listAccountLocationRows?accountId=${accountId}`);
-      if (response.data && Array.isArray(response.data.value)) {
-        setLocations(response.data.value);
+      const response = await listAccountLocationRows(accountId);
+      if (response && Array.isArray(response.value)) {
+        setLocations(response.value);
       } else {
-        console.error('Unexpected API response structure:', response.data);
+        console.error('Unexpected API response structure:', response);
         message.error('Failed to load locations. Please try again.');
       }
     } catch (error) {
@@ -63,11 +63,11 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
       const selectedLocation = locations.find(location => location.foxy_accountlocationid === selectedLocationId);
       if (selectedLocation) {
         try {
-          await axios.post('http://localhost:7071/api/createFoxyQuoteRequestLocation', {
-            buildingId: selectedLocation.foxy_Building.foxy_buildingid,
-            quoteRequestId: quoteRequestId,
-            accountLocationId: selectedLocationId
-          });
+          await createFoxyQuoteRequestLocation(
+            selectedLocation.foxy_Building.foxy_buildingid,
+            quoteRequestId,
+            selectedLocationId
+          );
           message.success('Location added successfully');
           onOk(selectedLocationId);
           onRefresh();
