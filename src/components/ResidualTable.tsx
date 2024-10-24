@@ -36,6 +36,7 @@ const columns: ColumnsType<TableRecord> = [
           <Tag color={isWireline ? 'green' : 'blue'}>
             {isWireline ? 'Wireline' : 'Residual'}
           </Tag>
+          <span>&nbsp;</span>
           {isWireline ? formatDescription(record as WirelineRecord) : record.foxyflow_product}
         </>
       );
@@ -116,7 +117,6 @@ const columns: ColumnsType<TableRecord> = [
         return (
           <>
             {wirelineRecord.foxy_companyname}<br />
-            Owner: {wirelineRecord.foxy_accountowner}<br />
             Site: {wirelineRecord.foxy_sitename}
           </>
         );
