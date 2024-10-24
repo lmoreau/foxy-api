@@ -47,3 +47,12 @@ export interface GroupedAccountData {
 }
 
 export type TableRecord = GroupedAccountData | ResidualRecord | WirelineRecord;
+
+export interface OpportunityRecord {
+  id: string;
+  name: string;
+  accountId: string;
+  actualclosedate: string;
+  foxy_foxystage: string;
+  stepname: string;
+}

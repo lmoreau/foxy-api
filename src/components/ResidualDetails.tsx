@@ -1,9 +1,10 @@
+// src/components/ResidualDetails.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from 'antd';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
-import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals } from '../utils/api';
-import { AccountData, ResidualRecord, WirelineRecord } from '../types/residualTypes';
+import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals, listOpportunityRows as fetchOpportunities } from '../utils/api';
+import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
 import { ResidualStatusModal } from './ResidualStatusModal';
@@ -13,8 +14,11 @@ export const ResidualDetails: React.FC = () => {
   const [accountData, setAccountData] = useState<AccountData | null>(null);
   const [residualData, setResidualData] = useState<ResidualRecord[]>([]);
   const [wirelineData, setWirelineData] = useState<WirelineRecord[]>([]);
+  const [opportunities, setOpportunities] = useState<OpportunityRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [opportunitiesLoading, setOpportunitiesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [opportunitiesError, setOpportunitiesError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [updating, setUpdating] = useState(false);
@@ -35,41 +39,20 @@ export const ResidualDetails: React.FC = () => {
         // Fetch wireline records
         const wirelineData = await listRogersWirelineRecords(id);
         setWirelineData(wirelineData);
+
+        // Fetch opportunities
+        const opportunitiesResponse = await fetchOpportunities(id);
+        setOpportunities(opportunitiesResponse.value);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
+        setOpportunitiesLoading(false);
       }
     };
 
-    if (id) {
-      fetchData();
-    }
+    fetchData();
   }, [id]);
-
-  const handleEdit = () => {
-    if (accountData) {
-      setSelectedValue(accountData.foxyflow_wirelineresiduals.toString());
-      setIsModalVisible(true);
-    }
-  };
-
-  const handleModalOk = async () => {
-    if (!accountData || !selectedValue) return;
-
-    setUpdating(true);
-    try {
-      await updateAccountWirelineResiduals(accountData.accountid, selectedValue);
-      // Refresh account data
-      const updatedAccount = await getAccountById(accountData.accountid);
-      setAccountData(updatedAccount);
-      setIsModalVisible(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update status');
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   const combinedData = React.useMemo(() => {
     return combineResidualData(residualData, wirelineData);
@@ -87,7 +70,7 @@ export const ResidualDetails: React.FC = () => {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
         <h1 style={{ margin: 0 }}>{accountData.name}</h1>
-        <Button type="primary" onClick={handleEdit}>
+        <Button type="primary" onClick={() => setIsModalVisible(true)}>
           Edit Status
         </Button>
       </div>
@@ -95,11 +78,36 @@ export const ResidualDetails: React.FC = () => {
       <div style={{ marginTop: '20px' }}>
         <ResidualTable data={combinedData} />
       </div>
+      <h2>Opportunities</h2>
+      {opportunitiesLoading ? (
+        <div>Loading opportunities...</div>
+      ) : opportunitiesError ? (
+        <div>Error loading opportunities: {opportunitiesError}</div>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Actual Close Date</th>
+              <th>Foxy Stage</th>
+              <th>Step Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {opportunities.map((opp, index) => (
+              <tr key={index}>
+                <td>{opp.actualclosedate}</td>
+                <td>{opp.foxy_foxystage}</td>
+                <td>{opp.stepname}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       <ResidualStatusModal
         isVisible={isModalVisible}
         selectedValue={selectedValue}
         onValueChange={setSelectedValue}
-        onOk={handleModalOk}
+        onOk={() => setIsModalVisible(false)}
         onCancel={() => setIsModalVisible(false)}
         updating={updating}
       />

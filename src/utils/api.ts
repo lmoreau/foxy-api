@@ -244,3 +244,16 @@ export const deleteQuoteLocation = async (locationId: string): Promise<void> => 
   console.log('Request URL:', url);
   await axios.delete(url, { headers });
 };
+
+export const listOpportunityRows = async (accountId: string) => {
+    console.log('=== Listing opportunity rows ===');
+    console.log('Account ID:', accountId);
+    
+    const headers = await getAuthHeaders();
+    const url = `${API_BASE_URL}/listOpportunityRows?accountId=${accountId}`;
+    
+    console.log('Request URL:', url);
+    const response = await axios.get(url, { headers });
+    console.log('Response status:', response.status);
+    return response.data; // Ensure this returns the expected structure
+};
