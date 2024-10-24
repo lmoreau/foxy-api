@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Tooltip, Select } from 'antd';
+import { Table, Tag, Tooltip, Select, Row, Col } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { FileTextOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -94,6 +94,7 @@ const ResidualCheck: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedResiduals, setSelectedResiduals] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -112,17 +113,30 @@ const ResidualCheck: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedServices.length === 0) {
-      setFilteredAccounts(accounts);
-    } else {
-      setFilteredAccounts(accounts.filter(account => 
+    let filtered = [...accounts];
+
+    if (selectedServices.length > 0) {
+      filtered = filtered.filter(account => 
         selectedServices.some(service => account[`foxy_${service.replace(' ', '').toLowerCase()}` as keyof Account])
-      ));
+      );
     }
-  }, [selectedServices, accounts]);
+
+    if (selectedResiduals.length > 0) {
+      filtered = filtered.filter(account => {
+        const accountResidualValue = account.foxyflow_wirelineresiduals?.toString();
+        return selectedResiduals.includes(accountResidualValue);
+      });
+    }
+
+    setFilteredAccounts(filtered);
+  }, [selectedServices, selectedResiduals, accounts]);
 
   const handleServiceChange = (value: string[]) => {
     setSelectedServices(value);
+  };
+
+  const handleResidualChange = (value: string[]) => {
+    setSelectedResiduals(value);
   };
 
   const handleRowClick = (record: Account) => {
@@ -224,17 +238,34 @@ const ResidualCheck: React.FC = () => {
   return (
     <div className="residual-check-container">
       <h2>Accounts for Residual Check</h2>
-      <Select
-        mode="multiple"
-        style={{ width: '100%', marginBottom: '16px' }}
-        placeholder="Filter by Services"
-        onChange={handleServiceChange}
-        allowClear
-      >
-        {Object.keys(serviceColors).map(service => (
-          <Option key={service} value={service}>{service}</Option>
-        ))}
-      </Select>
+      <Row gutter={16}>
+        <Col span={12}>
+          <Select
+            mode="multiple"
+            style={{ width: '100%', marginBottom: '16px' }}
+            placeholder="Filter by Services"
+            onChange={handleServiceChange}
+            allowClear
+          >
+            {Object.keys(serviceColors).map(service => (
+              <Option key={service} value={service}>{service}</Option>
+            ))}
+          </Select>
+        </Col>
+        <Col span={12}>
+          <Select
+            mode="multiple"
+            style={{ width: '100%', marginBottom: '16px' }}
+            placeholder="Filter by Wireline Residuals"
+            onChange={handleResidualChange}
+            allowClear
+          >
+            {wirelineResidualOptions.map(option => (
+              <Option key={option.value} value={option.value}>{option.label}</Option>
+            ))}
+          </Select>
+        </Col>
+      </Row>
       <Table 
         columns={columns} 
         dataSource={filteredAccounts} 
