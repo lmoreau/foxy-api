@@ -219,7 +219,7 @@ const ResidualCheck: React.FC = () => {
       sorter: (a, b) => parseFloat(a.foxy_wirelinemrr) - parseFloat(b.foxy_wirelinemrr),
     },
     {
-      title: 'Wireline Residuals',
+      title: 'Residual Status',
       dataIndex: 'foxyflow_wirelineresiduals',
       key: 'foxyflow_wirelineresiduals',
       width: '15%',
@@ -256,7 +256,7 @@ const ResidualCheck: React.FC = () => {
           <Select
             mode="multiple"
             style={{ width: '100%', marginBottom: '16px' }}
-            placeholder="Filter by Wireline Residuals"
+            placeholder="Filter by Residual Status"
             onChange={handleResidualChange}
             allowClear
           >
