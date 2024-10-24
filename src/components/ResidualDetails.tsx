@@ -7,6 +7,7 @@ import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '
 import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
 import { ResidualStatusModal } from './ResidualStatusModal';
+import { formatCurrency } from '../utils/formatters';
 
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,6 +59,42 @@ export const ResidualDetails: React.FC = () => {
   }, [residualData, wirelineData]);
 
   const opportunityColumns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text: string) => text || 'N/A',
+    },
+    {
+      title: 'Actual Value',
+      dataIndex: 'actualvalue',
+      key: 'actualvalue',
+      render: (value: number) => formatCurrency(value) || 'N/A',
+    },
+    {
+      title: 'SFDC Opportunity ID',
+      dataIndex: 'foxy_sfdcoppid',
+      key: 'foxy_sfdcoppid',
+      render: (text: string) => text || 'N/A',
+    },
+    {
+      title: 'Opportunity Type',
+      dataIndex: 'foxy_opportunitytype',
+      key: 'foxy_opportunitytype',
+      render: (text: string) => text || 'N/A',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'statuscode',
+      key: 'statuscode',
+      render: (text: string) => text || 'N/A',
+    },
+    {
+      title: 'Sales Stage',
+      dataIndex: 'salesstagecode',
+      key: 'salesstagecode',
+      render: (text: string) => text || 'N/A',
+    },
     {
       title: 'Actual Close Date',
       dataIndex: 'actualclosedate',
