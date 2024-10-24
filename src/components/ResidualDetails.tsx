@@ -8,6 +8,7 @@ import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
 import { ResidualStatusModal } from './ResidualStatusModal';
 import { formatCurrency } from '../utils/formatters';
+import { getStatusCodeLabel } from '../utils/statusCodeMapper';
 
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,7 +88,7 @@ export const ResidualDetails: React.FC = () => {
       title: 'Status',
       dataIndex: 'statuscode',
       key: 'statuscode',
-      render: (text: string) => text || 'N/A',
+      render: (code: number) => getStatusCodeLabel(code) || 'N/A',
     },
     {
       title: 'Sales Stage',
