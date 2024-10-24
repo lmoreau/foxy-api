@@ -9,6 +9,7 @@ import { ResidualTable } from './ResidualTable';
 import { ResidualStatusModal } from './ResidualStatusModal';
 import { formatCurrency } from '../utils/formatters';
 import { getStatusCodeLabel } from '../utils/statusCodeMapper';
+import { getOpportunityTypeLabel } from '../utils/opportunityTypeMapper';
 
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,19 +83,13 @@ export const ResidualDetails: React.FC = () => {
       title: 'Opportunity Type',
       dataIndex: 'foxy_opportunitytype',
       key: 'foxy_opportunitytype',
-      render: (text: string) => text || 'N/A',
+      render: (code: number) => getOpportunityTypeLabel(code) || 'N/A',
     },
     {
       title: 'Status',
       dataIndex: 'statuscode',
       key: 'statuscode',
       render: (code: number) => getStatusCodeLabel(code) || 'N/A',
-    },
-    {
-      title: 'Sales Stage',
-      dataIndex: 'salesstagecode',
-      key: 'salesstagecode',
-      render: (text: string) => text || 'N/A',
     },
     {
       title: 'Actual Close Date',
