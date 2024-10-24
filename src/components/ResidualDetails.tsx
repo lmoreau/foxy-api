@@ -114,6 +114,12 @@ export const ResidualDetails: React.FC = () => {
     },
   ];
 
+  const handleViewInFoxy = () => {
+    if (id) {
+      window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${id}`, '_blank');
+    }
+  };
+
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -128,6 +134,9 @@ export const ResidualDetails: React.FC = () => {
         <h1 style={{ margin: 0 }}>{accountData.name}</h1>
         <Button type="primary" onClick={() => setIsModalVisible(true)}>
           Edit Status
+        </Button>
+        <Button onClick={handleViewInFoxy}>
+          View in Foxy
         </Button>
       </div>
       <p>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</Tag></p>
