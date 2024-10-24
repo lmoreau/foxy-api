@@ -145,6 +145,19 @@ export const listRogersWirelineRecords = async (accountId: string) => {
   return response.data.value;
 };
 
+export const listResidualAuditByRows = async (accountId: string) => {
+  console.log('=== Listing residual audit rows ===');
+  console.log('Account ID:', accountId);
+  
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listResidualAuditByRows?accountId=${accountId}`;
+  
+  console.log('Request URL:', url);
+  const response = await axios.get(url, { headers });
+  console.log('Response status:', response.status);
+  return response.data;
+};
+
 export const listAccountsForResidualCheck = async () => {
   console.log('=== Listing accounts for residual check ===');
   

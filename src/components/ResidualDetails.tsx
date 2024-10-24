@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Table, Tag, Tooltip } from 'antd';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
-import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals, listOpportunityRows as fetchOpportunities } from '../utils/api';
+import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
@@ -17,10 +17,13 @@ export const ResidualDetails: React.FC = () => {
   const [residualData, setResidualData] = useState<ResidualRecord[]>([]);
   const [wirelineData, setWirelineData] = useState<WirelineRecord[]>([]);
   const [opportunities, setOpportunities] = useState<OpportunityRecord[]>([]);
+  const [auditData, setAuditData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [opportunitiesLoading, setOpportunitiesLoading] = useState(true);
+  const [auditLoading, setAuditLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [opportunitiesError, setOpportunitiesError] = useState<string | null>(null);
+  const [auditError, setAuditError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [updating, setUpdating] = useState(false);
@@ -45,11 +48,16 @@ export const ResidualDetails: React.FC = () => {
         // Fetch opportunities
         const opportunitiesResponse = await fetchOpportunities(id);
         setOpportunities(opportunitiesResponse.value);
+
+        // Fetch audit data
+        const auditResponse = await listResidualAuditByRows(id);
+        setAuditData(auditResponse.value);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
         setOpportunitiesLoading(false);
+        setAuditLoading(false);
       }
     };
 
@@ -114,6 +122,47 @@ export const ResidualDetails: React.FC = () => {
     },
   ];
 
+  const auditColumns = [
+    {
+      title: 'Status',
+      dataIndex: 'crc9f_newstatus',
+      key: 'crc9f_newstatus',
+      render: (status: number) => {
+        let label = 'Unknown';
+        let color = 'default';
+        
+        switch(status) {
+          case 755280001:
+            label = 'Status 1';
+            color = 'blue';
+            break;
+          case 755280003:
+            label = 'Status 3';
+            color = 'green';
+            break;
+          // Add more cases as needed
+        }
+        
+        return <Tag color={color}>{label}</Tag>;
+      },
+    },
+    {
+      title: 'Created On',
+      dataIndex: 'createdon',
+      key: 'createdon',
+      render: (date: string) => {
+        const formattedDate = new Date(date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return formattedDate;
+      },
+    },
+  ];
+
   const handleViewInFoxy = () => {
     if (id) {
       window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${id}`, '_blank');
@@ -153,6 +202,20 @@ export const ResidualDetails: React.FC = () => {
           columns={opportunityColumns}
           dataSource={opportunities}
           rowKey={(record) => record.opportunityid}
+          pagination={false}
+          size="middle"
+        />
+      )}
+      <h2>Residual Audit History</h2>
+      {auditLoading ? (
+        <div>Loading audit history...</div>
+      ) : auditError ? (
+        <div>Error loading audit history: {auditError}</div>
+      ) : (
+        <Table
+          columns={auditColumns}
+          dataSource={auditData}
+          rowKey={(record) => record.crc9f_residualscrubauditid}
           pagination={false}
           size="middle"
         />
