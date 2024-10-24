@@ -50,6 +50,7 @@ export type TableRecord = GroupedAccountData | ResidualRecord | WirelineRecord;
 
 export interface OpportunityRecord {
   id: string;
+  opportunityid: string;
   name: string;
   accountId: string;
   actualclosedate: string;

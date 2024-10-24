@@ -1,7 +1,6 @@
-// src/components/ResidualDetails.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from 'antd';
+import { Button, Table, Tag, Tooltip } from 'antd';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals, listOpportunityRows as fetchOpportunities } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
@@ -58,6 +57,27 @@ export const ResidualDetails: React.FC = () => {
     return combineResidualData(residualData, wirelineData);
   }, [residualData, wirelineData]);
 
+  const opportunityColumns = [
+    {
+      title: 'Actual Close Date',
+      dataIndex: 'actualclosedate',
+      key: 'actualclosedate',
+      render: (text: string) => text || 'N/A',
+    },
+    {
+      title: 'Foxy Stage',
+      dataIndex: 'foxy_foxystage',
+      key: 'foxy_foxystage',
+      render: (text: string) => text || 'N/A',
+    },
+    {
+      title: 'Step Name',
+      dataIndex: 'stepname',
+      key: 'stepname',
+      render: (text: string) => text || 'N/A',
+    },
+  ];
+
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -84,24 +104,13 @@ export const ResidualDetails: React.FC = () => {
       ) : opportunitiesError ? (
         <div>Error loading opportunities: {opportunitiesError}</div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Actual Close Date</th>
-              <th>Foxy Stage</th>
-              <th>Step Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {opportunities.map((opp, index) => (
-              <tr key={index}>
-                <td>{opp.actualclosedate}</td>
-                <td>{opp.foxy_foxystage}</td>
-                <td>{opp.stepname}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Table
+          columns={opportunityColumns}
+          dataSource={opportunities}
+          rowKey={(record) => record.opportunityid}
+          pagination={false}
+          size="middle"
+        />
       )}
       <ResidualStatusModal
         isVisible={isModalVisible}
