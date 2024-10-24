@@ -82,11 +82,20 @@ const columns: ColumnsType<TableRecord> = [
       const isWireline = 'foxy_description' in record;
       if (isWireline) {
         const wirelineRecord = record as WirelineRecord;
+        const formatDate = (dateStr: string) => {
+          const date = new Date(dateStr);
+          return date.toISOString().split('T')[0];
+        };
+        
         return (
           <>
-            Renewal: {wirelineRecord.foxyflow_estrenewaldtgible}<br />
-            End: {wirelineRecord.foxy_estimatedenddate}<br />
-            Billing: {wirelineRecord.foxy_billingeffectivedate}
+            <Tag color="purple">
+              Billing Start: {formatDate(wirelineRecord.foxy_billingeffectivedate)}
+            </Tag>
+            <br />
+            <Tag color="red">
+              Contract End: {formatDate(wirelineRecord.foxy_estimatedenddate)}
+            </Tag>
           </>
         );
       }
