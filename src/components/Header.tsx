@@ -22,20 +22,42 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
     return null;
   };
 
-  const menuItems = [
-    { key: 'header', label: getHeaderTitle() },
-    { key: 'quotes', label: <Link to="/quotes">Quotes</Link> },
-    { key: 'products', label: <Link to="/products">Products</Link> },
-    { key: 'customers', label: <Link to="/customers">Customers</Link> },
-  ].filter(item => item.label !== null);
+  const getMenuItems = () => {
+    if (location.pathname === '/residual-check') {
+      return [
+        { key: 'residual-check', label: <Link to="/residual-check">Residual Check</Link> }
+      ];
+    }
+
+    if (location.pathname.includes('/residual-details')) {
+      return [
+        { key: 'residual-details', label: 'Residual Details' },
+        { key: 'residual-check', label: <Link to="/residual-check">Residual Check</Link> }
+      ];
+    }
+
+    return [
+      { key: 'header', label: getHeaderTitle() },
+      { key: 'quotes', label: <Link to="/quotes">Quotes</Link> },
+      { key: 'products', label: <Link to="/products">Products</Link> },
+      { key: 'customers', label: <Link to="/customers">Customers</Link> },
+    ].filter(item => item.label !== null);
+  };
 
   const getSelectedKey = () => {
+    if (location.pathname === '/residual-check') {
+      return 'residual-check';
+    }
+    if (location.pathname.includes('/residual-details')) {
+      return 'residual-details';
+    }
     if (location.pathname === '/products') {
       return 'header';
-    } else if (location.pathname.startsWith('/quote/') || quoteRequestId) {
+    }
+    if (location.pathname.startsWith('/quote/') || quoteRequestId) {
       return 'header';
     }
-    return location.pathname.slice(1) || 'header'; // Remove leading slash
+    return location.pathname.slice(1) || 'header';
   };
 
   return (
@@ -48,7 +70,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
         mode="horizontal" 
         selectedKeys={[getSelectedKey()]}
         style={{ flex: 1, minWidth: 0, height: '48px', lineHeight: '48px' }} 
-        items={menuItems} 
+        items={getMenuItems()} 
       />
       <div style={{ marginLeft: 'auto' }}>
         <UserOutlined style={{ color: 'white', fontSize: '18px' }} />
