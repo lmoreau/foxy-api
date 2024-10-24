@@ -32,7 +32,8 @@ export async function listOpportunityRows(request: HttpRequest, context: Invocat
     try {
         // Use the user's token directly
         const accessToken = userToken.replace('Bearer ', '');
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/opportunities?$filter=_accountid_value eq ${accountId}`;
+        // Update the filter to use the correct logical name
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/opportunities?$filter=_customerid_value eq ${accountId}`;
 
         const response = await axios.get(apiUrl, {
             headers: {
