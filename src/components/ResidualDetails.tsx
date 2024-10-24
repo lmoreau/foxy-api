@@ -130,7 +130,7 @@ export const ResidualDetails: React.FC = () => {
           Edit Status
         </Button>
       </div>
-      <p>Wireline Residuals: {getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</p>
+      <p>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</Tag></p>
       <div style={{ marginTop: '20px' }}>
         <ResidualTable data={combinedData} />
       </div>
