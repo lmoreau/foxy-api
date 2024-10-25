@@ -48,7 +48,8 @@ export async function createCrc9fResidualScrubAudit(request: HttpRequest, contex
         // Create the request body for crc9f_residualscrubaudit
         const modifiedRequestBody = {
             "crc9f_Account@odata.bind": `/accounts(${requestBody.accountId})`,
-            "crc9f_note": requestBody.note || ""
+            "crc9f_note": requestBody.note || "",
+            "crc9f_updatedon": new Date().toISOString()
         };
 
         // Log the modified request body
