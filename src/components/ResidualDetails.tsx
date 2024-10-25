@@ -73,7 +73,19 @@ export const ResidualDetails: React.FC = () => {
   );
 
   const opportunityColumns = [
-    { title: 'Name', dataIndex: 'name', render: (text: string) => text || 'N/A' },
+    { 
+      title: 'Name', 
+      dataIndex: 'name', 
+      render: (text: string, record: OpportunityRecord) => (
+        <a 
+          href={`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&pagetype=entityrecord&etn=opportunity&id=${record.opportunityid}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {text || 'N/A'}
+        </a>
+      )
+    },
     { title: 'Actual Value', dataIndex: 'actualvalue', render: (value: number) => formatCurrency(value) || 'N/A' },
     { title: 'SFDC Opportunity ID', dataIndex: 'foxy_sfdcoppid', render: (text: string) => text || 'N/A' },
     { 
@@ -173,4 +185,4 @@ export const ResidualDetails: React.FC = () => {
       />
     </div>
   );
-};
+}
