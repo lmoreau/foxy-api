@@ -33,6 +33,23 @@ const serviceColors = {
   'Data Centre': 'volcano',
 };
 
+// Status color mapping
+const getStatusColor = (status: number): string => {
+  const colorMap: { [key: number]: string } = {
+    755280000: 'default',    // Status Unknown
+    755280001: 'red',        // Not Eligible
+    755280002: 'orange',     // Pending Start
+    755280003: 'green',      // Active
+    755280004: 'red',        // Issue - None Paying
+    755280005: 'orange',     // Issue - Some Paying
+    755280006: 'cyan',       // Issue - Ready to Submit
+    755280007: 'purple',     // Issue - Clarification Needed
+    755280008: 'magenta',    // Issue - Disputed to Comp
+    947760001: 'gold',       // Legacy Issue
+  };
+  return colorMap[status] || 'default';
+};
+
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [state, setState] = useState({
@@ -186,21 +203,22 @@ export const ResidualDetails: React.FC = () => {
     {
       title: 'Status',
       dataIndex: 'crc9f_newstatus',
-      width: '20%',
+      width: '15%',
+      minWidth: 150,
       render: (status: number | null) => {
         if (status === null || status === undefined) {
           return <Tag color="default">Unknown</Tag>;
         }
         const label = getWirelineResidualsLabel(status);
-        // Keep existing color logic but use proper label
-        const color = status === 755280001 ? 'blue' : status === 755280003 ? 'green' : 'default';
+        const color = getStatusColor(status);
         return <Tag color={color}>{label}</Tag>;
       }
     },
     {
       title: 'Created On',
       dataIndex: 'crc9f_updatedon',
-      width: '20%',
+      width: '15%',
+      minWidth: 150,
       defaultSortOrder: 'descend',
       sorter: (a: AuditRecord, b: AuditRecord) => {
         const dateA = new Date(a.crc9f_updatedon).getTime();
@@ -215,13 +233,22 @@ export const ResidualDetails: React.FC = () => {
       title: 'Created By', 
       dataIndex: ['owninguser', 'fullname'], 
       width: '20%',
+      minWidth: 150,
       render: (text: string) => <Tag color="blue">{text || 'N/A'}</Tag>
     },
     { 
       title: 'Note', 
       dataIndex: 'crc9f_note', 
-      width: '40%',
-      render: (text: string | undefined) => text || ''
+      width: '50%',
+      render: (text: string | undefined) => (
+        <div style={{ 
+          whiteSpace: 'pre-wrap', 
+          wordWrap: 'break-word',
+          maxWidth: '100%'
+        }}>
+          {text || ''}
+        </div>
+      )
     }
   ];
 
@@ -290,6 +317,7 @@ export const ResidualDetails: React.FC = () => {
           rowKey="crc9f_residualscrubauditid"
           pagination={false}
           size="middle"
+          scroll={{ x: 1200 }}
         />
       )}
 
