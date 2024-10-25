@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Table, Tag, Tooltip } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
@@ -10,6 +11,16 @@ import { ResidualStatusModal } from './ResidualStatusModal';
 import { formatCurrency } from '../utils/formatters';
 import { getStatusCodeLabel } from '../utils/statusCodeMapper';
 import { getOpportunityTypeInfo } from '../utils/opportunityTypeMapper';
+
+interface AuditRecord {
+  crc9f_residualscrubauditid: string;
+  crc9f_newstatus: number;
+  crc9f_updatedon: string;
+  crc9f_note?: string;
+  owninguser: {
+    fullname: string;
+  };
+}
 
 const serviceColors = {
   Cable: 'blue',
@@ -29,7 +40,7 @@ export const ResidualDetails: React.FC = () => {
     residualData: [] as ResidualRecord[],
     wirelineData: [] as WirelineRecord[],
     opportunities: [] as OpportunityRecord[],
-    auditData: [] as any[],
+    auditData: [] as AuditRecord[],
     loading: true,
     opportunitiesLoading: true,
     auditLoading: true,
@@ -171,10 +182,11 @@ export const ResidualDetails: React.FC = () => {
     }
   ];
 
-  const auditColumns = [
+  const auditColumns: ColumnsType<AuditRecord> = [
     {
       title: 'Status',
       dataIndex: 'crc9f_newstatus',
+      width: '20%',
       render: (status: number) => {
         const statusConfig = {
           755280001: { label: 'Status 1', color: 'blue' },
@@ -185,13 +197,30 @@ export const ResidualDetails: React.FC = () => {
     },
     {
       title: 'Created On',
-      dataIndex: 'createdon',
+      dataIndex: 'crc9f_updatedon',
+      width: '20%',
+      defaultSortOrder: 'descend',
+      sorter: (a: AuditRecord, b: AuditRecord) => {
+        const dateA = new Date(a.crc9f_updatedon).getTime();
+        const dateB = new Date(b.crc9f_updatedon).getTime();
+        return dateA - dateB;
+      },
       render: (date: string) => new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        year: 'numeric', month: 'short', day: 'numeric'
       })
     },
-    { title: 'Modified By', dataIndex: ['owninguser', 'fullname'], render: (text: string) => text || 'N/A' },
-    { title: 'Note', dataIndex: 'crc9f_note', render: (text: string) => text || 'N/A' }
+    { 
+      title: 'Created By', 
+      dataIndex: ['owninguser', 'fullname'], 
+      width: '20%',
+      render: (text: string) => <Tag color="blue">{text || 'N/A'}</Tag>
+    },
+    { 
+      title: 'Note', 
+      dataIndex: 'crc9f_note', 
+      width: '40%',
+      render: (text: string | undefined) => text || ''
+    }
   ];
 
   if (state.error) return <div>Error: {state.error}</div>;
