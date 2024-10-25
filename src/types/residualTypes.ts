@@ -45,16 +45,41 @@ export interface WirelineRecord {
   foxy_signacct: string;
 }
 
+export interface MergedRecord {
+  key: string;
+  type: 'merged';
+  // From WirelineRecord
+  foxy_serviceid: string;
+  foxy_description: string;
+  foxy_charges: string;
+  foxy_addressline1: string;
+  foxy_city: string;
+  foxy_province: string;
+  foxy_postalcode: string;
+  foxy_quantity: number;
+  foxy_contractterm: number;
+  foxy_estimatedenddate: string;
+  foxy_billingeffectivedate: string;
+  foxy_companyname: string;
+  foxy_sitename: string;
+  // From ResidualRecord
+  foxyflow_charge_item_code: string;
+  foxyflow_residualserviceid: string;
+  // Original records for reference if needed
+  wirelineRecord: WirelineRecord;
+  residualRecord: ResidualRecord;
+}
+
 export interface GroupedAccountData {
   key: string;
   accountId: string;
   companyName: string;
   totalResidualAmount: number;
   totalWirelineCharges: number;
-  children: (ResidualRecord | WirelineRecord)[];
+  children: (ResidualRecord | WirelineRecord | MergedRecord)[];
 }
 
-export type TableRecord = GroupedAccountData | ResidualRecord | WirelineRecord;
+export type TableRecord = GroupedAccountData | ResidualRecord | WirelineRecord | MergedRecord;
 
 export interface OpportunityRecord {
   id: string;

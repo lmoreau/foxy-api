@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Table, Tag } from 'antd';
+import { Button, Table, Tag, Tooltip } from 'antd';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
@@ -86,31 +86,89 @@ export const ResidualDetails: React.FC = () => {
   const opportunityColumns = [
     { 
       title: 'Name', 
-      dataIndex: 'name', 
+      dataIndex: 'name',
+      width: '15%',
+      ellipsis: {
+        showTitle: false
+      },
       render: (text: string, record: OpportunityRecord) => (
-        <a 
-          href={`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&pagetype=entityrecord&etn=opportunity&id=${record.opportunityid}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {text || 'N/A'}
-        </a>
+        <Tooltip placement="topLeft" title={text || 'N/A'}>
+          <a 
+            href={`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&pagetype=entityrecord&etn=opportunity&id=${record.opportunityid}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {text || 'N/A'}
+          </a>
+        </Tooltip>
       )
     },
-    { title: 'Actual Value', dataIndex: 'actualvalue', render: (value: number) => formatCurrency(value) || 'N/A' },
-    { title: 'SFDC Opportunity ID', dataIndex: 'foxy_sfdcoppid', render: (text: string) => text || 'N/A' },
+    { 
+      title: 'Actual Value', 
+      dataIndex: 'actualvalue', 
+      width: '15%', 
+      render: (value: number) => formatCurrency(value) || 'N/A' 
+    },
+    { 
+      title: 'SFDC Opportunity ID', 
+      dataIndex: 'foxy_sfdcoppid', 
+      width: '15%',
+      ellipsis: {
+        showTitle: false
+      },
+      render: (text: string) => (
+        <Tooltip placement="topLeft" title={text || 'N/A'}>
+          {text || 'N/A'}
+        </Tooltip>
+      )
+    },
     { 
       title: 'Opportunity Type',
       dataIndex: 'foxy_opportunitytype',
+      width: '15%',
       render: (code: number) => {
         const { label, color } = getOpportunityTypeInfo(code);
         return <Tag color={color}>{label}</Tag>;
       }
     },
-    { title: 'Status', dataIndex: 'statuscode', render: (code: number) => getStatusCodeLabel(code) || 'N/A' },
-    { title: 'Actual Close Date', dataIndex: 'actualclosedate', render: (text: string) => text || 'N/A' },
-    { title: 'Foxy Stage', dataIndex: 'foxy_foxystage', render: (text: string) => text || 'N/A' },
-    { title: 'Step Name', dataIndex: 'stepname', render: (text: string) => text || 'N/A' }
+    { 
+      title: 'Status', 
+      dataIndex: 'statuscode', 
+      width: '15%',
+      render: (code: number) => getStatusCodeLabel(code) || 'N/A' 
+    },
+    { 
+      title: 'Actual Close Date', 
+      dataIndex: 'actualclosedate', 
+      width: '10%',
+      render: (text: string) => text || 'N/A' 
+    },
+    { 
+      title: 'Foxy Stage', 
+      dataIndex: 'foxy_foxystage', 
+      width: '8%',
+      ellipsis: {
+        showTitle: false
+      },
+      render: (text: string) => (
+        <Tooltip placement="topLeft" title={text || 'N/A'}>
+          {text || 'N/A'}
+        </Tooltip>
+      )
+    },
+    { 
+      title: 'Step Name', 
+      dataIndex: 'stepname', 
+      width: '7%',
+      ellipsis: {
+        showTitle: false
+      },
+      render: (text: string) => (
+        <Tooltip placement="topLeft" title={text || 'N/A'}>
+          {text || 'N/A'}
+        </Tooltip>
+      )
+    }
   ];
 
   const auditColumns = [
@@ -185,6 +243,7 @@ export const ResidualDetails: React.FC = () => {
           rowKey="opportunityid"
           pagination={false}
           size="middle"
+          scroll={{ x: 1500 }}
         />
       )}
 
