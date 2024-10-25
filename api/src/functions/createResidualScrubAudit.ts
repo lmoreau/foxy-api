@@ -6,6 +6,7 @@ import { corsHandler } from "../shared/cors";
 interface ResidualScrubAuditBody {
     accountId: string;
     note?: string;
+    status: string | number;  // Accept both string and number
 }
 
 export async function createCrc9fResidualScrubAudit(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -42,6 +43,27 @@ export async function createCrc9fResidualScrubAudit(request: HttpRequest, contex
             };
         }
 
+        if (requestBody.status === undefined) {
+            return {
+                ...corsResponse,
+                status: 400,
+                body: "status is required in the request body"
+            };
+        }
+
+        // Convert status to string for validation
+        const statusString = requestBody.status.toString();
+        
+        // Validate status is a 9-digit number
+        const statusRegex = /^\d{9}$/;
+        if (!statusRegex.test(statusString)) {
+            return {
+                ...corsResponse,
+                status: 400,
+                body: "Invalid status value. Must be a 9-digit number"
+            };
+        }
+
         // Log the request body
         context.log('Request body:', JSON.stringify(requestBody));
 
@@ -49,7 +71,8 @@ export async function createCrc9fResidualScrubAudit(request: HttpRequest, contex
         const modifiedRequestBody = {
             "crc9f_Account@odata.bind": `/accounts(${requestBody.accountId})`,
             "crc9f_note": requestBody.note || "",
-            "crc9f_updatedon": new Date().toISOString()
+            "crc9f_updatedon": new Date().toISOString(),
+            "crc9f_newstatus": parseInt(statusString)  // Convert to number for Dataverse
         };
 
         // Log the modified request body
