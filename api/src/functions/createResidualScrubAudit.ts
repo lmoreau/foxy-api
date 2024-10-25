@@ -3,6 +3,11 @@ import axios from "axios";
 import { dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
+interface ResidualScrubAuditBody {
+    accountId: string;
+    note?: string;
+}
+
 export async function createCrc9fResidualScrubAudit(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
@@ -20,16 +25,34 @@ export async function createCrc9fResidualScrubAudit(request: HttpRequest, contex
     }
 
     try {
-        // Hardcoded accountId for testing
-        const accountId = "897f2922-2a1a-ec11-b6e7-000d3ae9b93f";
+        const requestBody = await request.json() as ResidualScrubAuditBody;
+        if (!requestBody) {
+            return { 
+                ...corsResponse,
+                status: 400, 
+                body: "Please provide request body" 
+            };
+        }
 
-        // Create the request body for crc9f_residualscrubaudit
-        const requestBody = {
-            "crc9f_Account@odata.bind": `/accounts(${accountId})`
-        };
+        if (!requestBody.accountId) {
+            return {
+                ...corsResponse,
+                status: 400,
+                body: "accountId is required in the request body"
+            };
+        }
 
         // Log the request body
         context.log('Request body:', JSON.stringify(requestBody));
+
+        // Create the request body for crc9f_residualscrubaudit
+        const modifiedRequestBody = {
+            "crc9f_Account@odata.bind": `/accounts(${requestBody.accountId})`,
+            "crc9f_note": requestBody.note || ""
+        };
+
+        // Log the modified request body
+        context.log('Modified request body:', JSON.stringify(modifiedRequestBody));
 
         // Use the user's token directly
         const accessToken = userToken.replace('Bearer ', '');
@@ -46,7 +69,7 @@ export async function createCrc9fResidualScrubAudit(request: HttpRequest, contex
             'Prefer': 'return=representation'
         });
 
-        const response = await axios.post(apiUrl, requestBody, {
+        const response = await axios.post(apiUrl, modifiedRequestBody, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'OData-MaxVersion': '4.0',
