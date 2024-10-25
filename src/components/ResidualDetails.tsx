@@ -132,7 +132,8 @@ export const ResidualDetails: React.FC = () => {
         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
       })
     },
-    { title: 'Modified By', dataIndex: ['owninguser', 'fullname'], render: (text: string) => text || 'N/A' }
+    { title: 'Modified By', dataIndex: ['owninguser', 'fullname'], render: (text: string) => text || 'N/A' },
+    { title: 'Note', dataIndex: 'crc9f_note', render: (text: string) => text || 'N/A' }
   ];
 
   if (state.error) return <div>Error: {state.error}</div>;
