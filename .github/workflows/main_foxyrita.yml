@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './api' # set this to the path to your web app project, defaults to the repository root
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './api/dist/functions' # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '18.x' # set this to the node version to use (supports 8.x, 10.x, 12.x)
 
 jobs:
@@ -44,7 +44,7 @@ jobs:
           ls -R ./api
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./api
+        run: zip -r release.zip ./api/dist/functions
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
