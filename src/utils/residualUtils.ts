@@ -65,6 +65,66 @@ const createMergedRecord = (
   };
 };
 
+const handleMultipleMatches = (
+  residuals: ResidualRecord[],
+  wirelines: WirelineRecord[],
+  accountGroup: GroupedAccountData,
+  globalIndex: number
+): void => {
+  // Check if all residuals are MULTISER
+  const allMultiser = residuals.every(r => r.foxyflow_product === 'MULTISER');
+  
+  if (allMultiser && residuals.length > 0 && wirelines.length > 0) {
+    // Pair MULTISER records with wireline records one-to-one
+    const maxPairs = Math.min(residuals.length, wirelines.length);
+    
+    for (let i = 0; i < maxPairs; i++) {
+      const mergedRecord = createMergedRecord(wirelines[i], residuals[i], globalIndex + i);
+      accountGroup.children.push(mergedRecord);
+      accountGroup.totalResidualAmount += normalizeAmount(residuals[i].foxyflow_actuals);
+      accountGroup.totalWirelineCharges += normalizeAmount(wirelines[i].foxy_charges);
+    }
+    
+    // Add remaining records separately
+    residuals.slice(maxPairs).forEach(record => {
+      accountGroup.children.push({
+        ...record,
+        type: 'residual',
+        key: generateUniqueKey('residual', globalIndex++, accountGroup.accountId, record.foxyflow_product)
+      });
+      accountGroup.totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
+    });
+    
+    wirelines.slice(maxPairs).forEach(record => {
+      accountGroup.children.push({
+        ...record,
+        type: 'wireline',
+        key: generateUniqueKey('wireline', globalIndex++, accountGroup.accountId, record.foxy_serviceid)
+      });
+      accountGroup.totalWirelineCharges += normalizeAmount(record.foxy_charges);
+    });
+  } else {
+    // Non-MULTISER or mixed case - keep all records separate
+    residuals.forEach(record => {
+      accountGroup.children.push({
+        ...record,
+        type: 'residual',
+        key: generateUniqueKey('residual', globalIndex++, accountGroup.accountId, record.foxyflow_product)
+      });
+      accountGroup.totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
+    });
+
+    wirelines.forEach(record => {
+      accountGroup.children.push({
+        ...record,
+        type: 'wireline',
+        key: generateUniqueKey('wireline', globalIndex++, accountGroup.accountId, record.foxy_serviceid)
+      });
+      accountGroup.totalWirelineCharges += normalizeAmount(record.foxy_charges);
+    });
+  }
+};
+
 export const combineResidualData = (
   residualData: ResidualRecord[],
   wirelineData: WirelineRecord[]
@@ -160,29 +220,14 @@ export const combineResidualData = (
         accountGroup.totalResidualAmount += normalizeAmount(residuals[0].foxyflow_actuals);
         accountGroup.totalWirelineCharges += normalizeAmount(wirelines[0].foxy_charges);
       } else {
-        // Add records separately if they can't be merged
-        residuals.forEach(record => {
-          children.push({
-            ...record,
-            type: 'residual',
-            key: generateUniqueKey('residual', globalIndex++, accountId, record.foxyflow_product)
-          });
-          accountGroup.totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
-        });
-
-        wirelines.forEach(record => {
-          children.push({
-            ...record,
-            type: 'wireline',
-            key: generateUniqueKey('wireline', globalIndex++, accountId, record.foxy_serviceid)
-          });
-          accountGroup.totalWirelineCharges += normalizeAmount(record.foxy_charges);
-        });
+        // Handle multiple matches (including MULTISER case)
+        handleMultipleMatches(residuals, wirelines, accountGroup, globalIndex);
       }
+      globalIndex++;
     });
 
     // Sort children by amount in descending order
-    accountGroup.children = children.sort((a, b) => {
+    accountGroup.children = accountGroup.children.sort((a, b) => {
       const amountA = getRecordAmount(a);
       const amountB = getRecordAmount(b);
       return amountB - amountA;

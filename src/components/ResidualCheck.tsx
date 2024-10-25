@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Tooltip, Select, Row, Col } from 'antd';
+import { Table, Tag, Tooltip, Select, Row, Col, Input } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { FileTextOutlined } from '@ant-design/icons';
+import { FileTextOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { listAccountsForResidualCheck } from '../utils/api';
 import wirelineResidualsMap, { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
@@ -81,6 +81,7 @@ const ResidualCheck: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedResiduals, setSelectedResiduals] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -101,12 +102,21 @@ const ResidualCheck: React.FC = () => {
   useEffect(() => {
     let filtered = [...accounts];
 
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(account => 
+        account.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by services
     if (selectedServices.length > 0) {
       filtered = filtered.filter(account => 
         selectedServices.some(service => account[`foxy_${service.replace(' ', '').toLowerCase()}` as keyof Account])
       );
     }
 
+    // Filter by residuals
     if (selectedResiduals.length > 0) {
       filtered = filtered.filter(account => {
         const accountResidualValue = account.foxyflow_wirelineresiduals?.toString();
@@ -115,7 +125,7 @@ const ResidualCheck: React.FC = () => {
     }
 
     setFilteredAccounts(filtered);
-  }, [selectedServices, selectedResiduals, accounts]);
+  }, [selectedServices, selectedResiduals, searchTerm, accounts]);
 
   const handleServiceChange = (value: string[]) => {
     setSelectedServices(value);
@@ -123,6 +133,10 @@ const ResidualCheck: React.FC = () => {
 
   const handleResidualChange = (value: string[]) => {
     setSelectedResiduals(value);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleRowClick = (record: Account) => {
@@ -225,7 +239,16 @@ const ResidualCheck: React.FC = () => {
     <div className="residual-check-container">
       <h2>Accounts for Residual Check</h2>
       <Row gutter={16}>
-        <Col span={12}>
+        <Col span={8}>
+          <Input
+            placeholder="Search by company name"
+            prefix={<SearchOutlined />}
+            onChange={handleSearchChange}
+            value={searchTerm}
+            style={{ width: '100%', marginBottom: '16px' }}
+          />
+        </Col>
+        <Col span={8}>
           <Select
             mode="multiple"
             style={{ width: '100%', marginBottom: '16px' }}
@@ -238,7 +261,7 @@ const ResidualCheck: React.FC = () => {
             ))}
           </Select>
         </Col>
-        <Col span={12}>
+        <Col span={8}>
           <Select
             mode="multiple"
             style={{ width: '100%', marginBottom: '16px' }}
