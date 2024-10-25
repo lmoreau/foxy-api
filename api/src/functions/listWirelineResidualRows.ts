@@ -33,7 +33,8 @@ export async function listWirelineResidualRows(request: HttpRequest, context: In
         // Format the GUID properly for Dataverse
         const formattedCompanyId = companyId.replace(/[{}]/g, '');
         const headers = getDataverseHeaders(authHeader);
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_rogerswirelines?$filter=_foxy_account_value eq '${formattedCompanyId}'`;
+        // Updated to use correct table and filter field
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxyflow_residualservices?$filter=_foxyflow_company_value eq ${formattedCompanyId}`;
 
         context.log('Using auth header:', authHeader.substring(0, 50) + '...');
         context.log('Calling URL:', apiUrl);
