@@ -24,6 +24,16 @@ const normalizeAmount = (amount: string | undefined): number => {
   return parseFloat(amount) || 0;
 };
 
+const getRecordAmount = (record: ResidualRecord | WirelineRecord | MergedRecord): number => {
+  if (record.type === 'merged') {
+    return normalizeAmount(record.wirelineRecord.foxy_charges);
+  } else if (record.type === 'wireline') {
+    return normalizeAmount(record.foxy_charges);
+  } else {
+    return normalizeAmount(record.foxyflow_actuals);
+  }
+};
+
 const createMergedRecord = (
   wirelineRecord: WirelineRecord,
   residualRecord: ResidualRecord,
@@ -129,27 +139,30 @@ export const combineResidualData = (
       ...Array.from(maps.wirelines.keys())
     ]));
     
+    const accountGroup = processAccount(
+      accountId,
+      maps.residuals.values().next().value?.[0]?.foxyflow_rogerscompanyname || 
+      maps.wirelines.values().next().value?.[0]?.foxy_companyname || 
+      'Unknown',
+      globalIndex
+    );
+
+    const children: (ResidualRecord | WirelineRecord | MergedRecord)[] = [];
+
     allAmounts.forEach(amount => {
       const residuals = maps.residuals.get(amount) || [];
       const wirelines = maps.wirelines.get(amount) || [];
-      
-      // Get or create account group
-      const accountGroup = processAccount(
-        accountId,
-        residuals[0]?.foxyflow_rogerscompanyname || wirelines[0]?.foxy_companyname || 'Unknown',
-        globalIndex
-      );
 
       // If exactly one record exists in both sources, merge them
       if (residuals.length === 1 && wirelines.length === 1) {
         const mergedRecord = createMergedRecord(wirelines[0], residuals[0], globalIndex);
-        accountGroup.children.push(mergedRecord);
+        children.push(mergedRecord);
         accountGroup.totalResidualAmount += normalizeAmount(residuals[0].foxyflow_actuals);
         accountGroup.totalWirelineCharges += normalizeAmount(wirelines[0].foxy_charges);
       } else {
         // Add records separately if they can't be merged
         residuals.forEach(record => {
-          accountGroup.children.push({
+          children.push({
             ...record,
             type: 'residual',
             key: generateUniqueKey('residual', globalIndex++, accountId, record.foxyflow_product)
@@ -158,7 +171,7 @@ export const combineResidualData = (
         });
 
         wirelines.forEach(record => {
-          accountGroup.children.push({
+          children.push({
             ...record,
             type: 'wireline',
             key: generateUniqueKey('wireline', globalIndex++, accountId, record.foxy_serviceid)
@@ -166,6 +179,13 @@ export const combineResidualData = (
           accountGroup.totalWirelineCharges += normalizeAmount(record.foxy_charges);
         });
       }
+    });
+
+    // Sort children by amount in descending order
+    accountGroup.children = children.sort((a, b) => {
+      const amountA = getRecordAmount(a);
+      const amountB = getRecordAmount(b);
+      return amountB - amountA;
     });
   });
 
