@@ -4,6 +4,7 @@ import { ColumnsType } from 'antd/es/table';
 import { FileTextOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { listAccountsForResidualCheck } from '../utils/api';
+import wirelineResidualsMap, { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import './ResidualCheck.css';
 
 const { Option } = Select;
@@ -38,19 +39,6 @@ const serviceColors = {
   'Data Centre': 'volcano',
 };
 
-const wirelineResidualOptions = [
-  { value: '755280000', label: 'Status Unknown' },
-  { value: '755280001', label: 'Not Eligible' },
-  { value: '755280002', label: 'Pending Start' },
-  { value: '755280003', label: 'Active' },
-  { value: '755280004', label: 'Issue - None Paying' },
-  { value: '755280005', label: 'Issue - Some Paying' },
-  { value: '755280006', label: 'Issue - Ready to Submit' },
-  { value: '755280007', label: 'Issue - Clarification Needed' },
-  { value: '755280008', label: 'Issue - Disputed to Comp' },
-  { value: '947760001', label: 'Legacy Issue' },
-];
-
 type WirelineResidualLabel = 
   | 'Active'
   | 'Pending Start'
@@ -82,9 +70,7 @@ const formatCurrency = (value: string) => {
 };
 
 const mapWirelineResiduals = (value: string) => {
-  const stringValue = value.toString();
-  const option = wirelineResidualOptions.find(opt => opt.value === stringValue);
-  return option ? option.label : stringValue;
+  return getWirelineResidualsLabel(value);
 };
 
 const ResidualCheck: React.FC = () => {
@@ -260,7 +246,7 @@ const ResidualCheck: React.FC = () => {
             onChange={handleResidualChange}
             allowClear
           >
-            {wirelineResidualOptions.map(option => (
+            {wirelineResidualsMap.map(option => (
               <Option key={option.value} value={option.value}>{option.label}</Option>
             ))}
           </Select>
