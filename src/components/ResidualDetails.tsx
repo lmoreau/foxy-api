@@ -187,7 +187,10 @@ export const ResidualDetails: React.FC = () => {
       title: 'Status',
       dataIndex: 'crc9f_newstatus',
       width: '20%',
-      render: (status: number) => {
+      render: (status: number | null) => {
+        if (status === null || status === undefined) {
+          return <Tag color="default">Unknown</Tag>;
+        }
         const label = getWirelineResidualsLabel(status);
         // Keep existing color logic but use proper label
         const color = status === 755280001 ? 'blue' : status === 755280003 ? 'green' : 'default';
