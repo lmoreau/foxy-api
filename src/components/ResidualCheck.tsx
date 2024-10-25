@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, Tooltip, Select, Row, Col, Input } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { FileTextOutlined, SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { listAccountsForResidualCheck } from '../utils/api';
 import wirelineResidualsMap, { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
@@ -184,30 +184,6 @@ const ResidualCheck: React.FC = () => {
       ellipsis: true,
       render: (value) => formatCurrency(value),
       sorter: (a, b) => parseFloat(a.foxyflow_residualstotal) - parseFloat(b.foxyflow_residualstotal),
-    },
-    {
-      title: 'Residuals Notes',
-      key: 'foxyflow_residualsnotes',
-      width: '5%',
-      ellipsis: true,
-      render: (_, record) => (
-        record.foxyflow_residualsnotes ? 
-        <Tooltip title={record.foxyflow_residualsnotes}>
-          <FileTextOutlined />
-        </Tooltip> : null
-      ),
-    },
-    {
-      title: 'RITA Residual Notes',
-      key: 'foxy_ritaresidualnotes',
-      width: '5%',
-      ellipsis: true,
-      render: (_, record) => (
-        record.foxy_ritaresidualnotes ? 
-        <Tooltip title={record.foxy_ritaresidualnotes}>
-          <FileTextOutlined />
-        </Tooltip> : null
-      ),
     },
     {
       title: 'Wireline MRR',
