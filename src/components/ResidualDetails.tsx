@@ -150,10 +150,13 @@ export const ResidualDetails: React.FC = () => {
         </Button>
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <p style={{ marginBottom: '8px' }}>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag></p>
-        
-        <p style={{ marginBottom: '8px' }}>Services: {' '}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '32px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>Wireline Residuals:</span>
+          <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>Services:</span>
           {state.accountData.foxy_cable && <Tag color={serviceColors.Cable}>Cable</Tag>}
           {state.accountData.foxy_datacentre && <Tag color={serviceColors['Data Centre']}>Data Centre</Tag>}
           {state.accountData.foxy_fibreinternet && <Tag color={serviceColors['Fibre Internet']}>Fibre Internet</Tag>}
@@ -162,7 +165,7 @@ export const ResidualDetails: React.FC = () => {
           {state.accountData.foxy_res && <Tag color={serviceColors.RES}>RES</Tag>}
           {state.accountData.foxy_sip && <Tag color={serviceColors.SIP}>SIP</Tag>}
           {state.accountData.foxy_unison && <Tag color={serviceColors.Unison}>Unison</Tag>}
-        </p>
+        </div>
       </div>
 
       <div style={{ marginTop: '20px' }}>
