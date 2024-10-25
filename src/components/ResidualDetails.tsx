@@ -11,6 +11,17 @@ import { formatCurrency } from '../utils/formatters';
 import { getStatusCodeLabel } from '../utils/statusCodeMapper';
 import { getOpportunityTypeInfo } from '../utils/opportunityTypeMapper';
 
+const serviceColors = {
+  Cable: 'blue',
+  'Fibre Internet': 'green',
+  GPON: 'cyan',
+  'Microsoft 365': 'purple',
+  RES: 'magenta',
+  SIP: 'orange',
+  Unison: 'geekblue',
+  'Data Centre': 'volcano',
+};
+
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [state, setState] = useState({
@@ -139,7 +150,20 @@ export const ResidualDetails: React.FC = () => {
         </Button>
       </div>
 
-      <p>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag></p>
+      <div style={{ marginBottom: '16px' }}>
+        <p style={{ marginBottom: '8px' }}>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag></p>
+        
+        <p style={{ marginBottom: '8px' }}>Services: {' '}
+          {state.accountData.foxy_cable && <Tag color={serviceColors.Cable}>Cable</Tag>}
+          {state.accountData.foxy_datacentre && <Tag color={serviceColors['Data Centre']}>Data Centre</Tag>}
+          {state.accountData.foxy_fibreinternet && <Tag color={serviceColors['Fibre Internet']}>Fibre Internet</Tag>}
+          {state.accountData.foxy_gpon && <Tag color={serviceColors.GPON}>GPON</Tag>}
+          {state.accountData.foxy_microsoft365 && <Tag color={serviceColors['Microsoft 365']}>Microsoft 365</Tag>}
+          {state.accountData.foxy_res && <Tag color={serviceColors.RES}>RES</Tag>}
+          {state.accountData.foxy_sip && <Tag color={serviceColors.SIP}>SIP</Tag>}
+          {state.accountData.foxy_unison && <Tag color={serviceColors.Unison}>Unison</Tag>}
+        </p>
+      </div>
 
       <div style={{ marginTop: '20px' }}>
         <ResidualTable data={combinedData} />
