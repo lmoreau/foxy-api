@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Table, Tag, Tooltip } from 'antd';
+import { Button, Table, Tag } from 'antd';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
-import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, updateAccountWirelineResiduals, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
+import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
@@ -13,226 +13,163 @@ import { getOpportunityTypeInfo } from '../utils/opportunityTypeMapper';
 
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [accountData, setAccountData] = useState<AccountData | null>(null);
-  const [residualData, setResidualData] = useState<ResidualRecord[]>([]);
-  const [wirelineData, setWirelineData] = useState<WirelineRecord[]>([]);
-  const [opportunities, setOpportunities] = useState<OpportunityRecord[]>([]);
-  const [auditData, setAuditData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [opportunitiesLoading, setOpportunitiesLoading] = useState(true);
-  const [auditLoading, setAuditLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [opportunitiesError, setOpportunitiesError] = useState<string | null>(null);
-  const [auditError, setAuditError] = useState<string | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedValue, setSelectedValue] = useState<string>('');
-  const [updating, setUpdating] = useState(false);
+  const [state, setState] = useState({
+    accountData: null as AccountData | null,
+    residualData: [] as ResidualRecord[],
+    wirelineData: [] as WirelineRecord[],
+    opportunities: [] as OpportunityRecord[],
+    auditData: [] as any[],
+    loading: true,
+    opportunitiesLoading: true,
+    auditLoading: true,
+    error: null as string | null,
+    opportunitiesError: null as string | null,
+    auditError: null as string | null,
+    isModalVisible: false,
+    selectedValue: '',
+    updating: false
+  });
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!id) return;
       try {
-        if (!id) return;
+        const [account, residuals, wireline, oppsResponse, auditResponse] = await Promise.all([
+          getAccountById(id),
+          listWirelineResidualRows(id),
+          listRogersWirelineRecords(id),
+          fetchOpportunities(id),
+          listResidualAuditByRows(id)
+        ]);
 
-        // Fetch account details
-        const accountData = await getAccountById(id);
-        setAccountData(accountData);
-
-        // Fetch residual rows
-        const residualData = await listWirelineResidualRows(id);
-        setResidualData(residualData);
-
-        // Fetch wireline records
-        const wirelineData = await listRogersWirelineRecords(id);
-        setWirelineData(wirelineData);
-
-        // Fetch opportunities
-        const opportunitiesResponse = await fetchOpportunities(id);
-        setOpportunities(opportunitiesResponse.value);
-
-        // Fetch audit data
-        const auditResponse = await listResidualAuditByRows(id);
-        setAuditData(auditResponse.value);
+        setState(prev => ({
+          ...prev,
+          accountData: account,
+          residualData: residuals,
+          wirelineData: wireline,
+          opportunities: oppsResponse.value,
+          auditData: auditResponse.value,
+          loading: false,
+          opportunitiesLoading: false,
+          auditLoading: false
+        }));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-        setOpportunitiesLoading(false);
-        setAuditLoading(false);
+        setState(prev => ({
+          ...prev,
+          error: err instanceof Error ? err.message : 'An error occurred',
+          loading: false,
+          opportunitiesLoading: false,
+          auditLoading: false
+        }));
       }
     };
 
     fetchData();
   }, [id]);
 
-  const combinedData = React.useMemo(() => {
-    return combineResidualData(residualData, wirelineData);
-  }, [residualData, wirelineData]);
+  const combinedData = React.useMemo(() => 
+    combineResidualData(state.residualData, state.wirelineData),
+    [state.residualData, state.wirelineData]
+  );
 
   const opportunityColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string) => text || 'N/A',
-    },
-    {
-      title: 'Actual Value',
-      dataIndex: 'actualvalue',
-      key: 'actualvalue',
-      render: (value: number) => formatCurrency(value) || 'N/A',
-    },
-    {
-      title: 'SFDC Opportunity ID',
-      dataIndex: 'foxy_sfdcoppid',
-      key: 'foxy_sfdcoppid',
-      render: (text: string) => text || 'N/A',
-    },
-    {
+    { title: 'Name', dataIndex: 'name', render: (text: string) => text || 'N/A' },
+    { title: 'Actual Value', dataIndex: 'actualvalue', render: (value: number) => formatCurrency(value) || 'N/A' },
+    { title: 'SFDC Opportunity ID', dataIndex: 'foxy_sfdcoppid', render: (text: string) => text || 'N/A' },
+    { 
       title: 'Opportunity Type',
       dataIndex: 'foxy_opportunitytype',
-      key: 'foxy_opportunitytype',
       render: (code: number) => {
         const { label, color } = getOpportunityTypeInfo(code);
         return <Tag color={color}>{label}</Tag>;
-      },
+      }
     },
-    {
-      title: 'Status',
-      dataIndex: 'statuscode',
-      key: 'statuscode',
-      render: (code: number) => getStatusCodeLabel(code) || 'N/A',
-    },
-    {
-      title: 'Actual Close Date',
-      dataIndex: 'actualclosedate',
-      key: 'actualclosedate',
-      render: (text: string) => text || 'N/A',
-    },
-    {
-      title: 'Foxy Stage',
-      dataIndex: 'foxy_foxystage',
-      key: 'foxy_foxystage',
-      render: (text: string) => text || 'N/A',
-    },
-    {
-      title: 'Step Name',
-      dataIndex: 'stepname',
-      key: 'stepname',
-      render: (text: string) => text || 'N/A',
-    },
+    { title: 'Status', dataIndex: 'statuscode', render: (code: number) => getStatusCodeLabel(code) || 'N/A' },
+    { title: 'Actual Close Date', dataIndex: 'actualclosedate', render: (text: string) => text || 'N/A' },
+    { title: 'Foxy Stage', dataIndex: 'foxy_foxystage', render: (text: string) => text || 'N/A' },
+    { title: 'Step Name', dataIndex: 'stepname', render: (text: string) => text || 'N/A' }
   ];
 
   const auditColumns = [
     {
       title: 'Status',
       dataIndex: 'crc9f_newstatus',
-      key: 'crc9f_newstatus',
       render: (status: number) => {
-        let label = 'Unknown';
-        let color = 'default';
-        
-        switch(status) {
-          case 755280001:
-            label = 'Status 1';
-            color = 'blue';
-            break;
-          case 755280003:
-            label = 'Status 3';
-            color = 'green';
-            break;
-          // Add more cases as needed
-        }
-        
-        return <Tag color={color}>{label}</Tag>;
-      },
+        const statusConfig = {
+          755280001: { label: 'Status 1', color: 'blue' },
+          755280003: { label: 'Status 3', color: 'green' }
+        }[status] || { label: 'Unknown', color: 'default' };
+        return <Tag color={statusConfig.color}>{statusConfig.label}</Tag>;
+      }
     },
     {
       title: 'Created On',
       dataIndex: 'createdon',
-      key: 'createdon',
-      render: (date: string) => {
-        const formattedDate = new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-        return formattedDate;
-      },
+      render: (date: string) => new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      })
     },
-    {
-      title: 'Modified By',
-      dataIndex: ['owninguser', 'fullname'],
-      key: 'owninguser',
-      render: (text: string) => text || 'N/A',
-    },
+    { title: 'Modified By', dataIndex: ['owninguser', 'fullname'], render: (text: string) => text || 'N/A' }
   ];
 
-  const handleViewInFoxy = () => {
-    if (id) {
-      window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${id}`, '_blank');
-    }
-  };
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (loading || !accountData) {
-    return <div>Loading...</div>;
-  }
+  if (state.error) return <div>Error: {state.error}</div>;
+  if (state.loading || !state.accountData) return <div>Loading...</div>;
 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-        <h1 style={{ margin: 0 }}>{accountData.name}</h1>
-        <Button type="primary" onClick={() => setIsModalVisible(true)}>
+        <h1 style={{ margin: 0 }}>{state.accountData.name}</h1>
+        <Button type="primary" onClick={() => setState(prev => ({ ...prev, isModalVisible: true }))}>
           Edit Status
         </Button>
-        <Button onClick={handleViewInFoxy}>
+        <Button onClick={() => window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${id}`, '_blank')}>
           View in Foxy
         </Button>
       </div>
-      <p>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</Tag></p>
+
+      <p>Wireline Residuals: <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag></p>
+
       <div style={{ marginTop: '20px' }}>
         <ResidualTable data={combinedData} />
       </div>
+
       <h2>Opportunities</h2>
-      {opportunitiesLoading ? (
+      {state.opportunitiesLoading ? (
         <div>Loading opportunities...</div>
-      ) : opportunitiesError ? (
-        <div>Error loading opportunities: {opportunitiesError}</div>
+      ) : state.opportunitiesError ? (
+        <div>Error loading opportunities: {state.opportunitiesError}</div>
       ) : (
         <Table
           columns={opportunityColumns}
-          dataSource={opportunities}
-          rowKey={(record) => record.opportunityid}
+          dataSource={state.opportunities}
+          rowKey="opportunityid"
           pagination={false}
           size="middle"
         />
       )}
+
       <h2>Residual Audit History</h2>
-      {auditLoading ? (
+      {state.auditLoading ? (
         <div>Loading audit history...</div>
-      ) : auditError ? (
-        <div>Error loading audit history: {auditError}</div>
+      ) : state.auditError ? (
+        <div>Error loading audit history: {state.auditError}</div>
       ) : (
         <Table
           columns={auditColumns}
-          dataSource={auditData}
-          rowKey={(record) => record.crc9f_residualscrubauditid}
+          dataSource={state.auditData}
+          rowKey="crc9f_residualscrubauditid"
           pagination={false}
           size="middle"
         />
       )}
+
       <ResidualStatusModal
-        isVisible={isModalVisible}
-        selectedValue={selectedValue}
-        onValueChange={setSelectedValue}
-        onOk={() => setIsModalVisible(false)}
-        onCancel={() => setIsModalVisible(false)}
-        updating={updating}
+        isVisible={state.isModalVisible}
+        selectedValue={state.selectedValue}
+        onValueChange={(value) => setState(prev => ({ ...prev, selectedValue: value }))}
+        onOk={() => setState(prev => ({ ...prev, isModalVisible: false }))}
+        onCancel={() => setState(prev => ({ ...prev, isModalVisible: false }))}
+        updating={state.updating}
       />
     </div>
   );
