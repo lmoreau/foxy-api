@@ -161,6 +161,12 @@ export const ResidualDetails: React.FC = () => {
         return formattedDate;
       },
     },
+    {
+      title: 'Modified By',
+      dataIndex: ['owninguser', 'fullname'],
+      key: 'owninguser',
+      render: (text: string) => text || 'N/A',
+    },
   ];
 
   const handleViewInFoxy = () => {

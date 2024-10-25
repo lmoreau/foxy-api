@@ -23,7 +23,7 @@ export async function listResidualAuditByRows(request: HttpRequest, context: Inv
         // Use the user's token directly
         const accessToken = userToken.replace('Bearer ', '');
         const accountId = request.query.get('accountId') || ''; // Assuming accountId is passed as a query parameter
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/crc9f_residualscrubaudits?$filter=_crc9f_account_value eq ${accountId}`;
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/crc9f_residualscrubaudits?$filter=_crc9f_account_value eq ${accountId}&$expand=owninguser($select=fullname)`;
 
         const response = await axios.get(apiUrl, {
             headers: {
