@@ -34,7 +34,7 @@ const columns: ColumnsType<TableRecord> = [
   {
     title: 'Description/Product',
     key: 'description',
-    width: '30%',
+    width: '35%',
     render: (_, record) => {
       if ('children' in record) {
         return (
@@ -58,15 +58,32 @@ const columns: ColumnsType<TableRecord> = [
       const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
       const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
 
+      if (isMerged || isWireline) {
+        const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
+        return (
+          <>
+            <Tag color={isMerged ? 'purple' : 'green'}>
+              {isMerged ? 'Merged' : 'Wireline'}
+            </Tag>
+            <span>&nbsp;</span>
+            {r.foxy_description || 'No Description'}
+            {r.foxy_serviceid && (
+              <>
+                {' '}
+                <Tag color="blue">({r.foxy_serviceid})</Tag>
+              </>
+            )}
+            {r.foxy_quantity > 1 && ` x ${r.foxy_quantity}`}
+            {r.foxy_contractterm && ` - ${r.foxy_contractterm} months`}
+          </>
+        );
+      }
+
       return (
         <>
-          <Tag color={isMerged ? 'purple' : isWireline ? 'green' : 'blue'}>
-            {isMerged ? 'Merged' : isWireline ? 'Wireline' : 'Residual'}
-          </Tag>
+          <Tag color="blue">Residual</Tag>
           <span>&nbsp;</span>
-          {isMerged ? formatDescription(mergedRecord.wirelineRecord) :
-           isWireline ? formatDescription(wirelineRecord!) :
-           residualRecord?.foxyflow_product}
+          {residualRecord?.foxyflow_product}
         </>
       );
     },
@@ -74,7 +91,7 @@ const columns: ColumnsType<TableRecord> = [
   {
     title: 'Service Details',
     key: 'serviceDetails',
-    width: '20%',
+    width: '15%',
     render: (_, record) => {
       if ('children' in record) return null;
 
@@ -87,14 +104,11 @@ const columns: ColumnsType<TableRecord> = [
       if (isMerged || isWireline) {
         const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
         return (
-          <>
-            Service ID: {r.foxy_serviceid}<br />
-            {r.foxy_addressline1 && (
-              <Tooltip title={`${r.foxy_city}, ${r.foxy_province} ${r.foxy_postalcode}`}>
-                {r.foxy_addressline1}
-              </Tooltip>
-            )}
-          </>
+          r.foxy_addressline1 && (
+            <Tooltip title={`${r.foxy_city}, ${r.foxy_province} ${r.foxy_postalcode}`}>
+              {r.foxy_addressline1}
+            </Tooltip>
+          )
         );
       }
 
@@ -107,7 +121,7 @@ const columns: ColumnsType<TableRecord> = [
     },
   },
   {
-    title: 'Dates',
+    title: 'Contract Start/End',
     key: 'dates',
     width: '25%',
     render: (_, record) => {
@@ -133,7 +147,7 @@ const columns: ColumnsType<TableRecord> = [
     },
   },
   {
-    title: 'Company Info',
+    title: 'Site Name',
     key: 'company',
     width: '15%',
     render: (_, record) => {
@@ -147,11 +161,7 @@ const columns: ColumnsType<TableRecord> = [
 
       if (isMerged || isWireline) {
         const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-        return (
-          <>
-            Site: {r.foxy_sitename}
-          </>
-        );
+        return r.foxy_sitename;
       }
 
       return residualRecord ? residualRecord.foxyflow_rogerscompanyname : null;
