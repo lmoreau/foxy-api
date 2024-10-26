@@ -22,6 +22,7 @@ import "./functions/listResidualAuditByRows";
 import "./functions/listRogersWirelineRecords";
 import "./functions/listWirelineResidualRows";
 import "./functions/updateAccountWirelineResiduals";
+import "./functions/helloWorld";  // Add the new hello world function
 
 // Export the initialized app
 export default functionApp;

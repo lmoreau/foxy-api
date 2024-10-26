@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './api/dist/functions' # Ensure this points correctly
-  NODE_VERSION: '18.x' # Node version
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './api' # Set to api root
+  NODE_VERSION: '18.x'
 
 jobs:
   build:
@@ -22,10 +22,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: 'Use specific npm version'
-        run: |
-          npm install -g npm@8.19.2
-
       - name: 'Resolve Project Dependencies Using Npm'
         shell: bash
         run: |
@@ -35,15 +31,15 @@ jobs:
           npm run test --if-present
           popd
 
-      - name: 'Display api directory contents'
+      - name: 'Display build output'
         run: |
-          echo "Contents of api directory:"
-          ls -R ./api
+          echo "Contents of api/dist directory:"
+          ls -R ./api/dist
 
       - name: Zip artifact for deployment
         run: |
-          cd ./api/dist/functions
-          zip -r ../../../release.zip ./*
+          cd ./api
+          zip -r ../release.zip . # Include entire api directory
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -56,7 +52,7 @@ jobs:
     needs: build
     
     permissions:
-      id-token: write # Required for requesting the JWT
+      id-token: write
 
     steps:
       - name: Download artifact from build job
@@ -65,7 +61,9 @@ jobs:
           name: node-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: |
+          mkdir api
+          unzip release.zip -d api
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -80,4 +78,6 @@ jobs:
         with:
           app-name: 'foxyrita'
           slot-name: 'Production'
-          package: release.zip
+          package: 'api'
+          scm-do-build-during-deployment: true # Enable remote build
+          enable-oryx-build: true # Enable Oryx builder for Linux apps
