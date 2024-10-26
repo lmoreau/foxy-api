@@ -306,21 +306,23 @@ export const ResidualDetails: React.FC = () => {
         />
       )}
 
-      <h2>Residual Audit History</h2>
-      {state.auditLoading ? (
-        <div>Loading audit history...</div>
-      ) : state.auditError ? (
-        <div>Error loading audit history: {state.auditError}</div>
-      ) : (
-        <Table
-          columns={auditColumns}
-          dataSource={state.auditData}
-          rowKey="crc9f_residualscrubauditid"
-          pagination={false}
-          size="middle"
-          scroll={{ x: 1200 }}
-        />
-      )}
+      <div style={{ marginBottom: '24px' }}>
+        <h2>Residual Audit History</h2>
+        {state.auditLoading ? (
+          <div>Loading audit history...</div>
+        ) : state.auditError ? (
+          <div>Error loading audit history: {state.auditError}</div>
+        ) : (
+          <Table
+            columns={auditColumns}
+            dataSource={state.auditData}
+            rowKey="crc9f_residualscrubauditid"
+            pagination={false}
+            size="middle"
+            scroll={{ x: 1200 }}
+          />
+        )}
+      </div>
 
       <ResidualStatusModal
         isVisible={state.isModalVisible}
