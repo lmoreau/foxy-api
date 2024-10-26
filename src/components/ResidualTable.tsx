@@ -30,177 +30,189 @@ const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate
   );
 };
 
-const columns: ColumnsType<TableRecord> = [
-  {
-    title: 'Description/Product',
-    key: 'description',
-    width: '35%',
-    render: (_, record) => {
-      if ('children' in record) {
-        return (
-          <div>
-            <div style={{ fontWeight: 'bold' }}>
-              <span style={{ color: '#1890ff' }}>{record.accountId}</span>
-              {' - '}
-              <span>{record.companyName}</span>
-            </div>
-            <div style={{ marginTop: 4 }}>
-              <Tag color="blue">Residual Total: {record.totalResidualAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
-              <Tag color="green">Wireline Total: {record.totalWirelineCharges.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
-            </div>
-          </div>
-        );
-      }
-
-      const isMerged = record.type === 'merged';
-      const isWireline = record.type === 'wireline';
-      const mergedRecord = record as MergedRecord;
-      const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-      const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
-
-      if (isMerged || isWireline) {
-        const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-        return (
-          <>
-            <Tag color={isMerged ? 'purple' : 'green'}>
-              {isMerged ? 'Merged' : 'Wireline'}
-            </Tag>
-            <span>&nbsp;</span>
-            {r.foxy_description || 'No Description'}
-            {r.foxy_serviceid && (
-              <>
-                {' '}
-                <Tag color="blue">({r.foxy_serviceid})</Tag>
-              </>
-            )}
-            {r.foxy_quantity > 1 && ` x ${r.foxy_quantity}`}
-            {r.foxy_contractterm && ` - ${r.foxy_contractterm} months`}
-          </>
-        );
-      }
-
-      return (
-        <>
-          <Tag color="blue">Residual</Tag>
-          <span>&nbsp;</span>
-          {residualRecord?.foxyflow_product}
-        </>
-      );
-    },
-  },
-  {
-    title: 'Service Details',
-    key: 'serviceDetails',
-    width: '15%',
-    render: (_, record) => {
-      if ('children' in record) return null;
-
-      const isMerged = record.type === 'merged';
-      const isWireline = record.type === 'wireline';
-      const mergedRecord = record as MergedRecord;
-      const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-      const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
-
-      if (isMerged || isWireline) {
-        const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-        return (
-          r.foxy_addressline1 && (
-            <Tooltip title={`${r.foxy_city}, ${r.foxy_province} ${r.foxy_postalcode}`}>
-              {r.foxy_addressline1}
-            </Tooltip>
-          )
-        );
-      }
-
-      return residualRecord ? (
-        <>
-          Billing Number: {residualRecord.foxyflow_billingnumber}<br />
-          Code: {residualRecord.foxyflow_charge_item_code}
-        </>
-      ) : null;
-    },
-  },
-  {
-    title: 'Contract Start/End',
-    key: 'dates',
-    width: '25%',
-    render: (_, record) => {
-      if ('children' in record) return null;
-
-      const isMerged = record.type === 'merged';
-      const isWireline = record.type === 'wireline';
-      const mergedRecord = record as MergedRecord;
-      const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-
-      if (isMerged || isWireline) {
-        const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-        return (
-          <DateRange 
-            startDate={r.foxy_billingeffectivedate}
-            endDate={r.foxy_estimatedenddate}
-          />
-        );
-      }
-
-      return null; // Return null for residual records
-    },
-  },
-  {
-    title: 'Site Name',
-    key: 'company',
-    width: '15%',
-    render: (_, record) => {
-      if ('children' in record) return null;
-
-      const isMerged = record.type === 'merged';
-      const isWireline = record.type === 'wireline';
-      const mergedRecord = record as MergedRecord;
-      const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-      const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
-
-      if (isMerged || isWireline) {
-        const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-        return r.foxy_sitename;
-      }
-
-      return residualRecord ? residualRecord.foxyflow_rogerscompanyname : null;
-    },
-  },
-  {
-    title: 'Amount',
-    key: 'amount',
-    width: '10%',
-    render: (_, record) => {
-      if ('children' in record) return null;
-
-      const isMerged = record.type === 'merged';
-      const isWireline = record.type === 'wireline';
-      const mergedRecord = record as MergedRecord;
-      const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-      const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
-
-      let value: string | undefined;
-      if (isMerged) {
-        value = mergedRecord.wirelineRecord.foxy_charges;
-      } else if (isWireline) {
-        value = wirelineRecord!.foxy_charges;
-      } else if (residualRecord) {
-        value = residualRecord.foxyflow_actuals;
-      }
-
-      if (!value) return null;
-      const num = parseFloat(value.toString());
-      return (
-        <Tag color={isMerged ? 'purple' : isWireline ? 'green' : 'blue'}>
-          {num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-        </Tag>
-      );
-    },
-  }
-];
-
 export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
   const [showMergedOnly, setShowMergedOnly] = useState(false);
+
+  const columns: ColumnsType<TableRecord> = [
+    {
+      title: () => (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>Description/Product</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
+            <Switch 
+              size="small"
+              checked={showMergedOnly}
+              onChange={setShowMergedOnly}
+            />
+            <span style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>Merged</span>
+          </div>
+        </div>
+      ),
+      key: 'description',
+      width: '35%',
+      render: (_, record) => {
+        if ('children' in record) {
+          return (
+            <div>
+              <div style={{ fontWeight: 'bold' }}>
+                <span style={{ color: '#1890ff' }}>{record.accountId}</span>
+                {' - '}
+                <span>{record.companyName}</span>
+              </div>
+              <div style={{ marginTop: 4 }}>
+                <Tag color="blue">Residual Total: {record.totalResidualAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
+                <Tag color="green">Wireline Total: {record.totalWirelineCharges.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
+              </div>
+            </div>
+          );
+        }
+
+        const isMerged = record.type === 'merged';
+        const isWireline = record.type === 'wireline';
+        const mergedRecord = record as MergedRecord;
+        const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
+        const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
+
+        if (isMerged || isWireline) {
+          const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
+          return (
+            <>
+              <Tag color={isMerged ? 'purple' : 'green'}>
+                {isMerged ? 'Merged' : 'Wireline'}
+              </Tag>
+              <span>&nbsp;</span>
+              {r.foxy_description || 'No Description'}
+              {r.foxy_serviceid && (
+                <>
+                  {' '}
+                  <Tag color="blue">({r.foxy_serviceid})</Tag>
+                </>
+              )}
+              {r.foxy_quantity > 1 && ` x ${r.foxy_quantity}`}
+              {r.foxy_contractterm && ` - ${r.foxy_contractterm} months`}
+            </>
+          );
+        }
+
+        return (
+          <>
+            <Tag color="blue">Residual</Tag>
+            <span>&nbsp;</span>
+            {residualRecord?.foxyflow_product}
+          </>
+        );
+      },
+    },
+    {
+      title: 'Service Details',
+      key: 'serviceDetails',
+      width: '15%',
+      render: (_, record) => {
+        if ('children' in record) return null;
+
+        const isMerged = record.type === 'merged';
+        const isWireline = record.type === 'wireline';
+        const mergedRecord = record as MergedRecord;
+        const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
+        const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
+
+        if (isMerged || isWireline) {
+          const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
+          return (
+            r.foxy_addressline1 && (
+              <Tooltip title={`${r.foxy_city}, ${r.foxy_province} ${r.foxy_postalcode}`}>
+                {r.foxy_addressline1}
+              </Tooltip>
+            )
+          );
+        }
+
+        return residualRecord ? (
+          <>
+            Billing Number: {residualRecord.foxyflow_billingnumber}<br />
+            Code: {residualRecord.foxyflow_charge_item_code}
+          </>
+        ) : null;
+      },
+    },
+    {
+      title: 'Contract Start/End',
+      key: 'dates',
+      width: '25%',
+      render: (_, record) => {
+        if ('children' in record) return null;
+
+        const isMerged = record.type === 'merged';
+        const isWireline = record.type === 'wireline';
+        const mergedRecord = record as MergedRecord;
+        const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
+
+        if (isMerged || isWireline) {
+          const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
+          return (
+            <DateRange 
+              startDate={r.foxy_billingeffectivedate}
+              endDate={r.foxy_estimatedenddate}
+            />
+          );
+        }
+
+        return null; // Return null for residual records
+      },
+    },
+    {
+      title: 'Site Name',
+      key: 'company',
+      width: '15%',
+      render: (_, record) => {
+        if ('children' in record) return null;
+
+        const isMerged = record.type === 'merged';
+        const isWireline = record.type === 'wireline';
+        const mergedRecord = record as MergedRecord;
+        const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
+        const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
+
+        if (isMerged || isWireline) {
+          const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
+          return r.foxy_sitename;
+        }
+
+        return residualRecord ? residualRecord.foxyflow_rogerscompanyname : null;
+      },
+    },
+    {
+      title: 'Amount',
+      key: 'amount',
+      width: '10%',
+      render: (_, record) => {
+        if ('children' in record) return null;
+
+        const isMerged = record.type === 'merged';
+        const isWireline = record.type === 'wireline';
+        const mergedRecord = record as MergedRecord;
+        const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
+        const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
+
+        let value: string | undefined;
+        if (isMerged) {
+          value = mergedRecord.wirelineRecord.foxy_charges;
+        } else if (isWireline) {
+          value = wirelineRecord!.foxy_charges;
+        } else if (residualRecord) {
+          value = residualRecord.foxyflow_actuals;
+        }
+
+        if (!value) return null;
+        const num = parseFloat(value.toString());
+        return (
+          <Tag color={isMerged ? 'purple' : isWireline ? 'green' : 'blue'}>
+            {num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+          </Tag>
+        );
+      },
+    }
+  ];
 
   const processedData = useMemo(() => {
     return data.map(accountGroup => {
@@ -239,13 +251,6 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
 
   return (
     <>
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Switch 
-          checked={showMergedOnly}
-          onChange={setShowMergedOnly}
-        />
-        <span>Show Merged Records Only</span>
-      </div>
       <Table
         columns={columns}
         dataSource={processedData}
