@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Table, Tag, Tooltip, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { SortOrder } from 'antd/es/table/interface';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
@@ -125,7 +126,7 @@ export const ResidualDetails: React.FC = () => {
     [state.residualData, state.wirelineData]
   );
 
-  const opportunityColumns = [
+  const opportunityColumns: ColumnsType<OpportunityRecord> = [
     { 
       title: 'Name', 
       dataIndex: 'name',
@@ -143,6 +144,26 @@ export const ResidualDetails: React.FC = () => {
             {text || 'N/A'}
           </a>
         </Tooltip>
+      )
+    },
+    { 
+      title: 'Actual Close Date', 
+      dataIndex: 'actualclosedate', 
+      width: '15%',
+      defaultSortOrder: 'ascend' as SortOrder,
+      sorter: (a: OpportunityRecord, b: OpportunityRecord) => {
+        const dateA = a.actualclosedate ? new Date(a.actualclosedate).getTime() : 0;
+        const dateB = b.actualclosedate ? new Date(b.actualclosedate).getTime() : 0;
+        return dateB - dateA; // Newest first
+      },
+      render: (text: string) => (
+        <Tag color="purple">
+          {text ? new Date(text).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : 'N/A'}
+        </Tag>
       )
     },
     { 
@@ -195,20 +216,6 @@ export const ResidualDetails: React.FC = () => {
         const { label, color } = getStateCodeLabel(code);
         return <Tag color={color}>{label}</Tag>;
       }
-    },
-    { 
-      title: 'Actual Close Date', 
-      dataIndex: 'actualclosedate', 
-      width: '10%',
-      render: (text: string) => (
-        <Tag color="purple">
-          {text ? new Date(text).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          }) : 'N/A'}
-        </Tag>
-      )
     }
   ];
 
