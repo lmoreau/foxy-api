@@ -51,6 +51,19 @@ const getStatusColor = (status: number): string => {
   return colorMap[status] || 'default';
 };
 
+const getStateCodeLabel = (code: number): { label: string; color: string } => {
+  switch (code) {
+    case 0:
+      return { label: 'Open', color: 'processing' };
+    case 1:
+      return { label: 'Won', color: 'success' };
+    case 2:
+      return { label: 'Lost', color: 'error' };
+    default:
+      return { label: 'Unknown', color: 'default' };
+  }
+};
+
 export const ResidualDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [state, setState] = useState({
@@ -162,7 +175,7 @@ export const ResidualDetails: React.FC = () => {
     { 
       title: 'Opportunity Type',
       dataIndex: 'foxy_opportunitytype',
-      width: '20%',
+      width: '15%',
       render: (code: number) => {
         const { label, color } = getOpportunityTypeInfo(code);
         return <Tag color={color}>{label}</Tag>;
@@ -171,8 +184,17 @@ export const ResidualDetails: React.FC = () => {
     { 
       title: 'Status', 
       dataIndex: 'statuscode', 
-      width: '15%',
+      width: '10%',
       render: (code: number) => getStatusCodeLabel(code) || 'N/A' 
+    },
+    { 
+      title: 'State', 
+      dataIndex: 'statecode', 
+      width: '10%',
+      render: (code: number) => {
+        const { label, color } = getStateCodeLabel(code);
+        return <Tag color={color}>{label}</Tag>;
+      }
     },
     { 
       title: 'Actual Close Date', 
@@ -348,4 +370,4 @@ export const ResidualDetails: React.FC = () => {
       />
     </div>
   );
-}
+};
