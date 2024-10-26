@@ -1,5 +1,5 @@
-import React from 'react';
-import { Table, Tag, Tooltip } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Table, Tag, Tooltip, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRecord, WirelineRecord, ResidualRecord, MergedRecord } from '../types/residualTypes';
 import { formatDescription } from '../utils/residualUtils';
@@ -200,11 +200,55 @@ const columns: ColumnsType<TableRecord> = [
 ];
 
 export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
+  const [showMergedOnly, setShowMergedOnly] = useState(false);
+
+  const processedData = useMemo(() => {
+    return data.map(accountGroup => {
+      if (!('children' in accountGroup)) return accountGroup;
+
+      // Sort children to put merged records first, then sort by amount within each type
+      const sortedChildren = [...accountGroup.children].sort((a, b) => {
+        const aIsMerged = a.type === 'merged';
+        const bIsMerged = b.type === 'merged';
+        
+        if (aIsMerged && !bIsMerged) return -1;
+        if (!aIsMerged && bIsMerged) return 1;
+        
+        // If both are merged or both are not merged, sort by amount
+        const aAmount = parseFloat(a.type === 'merged' ? (a as MergedRecord).wirelineRecord.foxy_charges : 
+                      a.type === 'wireline' ? (a as WirelineRecord).foxy_charges :
+                      (a as ResidualRecord).foxyflow_actuals) || 0;
+        const bAmount = parseFloat(b.type === 'merged' ? (b as MergedRecord).wirelineRecord.foxy_charges :
+                      b.type === 'wireline' ? (b as WirelineRecord).foxy_charges :
+                      (b as ResidualRecord).foxyflow_actuals) || 0;
+        
+        return bAmount - aAmount;
+      });
+
+      // Filter children if showMergedOnly is true
+      const filteredChildren = showMergedOnly 
+        ? sortedChildren.filter(record => record.type === 'merged')
+        : sortedChildren;
+
+      return {
+        ...accountGroup,
+        children: filteredChildren
+      };
+    });
+  }, [data, showMergedOnly]);
+
   return (
     <>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Switch 
+          checked={showMergedOnly}
+          onChange={setShowMergedOnly}
+        />
+        <span>Show Merged Records Only</span>
+      </div>
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={processedData}
         rowKey="key"
         pagination={false}
         scroll={{ x: 1500 }}
