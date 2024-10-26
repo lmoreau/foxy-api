@@ -131,7 +131,6 @@ const columns: ColumnsType<TableRecord> = [
       const isWireline = record.type === 'wireline';
       const mergedRecord = record as MergedRecord;
       const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-      const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
 
       if (isMerged || isWireline) {
         const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
@@ -143,7 +142,7 @@ const columns: ColumnsType<TableRecord> = [
         );
       }
 
-      return residualRecord ? residualRecord.foxyflow_month : null;
+      return null; // Return null for residual records
     },
   },
   {
