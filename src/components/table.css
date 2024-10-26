@@ -1,0 +1,8 @@
+.rounded-table .ant-table {
+  border-radius: 8px;
+}
+
+.rounded-table .ant-table-container {
+  border-radius: 8px;
+  overflow: hidden;
+}

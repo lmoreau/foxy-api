@@ -11,6 +11,7 @@ import { ResidualStatusModal } from './ResidualStatusModal';
 import { formatCurrency } from '../utils/formatters';
 import { getStatusCodeLabel } from '../utils/statusCodeMapper';
 import { getOpportunityTypeInfo } from '../utils/opportunityTypeMapper';
+import './table.css';
 
 interface AuditRecord {
   crc9f_residualscrubauditid: string;
@@ -303,6 +304,7 @@ export const ResidualDetails: React.FC = () => {
           pagination={false}
           size="middle"
           scroll={{ x: 1500 }}
+          className="rounded-table"
         />
       )}
 
@@ -320,6 +322,7 @@ export const ResidualDetails: React.FC = () => {
             pagination={false}
             size="middle"
             scroll={{ x: 1200 }}
+            className="rounded-table"
           />
         )}
       </div>

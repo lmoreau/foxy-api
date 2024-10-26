@@ -219,6 +219,22 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
           .ant-table-row-expand-icon-cell {
             padding-right: 0 !important;
           }
+          .ant-table {
+            border-radius: 8px !important;
+          }
+          .ant-table-container {
+            border-radius: 8px !important;
+            overflow: hidden;
+          }
+          .ant-table-content {
+            border-radius: 8px !important;
+          }
+          .ant-table-body {
+            border-radius: 0 0 8px 8px !important;
+          }
+          .ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+            border-bottom: none;
+          }
         `}
       </style>
     </>
