@@ -3,7 +3,8 @@ import axios from "axios";
 import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
-export async function getAccountById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+// Define the function
+const httpFunction = async function(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
         return corsResponse;
@@ -69,10 +70,11 @@ export async function getAccountById(request: HttpRequest, context: InvocationCo
             })
         };
     }
-}
+};
 
+// Register the function with the app
 app.http('getAccountById', {
     methods: ['GET', 'OPTIONS'],
     authLevel: 'anonymous',
-    handler: getAccountById
+    handler: httpFunction
 });
