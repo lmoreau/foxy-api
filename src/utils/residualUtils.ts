@@ -68,9 +68,17 @@ const createMergedRecord = (
 const handleMultipleMatches = (
   residuals: ResidualRecord[],
   wirelines: WirelineRecord[],
-  accountGroup: GroupedAccountData,
+  accountId: string,
   globalIndex: number
-): void => {
+): {
+  records: (ResidualRecord | WirelineRecord | MergedRecord)[];
+  totalResidualAmount: number;
+  totalWirelineCharges: number;
+} => {
+  const result: (ResidualRecord | WirelineRecord | MergedRecord)[] = [];
+  let totalResidualAmount = 0;
+  let totalWirelineCharges = 0;
+
   // Check if all residuals are MULTISER
   const allMultiser = residuals.every(r => r.foxyflow_product === 'MULTISER');
   
@@ -80,49 +88,55 @@ const handleMultipleMatches = (
     
     for (let i = 0; i < maxPairs; i++) {
       const mergedRecord = createMergedRecord(wirelines[i], residuals[i], globalIndex + i);
-      accountGroup.children.push(mergedRecord);
-      accountGroup.totalResidualAmount += normalizeAmount(residuals[i].foxyflow_actuals);
-      accountGroup.totalWirelineCharges += normalizeAmount(wirelines[i].foxy_charges);
+      result.push(mergedRecord);
+      totalResidualAmount += normalizeAmount(residuals[i].foxyflow_actuals);
+      totalWirelineCharges += normalizeAmount(wirelines[i].foxy_charges);
     }
     
     // Add remaining records separately
     residuals.slice(maxPairs).forEach(record => {
-      accountGroup.children.push({
+      result.push({
         ...record,
         type: 'residual',
-        key: generateUniqueKey('residual', globalIndex++, accountGroup.accountId, record.foxyflow_product)
+        key: generateUniqueKey('residual', globalIndex++, accountId, record.foxyflow_product)
       });
-      accountGroup.totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
+      totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
     });
     
     wirelines.slice(maxPairs).forEach(record => {
-      accountGroup.children.push({
+      result.push({
         ...record,
         type: 'wireline',
-        key: generateUniqueKey('wireline', globalIndex++, accountGroup.accountId, record.foxy_serviceid)
+        key: generateUniqueKey('wireline', globalIndex++, accountId, record.foxy_serviceid)
       });
-      accountGroup.totalWirelineCharges += normalizeAmount(record.foxy_charges);
+      totalWirelineCharges += normalizeAmount(record.foxy_charges);
     });
   } else {
     // Non-MULTISER or mixed case - keep all records separate
     residuals.forEach(record => {
-      accountGroup.children.push({
+      result.push({
         ...record,
         type: 'residual',
-        key: generateUniqueKey('residual', globalIndex++, accountGroup.accountId, record.foxyflow_product)
+        key: generateUniqueKey('residual', globalIndex++, accountId, record.foxyflow_product)
       });
-      accountGroup.totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
+      totalResidualAmount += normalizeAmount(record.foxyflow_actuals);
     });
 
     wirelines.forEach(record => {
-      accountGroup.children.push({
+      result.push({
         ...record,
         type: 'wireline',
-        key: generateUniqueKey('wireline', globalIndex++, accountGroup.accountId, record.foxy_serviceid)
+        key: generateUniqueKey('wireline', globalIndex++, accountId, record.foxy_serviceid)
       });
-      accountGroup.totalWirelineCharges += normalizeAmount(record.foxy_charges);
+      totalWirelineCharges += normalizeAmount(record.foxy_charges);
     });
   }
+
+  return {
+    records: result,
+    totalResidualAmount,
+    totalWirelineCharges
+  };
 };
 
 export const combineResidualData = (
@@ -221,13 +235,21 @@ export const combineResidualData = (
         accountGroup.totalWirelineCharges += normalizeAmount(wirelines[0].foxy_charges);
       } else {
         // Handle multiple matches (including MULTISER case)
-        handleMultipleMatches(residuals, wirelines, accountGroup, globalIndex);
+        const { records, totalResidualAmount, totalWirelineCharges } = handleMultipleMatches(
+          residuals,
+          wirelines,
+          accountId,
+          globalIndex
+        );
+        children.push(...records);
+        accountGroup.totalResidualAmount += totalResidualAmount;
+        accountGroup.totalWirelineCharges += totalWirelineCharges;
       }
       globalIndex++;
     });
 
     // Sort children by amount in descending order
-    accountGroup.children = accountGroup.children.sort((a, b) => {
+    accountGroup.children = children.sort((a, b) => {
       const amountA = getRecordAmount(a);
       const amountB = getRecordAmount(b);
       return amountB - amountA;
