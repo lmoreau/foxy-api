@@ -285,6 +285,7 @@ export const ResidualDetails: React.FC = () => {
         </div>
       </div>
 
+      <h2>Billing Services</h2>
       <div style={{ marginTop: '20px' }}>
         <ResidualTable data={combinedData} />
       </div>
