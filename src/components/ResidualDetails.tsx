@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Table, Tag, Tooltip } from 'antd';
+import { Button, Table, Tag, Tooltip, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
@@ -258,74 +258,95 @@ export const ResidualDetails: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-        <h1 style={{ margin: 0 }}>{state.accountData.name}</h1>
-        <Button type="primary" onClick={() => setState(prev => ({ ...prev, isModalVisible: true }))}>
-          Edit Status
-        </Button>
-        <Button onClick={() => window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${id}`, '_blank')}>
-          View in Foxy
-        </Button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '32px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>Wireline Residuals:</span>
-          <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>Services:</span>
-          {state.accountData.foxy_cable && <Tag color={serviceColors.Cable}>Cable</Tag>}
-          {state.accountData.foxy_datacentre && <Tag color={serviceColors['Data Centre']}>Data Centre</Tag>}
-          {state.accountData.foxy_fibreinternet && <Tag color={serviceColors['Fibre Internet']}>Fibre Internet</Tag>}
-          {state.accountData.foxy_gpon && <Tag color={serviceColors.GPON}>GPON</Tag>}
-          {state.accountData.foxy_microsoft365 && <Tag color={serviceColors['Microsoft 365']}>Microsoft 365</Tag>}
-          {state.accountData.foxy_res && <Tag color={serviceColors.RES}>RES</Tag>}
-          {state.accountData.foxy_sip && <Tag color={serviceColors.SIP}>SIP</Tag>}
-          {state.accountData.foxy_unison && <Tag color={serviceColors.Unison}>Unison</Tag>}
-        </div>
-      </div>
-
-      <h2>Billing Services</h2>
-      <div style={{ marginTop: '20px' }}>
-        <ResidualTable data={combinedData} />
-      </div>
-
-      <h2>Opportunities</h2>
-      {state.opportunitiesLoading ? (
-        <div>Loading opportunities...</div>
-      ) : state.opportunitiesError ? (
-        <div>Error loading opportunities: {state.opportunitiesError}</div>
-      ) : (
-        <Table
-          columns={opportunityColumns}
-          dataSource={state.opportunities}
-          rowKey="opportunityid"
-          pagination={false}
-          size="middle"
-          scroll={{ x: 1500 }}
-          className="rounded-table"
-        />
-      )}
-
       <div style={{ marginBottom: '24px' }}>
-        <h2>Residual Audit History</h2>
-        {state.auditLoading ? (
-          <div>Loading audit history...</div>
-        ) : state.auditError ? (
-          <div>Error loading audit history: {state.auditError}</div>
-        ) : (
-          <Table
-            columns={auditColumns}
-            dataSource={state.auditData}
-            rowKey="crc9f_residualscrubauditid"
-            pagination={false}
-            size="middle"
-            scroll={{ x: 1200 }}
-            className="rounded-table"
-          />
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+          <h1 style={{ margin: 0 }}>{state.accountData.name}</h1>
+          <Button type="primary" onClick={() => setState(prev => ({ ...prev, isModalVisible: true }))}>
+            Edit Status
+          </Button>
+          <Button onClick={() => window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${id}`, '_blank')}>
+            View in Foxy
+          </Button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>Wireline Residuals:</span>
+            <Tag color="blue">{getWirelineResidualsLabel(state.accountData.foxyflow_wirelineresiduals)}</Tag>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>Services:</span>
+            {state.accountData.foxy_cable && <Tag color={serviceColors.Cable}>Cable</Tag>}
+            {state.accountData.foxy_datacentre && <Tag color={serviceColors['Data Centre']}>Data Centre</Tag>}
+            {state.accountData.foxy_fibreinternet && <Tag color={serviceColors['Fibre Internet']}>Fibre Internet</Tag>}
+            {state.accountData.foxy_gpon && <Tag color={serviceColors.GPON}>GPON</Tag>}
+            {state.accountData.foxy_microsoft365 && <Tag color={serviceColors['Microsoft 365']}>Microsoft 365</Tag>}
+            {state.accountData.foxy_res && <Tag color={serviceColors.RES}>RES</Tag>}
+            {state.accountData.foxy_sip && <Tag color={serviceColors.SIP}>SIP</Tag>}
+            {state.accountData.foxy_unison && <Tag color={serviceColors.Unison}>Unison</Tag>}
+          </div>
+        </div>
       </div>
+
+      <Tabs
+        items={[
+          {
+            key: '1',
+            label: 'Billing Profile',
+            children: (
+              <>
+                <h2>Billing Services</h2>
+                <div style={{ marginTop: '20px', marginBottom: '24px' }}>
+                  <ResidualTable data={combinedData} />
+                </div>
+
+                <h2>Opportunities</h2>
+                {state.opportunitiesLoading ? (
+                  <div>Loading opportunities...</div>
+                ) : state.opportunitiesError ? (
+                  <div>Error loading opportunities: {state.opportunitiesError}</div>
+                ) : (
+                  <div style={{ marginBottom: '24px' }}>
+                    <Table
+                      columns={opportunityColumns}
+                      dataSource={state.opportunities}
+                      rowKey="opportunityid"
+                      pagination={false}
+                      size="middle"
+                      scroll={{ x: 1500 }}
+                      className="rounded-table"
+                    />
+                  </div>
+                )}
+
+                <h2>Residual Audit History</h2>
+                {state.auditLoading ? (
+                  <div>Loading audit history...</div>
+                ) : state.auditError ? (
+                  <div>Error loading audit history: {state.auditError}</div>
+                ) : (
+                  <div style={{ marginBottom: '24px' }}>
+                    <Table
+                      columns={auditColumns}
+                      dataSource={state.auditData}
+                      rowKey="crc9f_residualscrubauditid"
+                      pagination={false}
+                      size="middle"
+                      scroll={{ x: 1200 }}
+                      className="rounded-table"
+                    />
+                  </div>
+                )}
+              </>
+            ),
+          },
+          {
+            key: '2',
+            label: 'Callidus Payments',
+            children: <div></div>,
+          }
+        ]}
+      />
 
       <ResidualStatusModal
         isVisible={state.isModalVisible}
