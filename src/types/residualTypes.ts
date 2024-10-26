@@ -79,6 +79,16 @@ export interface GroupedAccountData {
   children: (ResidualRecord | WirelineRecord | MergedRecord)[];
 }
 
+export interface AuditRecord {
+  crc9f_residualscrubauditid: string;
+  crc9f_newstatus: number;
+  crc9f_updatedon: string;
+  crc9f_note?: string;
+  owninguser: {
+    fullname: string;
+  };
+}
+
 export type TableRecord = GroupedAccountData | ResidualRecord | WirelineRecord | MergedRecord;
 
 export interface OpportunityRecord {
