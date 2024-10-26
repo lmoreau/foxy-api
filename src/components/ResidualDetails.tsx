@@ -116,7 +116,7 @@ export const ResidualDetails: React.FC = () => {
     { 
       title: 'Name', 
       dataIndex: 'name',
-      width: '15%',
+      width: '20%',
       ellipsis: {
         showTitle: false
       },
@@ -136,12 +136,20 @@ export const ResidualDetails: React.FC = () => {
       title: 'Actual Value', 
       dataIndex: 'actualvalue', 
       width: '15%', 
-      render: (value: number) => formatCurrency(value) || 'N/A' 
+      render: (value: number) => {
+        const amount = value || 0;
+        const color = amount === 0 ? 'red' : 'green';
+        return (
+          <Tag color={color}>
+            {formatCurrency(amount)}
+          </Tag>
+        );
+      }
     },
     { 
       title: 'SFDC Opportunity ID', 
       dataIndex: 'foxy_sfdcoppid', 
-      width: '15%',
+      width: '20%',
       ellipsis: {
         showTitle: false
       },
@@ -154,7 +162,7 @@ export const ResidualDetails: React.FC = () => {
     { 
       title: 'Opportunity Type',
       dataIndex: 'foxy_opportunitytype',
-      width: '15%',
+      width: '20%',
       render: (code: number) => {
         const { label, color } = getOpportunityTypeInfo(code);
         return <Tag color={color}>{label}</Tag>;
@@ -170,32 +178,14 @@ export const ResidualDetails: React.FC = () => {
       title: 'Actual Close Date', 
       dataIndex: 'actualclosedate', 
       width: '10%',
-      render: (text: string) => text || 'N/A' 
-    },
-    { 
-      title: 'Foxy Stage', 
-      dataIndex: 'foxy_foxystage', 
-      width: '8%',
-      ellipsis: {
-        showTitle: false
-      },
       render: (text: string) => (
-        <Tooltip placement="topLeft" title={text || 'N/A'}>
-          {text || 'N/A'}
-        </Tooltip>
-      )
-    },
-    { 
-      title: 'Step Name', 
-      dataIndex: 'stepname', 
-      width: '7%',
-      ellipsis: {
-        showTitle: false
-      },
-      render: (text: string) => (
-        <Tooltip placement="topLeft" title={text || 'N/A'}>
-          {text || 'N/A'}
-        </Tooltip>
+        <Tag color="purple">
+          {text ? new Date(text).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : 'N/A'}
+        </Tag>
       )
     }
   ];

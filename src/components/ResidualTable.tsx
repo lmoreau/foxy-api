@@ -269,7 +269,6 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       {showMatchAlert && (
         <Alert
           message="Perfect Match!"
-          description="All records are merged and totals match perfectly."
           type="success"
           showIcon
           style={{ marginBottom: 16 }}
