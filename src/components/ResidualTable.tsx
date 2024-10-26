@@ -8,6 +8,28 @@ interface ResidualTableProps {
   data: TableRecord[];
 }
 
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toISOString().split('T')[0];
+};
+
+const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate, endDate }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Tag color="purple">{formatDate(startDate)}</Tag>
+      <span style={{ 
+        color: '#666', 
+        margin: '0 4px',
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        ⟶
+      </span>
+      <Tag color="red">{formatDate(endDate)}</Tag>
+    </div>
+  );
+};
+
 const columns: ColumnsType<TableRecord> = [
   {
     title: 'Description/Product',
@@ -87,7 +109,7 @@ const columns: ColumnsType<TableRecord> = [
   {
     title: 'Dates',
     key: 'dates',
-    width: '20%',
+    width: '25%',
     render: (_, record) => {
       if ('children' in record) return null;
 
@@ -99,21 +121,11 @@ const columns: ColumnsType<TableRecord> = [
 
       if (isMerged || isWireline) {
         const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-        const formatDate = (dateStr: string) => {
-          const date = new Date(dateStr);
-          return date.toISOString().split('T')[0];
-        };
-        
         return (
-          <>
-            <Tag color="purple">
-              Billing Start: {formatDate(r.foxy_billingeffectivedate)}
-            </Tag>
-            <br />
-            <Tag color="red">
-              Contract End: {formatDate(r.foxy_estimatedenddate)}
-            </Tag>
-          </>
+          <DateRange 
+            startDate={r.foxy_billingeffectivedate}
+            endDate={r.foxy_estimatedenddate}
+          />
         );
       }
 
@@ -123,7 +135,7 @@ const columns: ColumnsType<TableRecord> = [
   {
     title: 'Company Info',
     key: 'company',
-    width: '20%',
+    width: '15%',
     render: (_, record) => {
       if ('children' in record) return null;
 
@@ -137,7 +149,6 @@ const columns: ColumnsType<TableRecord> = [
         const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
         return (
           <>
-            {r.foxy_companyname}<br />
             Site: {r.foxy_sitename}
           </>
         );
