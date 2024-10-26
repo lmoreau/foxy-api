@@ -214,7 +214,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
     }
   ];
 
-  const { processedData, allMergedWithMatchingTotals } = useMemo(() => {
+  const { processedData, showMatchAlert } = useMemo(() => {
     const processed = data.map(accountGroup => {
       if (!('children' in accountGroup)) return accountGroup;
 
@@ -248,23 +248,25 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       };
     });
 
-    // Check if all records are merged and totals match
-    const allMerged = processed.every(group => {
+    // Check if there are rows and totals match
+    const hasMatchingTotals = processed.every(group => {
       if (!('children' in group)) return false;
-      return group.children.every(record => record.type === 'merged') && 
-             group.children.length > 0 &&
+      return group.children.length > 0 && 
              Math.abs(group.totalResidualAmount - group.totalWirelineCharges) < 0.01; // Account for floating point precision
     });
 
+    // Only show alert if there are rows and totals match
+    const showAlert = processed.some(group => 'children' in group && group.children.length > 0) && hasMatchingTotals;
+
     return {
       processedData: processed,
-      allMergedWithMatchingTotals: allMerged
+      showMatchAlert: showAlert
     };
   }, [data, showMergedOnly]);
 
   return (
     <>
-      {allMergedWithMatchingTotals && (
+      {showMatchAlert && (
         <Alert
           message="Perfect Match!"
           description="All records are merged and totals match perfectly."
