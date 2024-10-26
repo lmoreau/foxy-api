@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Table, Tag, Tooltip, Switch } from 'antd';
+import { Table, Tag, Tooltip, Switch, Alert } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRecord, WirelineRecord, ResidualRecord, MergedRecord } from '../types/residualTypes';
 import { formatDescription } from '../utils/residualUtils';
@@ -214,8 +214,8 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
     }
   ];
 
-  const processedData = useMemo(() => {
-    return data.map(accountGroup => {
+  const { processedData, allMergedWithMatchingTotals } = useMemo(() => {
+    const processed = data.map(accountGroup => {
       if (!('children' in accountGroup)) return accountGroup;
 
       // Sort children to put merged records first, then sort by amount within each type
@@ -247,10 +247,32 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         children: filteredChildren
       };
     });
+
+    // Check if all records are merged and totals match
+    const allMerged = processed.every(group => {
+      if (!('children' in group)) return false;
+      return group.children.every(record => record.type === 'merged') && 
+             group.children.length > 0 &&
+             Math.abs(group.totalResidualAmount - group.totalWirelineCharges) < 0.01; // Account for floating point precision
+    });
+
+    return {
+      processedData: processed,
+      allMergedWithMatchingTotals: allMerged
+    };
   }, [data, showMergedOnly]);
 
   return (
     <>
+      {allMergedWithMatchingTotals && (
+        <Alert
+          message="Perfect Match!"
+          description="All records are merged and totals match perfectly."
+          type="success"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
       <Table
         columns={columns}
         dataSource={processedData}
