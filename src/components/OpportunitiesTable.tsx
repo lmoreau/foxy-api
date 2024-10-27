@@ -12,7 +12,7 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
   { 
     title: 'Name', 
     dataIndex: 'name',
-    width: '20%',
+    width: '30%',
     ellipsis: {
       showTitle: false
     },
@@ -46,12 +46,34 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
       }) : 'N/A'
   },
   { 
-    title: 'Actual Value', 
+    title: 'Amount', 
     dataIndex: 'actualvalue', 
-    width: '15%', 
+    width: '12%', 
+    render: (_: number, record: OpportunityRecord) => {
+      // Show actualvalue for WON opportunities, estimatedvalue for OPEN/LOST
+      const amount = record.statecode === 1 ? record.actualvalue : record.estimatedvalue;
+      const value = amount || 0;
+      
+      // Color based on state: red for LOST, green for WON, blue for OPEN
+      let color;
+      if (record.statecode === 2) color = 'red';      // LOST
+      else if (record.statecode === 1) color = 'green'; // WON
+      else color = 'blue';                             // OPEN
+
+      return (
+        <Tag color={color}>
+          {formatCurrency(value)}
+        </Tag>
+      );
+    }
+  },
+  { 
+    title: 'Estimated Value', 
+    dataIndex: 'estimatedvalue', 
+    width: '12%', 
     render: (value: number) => {
       const amount = value || 0;
-      const color = amount === 0 ? 'red' : 'green';
+      const color = amount === 0 ? 'red' : 'blue';
       return (
         <Tag color={color}>
           {formatCurrency(amount)}
@@ -62,7 +84,7 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
   { 
     title: 'SFDC Opportunity ID', 
     dataIndex: 'foxy_sfdcoppid', 
-    width: '20%',
+    width: '15%',
     ellipsis: {
       showTitle: false
     },

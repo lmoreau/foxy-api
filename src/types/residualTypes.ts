@@ -102,6 +102,7 @@ export interface OpportunityRecord {
   statuscode: number;
   statecode: number;
   actualvalue?: number;
+  estimatedvalue?: number;
   foxy_opportunitytype?: number;
   foxy_sfdcoppid?: string;
 }

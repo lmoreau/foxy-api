@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tabs } from 'antd';
+import { Tabs, Card, Row, Col, Statistic } from 'antd';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
@@ -9,6 +9,7 @@ import { ResidualStatusModal } from './ResidualStatusModal';
 import { AccountHeader } from './AccountHeader';
 import { OpportunitiesTable } from './OpportunitiesTable';
 import { AuditTable } from './AuditTable';
+import { formatCurrency } from '../utils/formatters';
 
 interface State {
   accountData: AccountData | null;
@@ -92,16 +93,10 @@ export const ResidualDetails: React.FC = () => {
 
     setState(prev => ({ ...prev, updating: true }));
     try {
-      // Create audit record first
       await createResidualScrubAudit(id, state.selectedValue, state.notes);
-      
-      // Then update the account status
       await updateAccountWirelineResiduals(id, state.selectedValue);
-
-      // Refresh the audit data
       const auditResponse = await listResidualAuditByRows(id);
       
-      // Update local state
       setState(prev => ({
         ...prev,
         isModalVisible: false,
@@ -133,6 +128,31 @@ export const ResidualDetails: React.FC = () => {
     [state.residualData, state.wirelineData]
   );
 
+  const opportunityStats = React.useMemo(() => {
+    const wonOpps = state.opportunities.filter(opp => opp.statecode === 1);
+    const lostOpps = state.opportunities.filter(opp => opp.statecode === 2);
+
+    const wonTotal = wonOpps.reduce((sum, opp) => sum + (opp.actualvalue || 0), 0);
+    const lostTotal = lostOpps.reduce((sum, opp) => sum + (opp.actualvalue || 0), 0);
+
+    const mostRecentWon = wonOpps.length > 0 
+      ? new Date(Math.max(...wonOpps.map(opp => new Date(opp.actualclosedate).getTime()))).toLocaleDateString()
+      : 'N/A';
+
+    const mostRecentLost = lostOpps.length > 0
+      ? new Date(Math.max(...lostOpps.map(opp => new Date(opp.actualclosedate).getTime()))).toLocaleDateString()
+      : 'N/A';
+
+    return {
+      wonCount: wonOpps.length,
+      lostCount: lostOpps.length,
+      wonTotal,
+      lostTotal,
+      mostRecentWon,
+      mostRecentLost
+    };
+  }, [state.opportunities]);
+
   if (state.error) return <div>Error: {state.error}</div>;
   if (state.loading || !state.accountData) return <div>Loading...</div>;
 
@@ -143,6 +163,36 @@ export const ResidualDetails: React.FC = () => {
         onEditStatus={handleOpenModal}
         accountId={id || ''}
       />
+
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="Won Opportunities"
+              value={opportunityStats.wonCount}
+              suffix={` / ${formatCurrency(opportunityStats.wonTotal)}`}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="Lost Opportunities"
+              value={opportunityStats.lostCount}
+              suffix={` / ${formatCurrency(opportunityStats.lostTotal)}`}
+            />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card>
+            <Statistic
+              title="Most Recent"
+              value={`Won: ${opportunityStats.mostRecentWon}`}
+              suffix={`Lost: ${opportunityStats.mostRecentLost}`}
+            />
+          </Card>
+        </Col>
+      </Row>
 
       <Tabs
         items={[
