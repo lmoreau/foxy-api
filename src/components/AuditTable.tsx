@@ -30,7 +30,7 @@ const auditColumns: ColumnsType<AuditRecord> = [
     }
   },
   {
-    title: 'Created On',
+    title: 'Updated On',
     dataIndex: 'crc9f_updatedon',
     width: '15%',
     minWidth: 150,
@@ -40,12 +40,17 @@ const auditColumns: ColumnsType<AuditRecord> = [
       const dateB = new Date(b.crc9f_updatedon).getTime();
       return dateA - dateB;
     },
-    render: (date: string) => new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric'
+    render: (date: string) => new Date(date).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
     })
   },
   { 
-    title: 'Created By', 
+    title: 'Updated By', 
     dataIndex: ['owninguser', 'fullname'], 
     width: '20%',
     minWidth: 150,
