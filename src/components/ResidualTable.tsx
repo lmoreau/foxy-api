@@ -61,9 +61,9 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
     
     const diff = residualTotal - wirelineTotal;
     if (diff > 0) {
-      return `Residuals are ${diff.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} higher`;
+      return <>Residuals are <span style={{ fontWeight: 'bold' }}>{diff.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span> higher</>;
     } else {
-      return `Wireline is ${Math.abs(diff).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} higher`;
+      return <>Wireline is <span style={{ fontWeight: 'bold' }}>{Math.abs(diff).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span> higher</>;
     }
   };
 
@@ -86,38 +86,43 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       ),
       key: 'description',
       width: '35%',
-      render: (_, record) => {
+      render: (_, record, index) => {
         if ('children' in record) {
           const residualTotal = record.totalResidualAmount;
           const wirelineTotal = record.totalWirelineCharges;
           const totalsMatch = Math.abs(residualTotal - wirelineTotal) < 0.01;
 
-          return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ fontWeight: 'bold' }}>
-                <span style={{ color: '#1890ff' }}>{record.accountId}</span>
-                {' - '}
-                <span>{record.companyName}</span>
+          return {
+            children: (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ fontWeight: 'bold' }}>
+                  <span style={{ color: '#1890ff' }}>{record.accountId}</span>
+                  {' - '}
+                  <span>{record.companyName}</span>
+                </div>
+                {totalsMatch ? (
+                  <Tag color="purple">
+                    Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                  </Tag>
+                ) : (
+                  <>
+                    <Tag color="blue">
+                      Residual Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                    </Tag>
+                    <Tag color="green">
+                      Wireline Total: <span style={{ fontWeight: 'bold' }}>{wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                    </Tag>
+                    <Tag color="orange">
+                      {getTotalsDifference(residualTotal, wirelineTotal)}
+                    </Tag>
+                  </>
+                )}
               </div>
-              {totalsMatch ? (
-                <Tag color="purple">
-                  Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                </Tag>
-              ) : (
-                <>
-                  <Tag color="blue">
-                    Residual Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                  </Tag>
-                  <Tag color="green">
-                    Wireline Total: <span style={{ fontWeight: 'bold' }}>{wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                  </Tag>
-                  <Tag color="orange">
-                    {getTotalsDifference(residualTotal, wirelineTotal)}
-                  </Tag>
-                </>
-              )}
-            </div>
-          );
+            ),
+            props: {
+              colSpan: 5
+            }
+          };
         }
 
         return <DescriptionProductColumn record={record} />;
