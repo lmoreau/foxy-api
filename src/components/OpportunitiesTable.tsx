@@ -38,15 +38,12 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
       const dateB = b.actualclosedate ? new Date(b.actualclosedate).getTime() : 0;
       return dateB - dateA;
     },
-    render: (text: string) => (
-      <Tag color="purple">
-        {text ? new Date(text).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        }) : 'N/A'}
-      </Tag>
-    )
+    render: (text: string) => 
+      text ? new Date(text).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }) : 'N/A'
   },
   { 
     title: 'Actual Value', 
@@ -85,18 +82,17 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
     }
   },
   { 
-    title: 'Status', 
-    dataIndex: 'statuscode', 
-    width: '10%',
-    render: (code: number) => getStatusCodeLabel(code) || 'N/A' 
-  },
-  { 
     title: 'State', 
     dataIndex: 'statecode', 
-    width: '10%',
-    render: (code: number) => {
+    width: '15%',
+    render: (code: number, record: OpportunityRecord) => {
       const { label, color } = getStateCodeLabel(code);
-      return <Tag color={color}>{label}</Tag>;
+      const status = getStatusCodeLabel(record.statuscode);
+      return (
+        <Tooltip title={`Status: ${status || 'N/A'}`}>
+          <Tag color={color}>{label}</Tag>
+        </Tooltip>
+      );
     }
   }
 ];

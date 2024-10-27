@@ -99,4 +99,9 @@ export interface OpportunityRecord {
   actualclosedate: string;
   foxy_foxystage: string;
   stepname: string;
+  statuscode: number;
+  statecode: number;
+  actualvalue?: number;
+  foxy_opportunitytype?: number;
+  foxy_sfdcoppid?: string;
 }
