@@ -22,7 +22,7 @@ export const AccountHeader: React.FC<AccountHeaderProps> = ({ accountData, onEdi
         onClick={() => window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${accountId}`, '_blank')}
         icon={<TeamOutlined />}
       >
-        Open Foxy CRM Account
+        Foxy CRM Account
       </Button>
     </div>
 
