@@ -53,24 +53,16 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
     }
   },
   { 
-    title: 'Amount', 
-    dataIndex: 'actualvalue', 
-    width: '12%', 
-    render: (_: number, record: OpportunityRecord) => {
-      // Show actualvalue for WON opportunities, estimatedvalue for OPEN/LOST
-      const amount = record.statecode === 1 ? record.actualvalue : record.estimatedvalue;
-      const value = amount || 0;
-      
-      // Color based on state: red for LOST, green for WON, blue for OPEN
-      let color;
-      if (record.statecode === 2) color = 'red';      // LOST
-      else if (record.statecode === 1) color = 'green'; // WON
-      else color = 'blue';                             // OPEN
-
+    title: 'State', 
+    dataIndex: 'statecode', 
+    width: '15%',
+    render: (code: number, record: OpportunityRecord) => {
+      const { label, color } = getStateCodeLabel(code);
+      const status = getStatusCodeLabel(record.statuscode);
       return (
-        <Tag color={color} style={{ fontWeight: 'bold' }}>
-          {formatCurrency(value)}
-        </Tag>
+        <Tooltip title={`Status: ${status || 'N/A'}`}>
+          <Tag color={color} style={{ fontWeight: 'bold' }}>{label}</Tag>
+        </Tooltip>
       );
     }
   },
@@ -97,16 +89,24 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
     }
   },
   { 
-    title: 'State', 
-    dataIndex: 'statecode', 
-    width: '15%',
-    render: (code: number, record: OpportunityRecord) => {
-      const { label, color } = getStateCodeLabel(code);
-      const status = getStatusCodeLabel(record.statuscode);
+    title: 'Amount', 
+    dataIndex: 'actualvalue', 
+    width: '12%', 
+    render: (_: number, record: OpportunityRecord) => {
+      // Show actualvalue for WON opportunities, estimatedvalue for OPEN/LOST
+      const amount = record.statecode === 1 ? record.actualvalue : record.estimatedvalue;
+      const value = amount || 0;
+      
+      // Color based on state: red for LOST, green for WON, blue for OPEN
+      let color;
+      if (record.statecode === 2) color = 'red';      // LOST
+      else if (record.statecode === 1) color = 'green'; // WON
+      else color = 'blue';                             // OPEN
+
       return (
-        <Tooltip title={`Status: ${status || 'N/A'}`}>
-          <Tag color={color}>{label}</Tag>
-        </Tooltip>
+        <Tag color={color} style={{ fontWeight: 'bold' }}>
+          {formatCurrency(value)}
+        </Tag>
       );
     }
   }
