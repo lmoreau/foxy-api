@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Table, Tag, Tooltip, Select, Row, Col, Input } from 'antd';
-import { ColumnsType } from 'antd/es/table';
+import { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import { SortOrder } from 'antd/es/table/interface';
 import { SearchOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { listAccountsForResidualCheck } from '../utils/api';
@@ -78,9 +79,21 @@ const ResidualCheck: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [selectedResiduals, setSelectedResiduals] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedServices, setSelectedServices] = useState<string[]>(() => {
+    return JSON.parse(localStorage.getItem('selectedServices') || '[]');
+  });
+  const [selectedResiduals, setSelectedResiduals] = useState<string[]>(() => {
+    return JSON.parse(localStorage.getItem('selectedResiduals') || '[]');
+  });
+  const [searchTerm, setSearchTerm] = useState<string>(() => {
+    return localStorage.getItem('searchTerm') || '';
+  });
+  const [pagination, setPagination] = useState<TablePaginationConfig>(() => {
+    return JSON.parse(localStorage.getItem('pagination') || '{"current": 1, "pageSize": 50}');
+  });
+  const [sortOrder, setSortOrder] = useState<{ columnKey: string; order: SortOrder }>(() => {
+    return JSON.parse(localStorage.getItem('sortOrder') || '{"columnKey": "", "order": null}');
+  });
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -127,19 +140,29 @@ const ResidualCheck: React.FC = () => {
 
   const handleServiceChange = useCallback((value: string[]) => {
     setSelectedServices(value);
+    localStorage.setItem('selectedServices', JSON.stringify(value));
   }, []);
 
   const handleResidualChange = useCallback((value: string[]) => {
     setSelectedResiduals(value);
+    localStorage.setItem('selectedResiduals', JSON.stringify(value));
   }, []);
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    localStorage.setItem('searchTerm', e.target.value);
   }, []);
 
   const handleRowClick = useCallback((record: Account) => {
     navigate(`/residual-details/${record.accountid}`);
   }, [navigate]);
+
+  const handleTableChange = useCallback((pagination: TablePaginationConfig, filters: any, sorter: any) => {
+    setPagination(pagination);
+    setSortOrder({ columnKey: sorter.field, order: sorter.order });
+    localStorage.setItem('pagination', JSON.stringify(pagination));
+    localStorage.setItem('sortOrder', JSON.stringify({ columnKey: sorter.field, order: sorter.order }));
+  }, []);
 
   const columns: ColumnsType<Account> = [
     {
@@ -182,6 +205,7 @@ const ResidualCheck: React.FC = () => {
       ellipsis: true,
       render: (value) => formatCurrency(value),
       sorter: (a, b) => parseFloat(a.foxyflow_residualstotal) - parseFloat(b.foxyflow_residualstotal),
+      sortOrder: sortOrder.columnKey === 'foxyflow_residualstotal' ? sortOrder.order : undefined,
     },
     {
       title: 'Wireline MRR',
@@ -191,6 +215,7 @@ const ResidualCheck: React.FC = () => {
       ellipsis: true,
       render: (value) => formatCurrency(value),
       sorter: (a, b) => parseFloat(a.foxy_wirelinemrr) - parseFloat(b.foxy_wirelinemrr),
+      sortOrder: sortOrder.columnKey === 'foxy_wirelinemrr' ? sortOrder.order : undefined,
     },
     {
       title: 'Residual Status',
@@ -229,6 +254,7 @@ const ResidualCheck: React.FC = () => {
             placeholder="Filter by Services"
             onChange={handleServiceChange}
             allowClear
+            value={selectedServices}
           >
             {Object.keys(serviceColors).map(service => (
               <Option key={service} value={service}>{service}</Option>
@@ -242,6 +268,7 @@ const ResidualCheck: React.FC = () => {
             placeholder="Filter by Residual Status"
             onChange={handleResidualChange}
             allowClear
+            value={selectedResiduals}
           >
             {wirelineResidualsMap.map(option => (
               <Option key={option.value} value={option.value}>{option.label}</Option>
@@ -254,12 +281,13 @@ const ResidualCheck: React.FC = () => {
         dataSource={filteredAccounts} 
         rowKey="accountid"
         scroll={{ x: true }}
-        pagination={{ pageSize: 50 }}
+        pagination={pagination}
         size="small"
         onRow={(record) => ({
           onClick: () => handleRowClick(record),
           style: { cursor: 'pointer' }
         })}
+        onChange={handleTableChange}
       />
     </div>
   );
