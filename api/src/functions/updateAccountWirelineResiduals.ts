@@ -48,7 +48,8 @@ export async function updateAccountWirelineResiduals(request: HttpRequest, conte
         const apiUrl = `${dataverseUrl}/api/data/v9.1/accounts(${formattedAccountId})`;
 
         await axios.patch(apiUrl, {
-            foxyflow_wirelineresiduals: requestBody.foxyflow_wirelineresiduals
+            foxyflow_wirelineresiduals: requestBody.foxyflow_wirelineresiduals,
+            crc9f_residuallastscrub: new Date().toISOString()
         }, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`,

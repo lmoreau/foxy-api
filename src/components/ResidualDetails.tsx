@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Tabs } from 'antd';
-import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows } from '../utils/api';
+import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
@@ -24,6 +24,7 @@ interface State {
   auditError: string | null;
   isModalVisible: boolean;
   selectedValue: string;
+  notes: string;
   updating: boolean;
 }
 
@@ -41,6 +42,7 @@ const initialState: State = {
   auditError: null,
   isModalVisible: false,
   selectedValue: '',
+  notes: '',
   updating: false
 };
 
@@ -84,6 +86,39 @@ export const ResidualDetails: React.FC = () => {
 
     fetchData();
   }, [id]);
+
+  const handleStatusUpdate = async () => {
+    if (!id || !state.selectedValue) return;
+
+    setState(prev => ({ ...prev, updating: true }));
+    try {
+      // Create audit record first
+      await createResidualScrubAudit(id, state.selectedValue, state.notes);
+      
+      // Then update the account status
+      await updateAccountWirelineResiduals(id, state.selectedValue);
+
+      // Refresh the audit data
+      const auditResponse = await listResidualAuditByRows(id);
+      
+      // Update local state
+      setState(prev => ({
+        ...prev,
+        isModalVisible: false,
+        updating: false,
+        selectedValue: '',
+        notes: '',
+        auditData: auditResponse.value,
+        accountData: prev.accountData ? {
+          ...prev.accountData,
+          foxyflow_wirelineresiduals: parseInt(state.selectedValue)
+        } : null
+      }));
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setState(prev => ({ ...prev, updating: false }));
+    }
+  };
 
   const combinedData = React.useMemo(() => 
     combineResidualData(state.residualData, state.wirelineData),
@@ -140,9 +175,16 @@ export const ResidualDetails: React.FC = () => {
       <ResidualStatusModal
         isVisible={state.isModalVisible}
         selectedValue={state.selectedValue}
+        notes={state.notes}
         onValueChange={(value) => setState(prev => ({ ...prev, selectedValue: value }))}
-        onOk={() => setState(prev => ({ ...prev, isModalVisible: false }))}
-        onCancel={() => setState(prev => ({ ...prev, isModalVisible: false }))}
+        onNotesChange={(value) => setState(prev => ({ ...prev, notes: value }))}
+        onOk={handleStatusUpdate}
+        onCancel={() => setState(prev => ({ 
+          ...prev, 
+          isModalVisible: false,
+          selectedValue: '',
+          notes: ''
+        }))}
         updating={state.updating}
       />
     </div>

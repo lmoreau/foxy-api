@@ -115,6 +115,23 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
   }
 };
 
+export const createResidualScrubAudit = async (accountId: string, status: string, note?: string) => {
+  try {
+    const headers = await getAuthHeaders();
+    const url = `${API_BASE_URL}/createCrc9fResidualScrubAudit`;
+    const response = await axios.post(
+      url,
+      { accountId, status, note },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to create residual scrub audit:', err.response?.data);
+    throw error;
+  }
+};
+
 // New authenticated API functions for location management
 export const listAccountLocationRows = async (accountId: string) => {
   const headers = await getAuthHeaders();
