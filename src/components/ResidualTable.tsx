@@ -77,16 +77,14 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       render: (_, record) => {
         if ('children' in record) {
           return (
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ fontWeight: 'bold' }}>
                 <span style={{ color: '#1890ff' }}>{record.accountId}</span>
                 {' - '}
                 <span>{record.companyName}</span>
               </div>
-              <div style={{ marginTop: 4 }}>
-                <Tag color="blue">Residual Total: {record.totalResidualAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
-                <Tag color="green">Wireline Total: {record.totalWirelineCharges.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
-              </div>
+              <Tag color="blue">Residual Total: {record.totalResidualAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
+              <Tag color="green">Wireline Total: {record.totalWirelineCharges.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
             </div>
           );
         }
@@ -297,4 +295,4 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       </style>
     </>
   );
-};
+}
