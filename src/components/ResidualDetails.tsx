@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tabs, Card, Row, Col, Statistic } from 'antd';
+import { Tabs, Card, Space, Typography } from 'antd';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
@@ -10,6 +10,8 @@ import { AccountHeader } from './AccountHeader';
 import { OpportunitiesTable } from './OpportunitiesTable';
 import { AuditTable } from './AuditTable';
 import { formatCurrency } from '../utils/formatters';
+
+const { Text } = Typography;
 
 interface State {
   accountData: AccountData | null;
@@ -135,21 +137,11 @@ export const ResidualDetails: React.FC = () => {
     const wonTotal = wonOpps.reduce((sum, opp) => sum + (opp.actualvalue || 0), 0);
     const lostTotal = lostOpps.reduce((sum, opp) => sum + (opp.estimatedvalue || 0), 0);
 
-    const mostRecentWon = wonOpps.length > 0 
-      ? new Date(Math.max(...wonOpps.map(opp => new Date(opp.actualclosedate).getTime()))).toLocaleDateString()
-      : 'N/A';
-
-    const mostRecentLost = lostOpps.length > 0
-      ? new Date(Math.max(...lostOpps.map(opp => new Date(opp.actualclosedate).getTime()))).toLocaleDateString()
-      : 'N/A';
-
     return {
       wonCount: wonOpps.length,
       lostCount: lostOpps.length,
       wonTotal,
-      lostTotal,
-      mostRecentWon,
-      mostRecentLost
+      lostTotal
     };
   }, [state.opportunities]);
 
@@ -158,41 +150,35 @@ export const ResidualDetails: React.FC = () => {
 
   return (
     <div>
-      <AccountHeader
-        accountData={state.accountData}
-        onEditStatus={handleOpenModal}
-        accountId={id || ''}
-      />
-
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="Won Opportunities"
-              value={opportunityStats.wonCount}
-              suffix={` / ${formatCurrency(opportunityStats.wonTotal)}`}
-            />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <div style={{ flex: '1' }}>
+          <AccountHeader
+            accountData={state.accountData}
+            onEditStatus={handleOpenModal}
+            accountId={id || ''}
+          />
+        </div>
+        <Space size="small" style={{ marginLeft: 16 }}>
+          <Card size="small" style={{ width: 180 }}>
+            <div>
+              <Text>{opportunityStats.wonCount} Won Opps.</Text>
+              <br />
+              <Text style={{ color: '#52c41a', fontSize: '14px', fontWeight: 'bold' }}>
+                {formatCurrency(opportunityStats.wonTotal)}
+              </Text>
+            </div>
           </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="Lost Opportunities"
-              value={opportunityStats.lostCount}
-              suffix={` / ${formatCurrency(opportunityStats.lostTotal)}`}
-            />
+          <Card size="small" style={{ width: 180 }}>
+            <div>
+              <Text>{opportunityStats.lostCount} Lost Opps.</Text>
+              <br />
+              <Text style={{ color: '#f5222d', fontSize: '14px', fontWeight: 'bold' }}>
+                {formatCurrency(opportunityStats.lostTotal)}
+              </Text>
+            </div>
           </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="Most Recent"
-              value={`Won: ${opportunityStats.mostRecentWon}`}
-              suffix={`Lost: ${opportunityStats.mostRecentLost}`}
-            />
-          </Card>
-        </Col>
-      </Row>
+        </Space>
+      </div>
 
       <Tabs
         items={[
