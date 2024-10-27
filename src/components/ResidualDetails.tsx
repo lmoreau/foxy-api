@@ -133,7 +133,7 @@ export const ResidualDetails: React.FC = () => {
     const lostOpps = state.opportunities.filter(opp => opp.statecode === 2);
 
     const wonTotal = wonOpps.reduce((sum, opp) => sum + (opp.actualvalue || 0), 0);
-    const lostTotal = lostOpps.reduce((sum, opp) => sum + (opp.actualvalue || 0), 0);
+    const lostTotal = lostOpps.reduce((sum, opp) => sum + (opp.estimatedvalue || 0), 0);
 
     const mostRecentWon = wonOpps.length > 0 
       ? new Date(Math.max(...wonOpps.map(opp => new Date(opp.actualclosedate).getTime()))).toLocaleDateString()

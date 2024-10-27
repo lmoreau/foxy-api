@@ -97,6 +97,7 @@ export interface OpportunityRecord {
   name: string;
   accountId: string;
   actualclosedate: string;
+  estimatedclosedate?: string;
   foxy_foxystage: string;
   stepname: string;
   statuscode: number;

@@ -29,21 +29,25 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
     )
   },
   { 
-    title: 'Actual Close Date', 
+    title: 'Close Date', 
     dataIndex: 'actualclosedate', 
     width: '15%',
     defaultSortOrder: 'ascend' as SortOrder,
     sorter: (a: OpportunityRecord, b: OpportunityRecord) => {
-      const dateA = a.actualclosedate ? new Date(a.actualclosedate).getTime() : 0;
-      const dateB = b.actualclosedate ? new Date(b.actualclosedate).getTime() : 0;
-      return dateB - dateA;
+      const getDate = (record: OpportunityRecord) => {
+        const date = record.statecode === 0 ? record.estimatedclosedate : record.actualclosedate;
+        return date ? new Date(date).getTime() : 0;
+      };
+      return getDate(b) - getDate(a);
     },
-    render: (text: string) => 
-      text ? new Date(text).toLocaleDateString('en-US', {
+    render: (text: string, record: OpportunityRecord) => {
+      const date = record.statecode === 0 ? record.estimatedclosedate : record.actualclosedate;
+      return date ? new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric'
-      }) : 'N/A'
+      }) : 'N/A';
+    }
   },
   { 
     title: 'Amount', 
