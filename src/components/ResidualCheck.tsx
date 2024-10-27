@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Table, Tag, Tooltip, Select, Row, Col, Input } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { SearchOutlined } from '@ant-design/icons';
@@ -76,7 +76,6 @@ const mapWirelineResiduals = (value: string) => {
 const ResidualCheck: React.FC = () => {
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -88,7 +87,6 @@ const ResidualCheck: React.FC = () => {
       try {
         const response = await listAccountsForResidualCheck();
         setAccounts(response.value);
-        setFilteredAccounts(response.value);
         setLoading(false);
       } catch (err) {
         setError('Error fetching accounts. Please try again later.');
@@ -99,7 +97,7 @@ const ResidualCheck: React.FC = () => {
     fetchAccounts();
   }, []);
 
-  useEffect(() => {
+  const filteredAccounts = useMemo(() => {
     let filtered = [...accounts];
 
     // Filter by search term
@@ -124,24 +122,24 @@ const ResidualCheck: React.FC = () => {
       });
     }
 
-    setFilteredAccounts(filtered);
+    return filtered;
   }, [selectedServices, selectedResiduals, searchTerm, accounts]);
 
-  const handleServiceChange = (value: string[]) => {
+  const handleServiceChange = useCallback((value: string[]) => {
     setSelectedServices(value);
-  };
+  }, []);
 
-  const handleResidualChange = (value: string[]) => {
+  const handleResidualChange = useCallback((value: string[]) => {
     setSelectedResiduals(value);
-  };
+  }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
+  }, []);
 
-  const handleRowClick = (record: Account) => {
+  const handleRowClick = useCallback((record: Account) => {
     navigate(`/residual-details/${record.accountid}`);
-  };
+  }, [navigate]);
 
   const columns: ColumnsType<Account> = [
     {
