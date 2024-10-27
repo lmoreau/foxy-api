@@ -120,6 +120,14 @@ export const ResidualDetails: React.FC = () => {
     }
   };
 
+  const handleOpenModal = () => {
+    setState(prev => ({ 
+      ...prev, 
+      isModalVisible: true,
+      selectedValue: prev.accountData ? prev.accountData.foxyflow_wirelineresiduals.toString() : ''
+    }));
+  };
+
   const combinedData = React.useMemo(() => 
     combineResidualData(state.residualData, state.wirelineData),
     [state.residualData, state.wirelineData]
@@ -132,7 +140,7 @@ export const ResidualDetails: React.FC = () => {
     <div>
       <AccountHeader
         accountData={state.accountData}
-        onEditStatus={() => setState(prev => ({ ...prev, isModalVisible: true }))}
+        onEditStatus={handleOpenModal}
         accountId={id || ''}
       />
 

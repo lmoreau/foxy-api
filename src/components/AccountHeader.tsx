@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Tag } from 'antd';
+import { PlusOutlined, TeamOutlined } from '@ant-design/icons';
 import { AccountData } from '../types/residualTypes';
 import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { serviceColors } from '../utils/constants/serviceColors';
@@ -14,11 +15,14 @@ export const AccountHeader: React.FC<AccountHeaderProps> = ({ accountData, onEdi
   <div style={{ marginBottom: '24px' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
       <h1 style={{ margin: 0 }}>{accountData.name}</h1>
-      <Button type="primary" onClick={onEditStatus}>
-        Edit Status
+      <Button type="primary" onClick={onEditStatus} icon={<PlusOutlined />}>
+        Status Update
       </Button>
-      <Button onClick={() => window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${accountId}`, '_blank')}>
-        View in Foxy
+      <Button 
+        onClick={() => window.open(`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=account&id=${accountId}`, '_blank')}
+        icon={<TeamOutlined />}
+      >
+        Open Foxy CRM Account
       </Button>
     </div>
 
