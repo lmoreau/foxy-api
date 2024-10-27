@@ -62,7 +62,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
 
   return (
     <Header style={{ display: 'flex', alignItems: 'center', padding: '0 16px', height: '48px', lineHeight: '48px' }}>
-      <div className="logo" style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '24px' }}>
+      <div className="logo" style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '24px', display: 'flex', alignItems: 'center' }}>
+        <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
         Foxy PL
       </div>
       <Menu 
