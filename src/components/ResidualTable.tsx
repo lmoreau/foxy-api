@@ -31,7 +31,21 @@ const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate
 };
 
 export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
-  const [showMergedOnly, setShowMergedOnly] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<React.Key[]>(() => 
+    data.filter(record => 'children' in record).map(record => record.key)
+  );
+
+  const handleExpandToggle = (checked: boolean) => {
+    if (checked) {
+      setExpandedRows(data.filter(record => 'children' in record).map(record => record.key));
+    } else {
+      setExpandedRows([]);
+    }
+  };
+
+  const handleExpandedRowsChange = (keys: readonly React.Key[]) => {
+    setExpandedRows([...keys]);
+  };
 
   const columns: ColumnsType<TableRecord> = [
     {
@@ -41,10 +55,12 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
             <Switch 
               size="small"
-              checked={showMergedOnly}
-              onChange={setShowMergedOnly}
+              checked={expandedRows.length > 0}
+              onChange={handleExpandToggle}
             />
-            <span style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>Merged</span>
+            <span style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+              {expandedRows.length > 0 ? 'Collapse All' : 'Expand All'}
+            </span>
           </div>
         </div>
       ),
@@ -237,14 +253,9 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         return bAmount - aAmount;
       });
 
-      // Filter children if showMergedOnly is true
-      const filteredChildren = showMergedOnly 
-        ? sortedChildren.filter(record => record.type === 'merged')
-        : sortedChildren;
-
       return {
         ...accountGroup,
-        children: filteredChildren
+        children: sortedChildren
       };
     });
 
@@ -262,7 +273,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       processedData: processed,
       showMatchAlert: showAlert
     };
-  }, [data, showMergedOnly]);
+  }, [data]);
 
   return (
     <>
@@ -282,7 +293,8 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         scroll={{ x: 1500 }}
         size="middle"
         expandable={{
-          defaultExpandAllRows: true,
+          expandedRowKeys: expandedRows,
+          onExpandedRowsChange: handleExpandedRowsChange
         }}
       />
       <style>

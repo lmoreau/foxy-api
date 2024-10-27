@@ -63,7 +63,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
   return (
     <Header style={{ display: 'flex', alignItems: 'center', padding: '0 16px', height: '48px', lineHeight: '48px' }}>
       <div className="logo" style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '24px' }}>
-        RITA
+        Foxy PL
       </div>
       <Menu 
         theme="dark" 
