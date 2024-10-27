@@ -17,7 +17,7 @@ const { Panel } = Collapse;
 
 // Custom panel header component to maintain heading styling
 const PanelHeader: React.FC<{ title: string }> = ({ title }) => (
-  <Title level={4} style={{ margin: 0, fontWeight: 500 }}>{title}</Title>
+  <Title level={4} style={{ margin: 0, fontWeight: 600 }}>{title}</Title>
 );
 
 interface State {
