@@ -26,7 +26,7 @@ const DescriptionProductColumn: React.FC<DescriptionProductColumnProps> = ({ rec
         <span>&nbsp;</span>
         {r.foxy_description || 'No Description'}
         {r.foxy_quantity > 1 && ` x ${r.foxy_quantity}`}
-        {r.foxy_serviceid && (
+        {r.foxy_serviceid && r.foxy_serviceid !== 'N/A' && (
           <>
             {' '}
             <Tag color="blue">({r.foxy_serviceid})</Tag>
