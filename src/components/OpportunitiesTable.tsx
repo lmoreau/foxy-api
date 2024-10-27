@@ -42,10 +42,13 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
     },
     render: (text: string, record: OpportunityRecord) => {
       const date = record.statecode === 0 ? record.estimatedclosedate : record.actualclosedate;
-      return date ? new Date(date).toLocaleDateString('en-US', {
+      return date ? new Date(date).toLocaleString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
       }) : 'N/A';
     }
   },
@@ -72,20 +75,6 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
     }
   },
   { 
-    title: 'Estimated Value', 
-    dataIndex: 'estimatedvalue', 
-    width: '12%', 
-    render: (value: number) => {
-      const amount = value || 0;
-      const color = amount === 0 ? 'red' : 'blue';
-      return (
-        <Tag color={color}>
-          {formatCurrency(amount)}
-        </Tag>
-      );
-    }
-  },
-  { 
     title: 'SFDC Opportunity ID', 
     dataIndex: 'foxy_sfdcoppid', 
     width: '15%',
@@ -93,8 +82,8 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
       showTitle: false
     },
     render: (text: string) => (
-      <Tooltip placement="topLeft" title={text || 'N/A'}>
-        {text || 'N/A'}
+      <Tooltip placement="topLeft" title={text || ''}>
+        {text || ''}
       </Tooltip>
     )
   },
