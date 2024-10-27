@@ -31,20 +31,21 @@ const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate
 };
 
 export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
-  const [expandedRows, setExpandedRows] = useState<React.Key[]>(() => 
+  const allParentKeys = useMemo(() => 
     data.filter(record => 'children' in record).map(record => record.key)
-  );
+  , [data]);
+
+  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>(allParentKeys);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleExpandToggle = (checked: boolean) => {
-    if (checked) {
-      setExpandedRows(data.filter(record => 'children' in record).map(record => record.key));
-    } else {
-      setExpandedRows([]);
-    }
+    setIsCollapsed(checked);
+    setExpandedRowKeys(checked ? [] : allParentKeys);
   };
 
   const handleExpandedRowsChange = (keys: readonly React.Key[]) => {
-    setExpandedRows([...keys]);
+    setExpandedRowKeys([...keys]);
+    setIsCollapsed(keys.length === 0);
   };
 
   const columns: ColumnsType<TableRecord> = [
@@ -55,11 +56,11 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
             <Switch 
               size="small"
-              checked={expandedRows.length > 0}
+              checked={isCollapsed}
               onChange={handleExpandToggle}
             />
             <span style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
-              {expandedRows.length > 0 ? 'Collapse All' : 'Expand All'}
+              {isCollapsed ? 'Expand All' : 'Collapse All'}
             </span>
           </div>
         </div>
@@ -293,7 +294,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         scroll={{ x: 1500 }}
         size="middle"
         expandable={{
-          expandedRowKeys: expandedRows,
+          expandedRowKeys,
           onExpandedRowsChange: handleExpandedRowsChange
         }}
       />
