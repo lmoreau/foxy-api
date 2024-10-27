@@ -15,6 +15,7 @@ const CommandPalette: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
 
   // Toggle command palette with Cmd+K or Ctrl+K
@@ -32,18 +33,20 @@ const CommandPalette: React.FC = () => {
   // Search accounts when typing
   useEffect(() => {
     const searchAccounts = async () => {
-      if (search.trim() && !search.startsWith('>')) {
+      if (search.trim()) {
         try {
           const response = await listAccountsForResidualCheck();
           const filteredAccounts = response.value.filter((account: Account) =>
             account.name.toLowerCase().includes(search.toLowerCase())
           );
           setAccounts(filteredAccounts);
+          setShowResults(true);
         } catch (error) {
           console.error('Error searching accounts:', error);
         }
       } else {
         setAccounts([]);
+        setShowResults(false);
       }
     };
 
@@ -57,62 +60,63 @@ const CommandPalette: React.FC = () => {
     { name: 'Customers', path: '/customers' },
   ];
 
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    if (!open) {
+      setOpen(true);
+    }
+  };
+
+  const handleItemSelect = (path: string) => {
+    navigate(path);
+    setSearch('');
+    setOpen(false);
+    setShowResults(false);
+  };
+
   return (
     <div className="search-container">
-      <div className="search-bar" onClick={() => setOpen(true)}>
+      <div className={`search-bar ${showResults ? 'with-results' : ''}`}>
         <SearchOutlined className="search-icon" />
         <input 
           type="text"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          onFocus={() => setOpen(true)}
           placeholder="Search accounts or type '>' for commands... (⌘K)"
-          readOnly
           className="search-input"
         />
       </div>
 
-      <Command.Dialog
-        open={open}
-        onOpenChange={setOpen}
-        label="Global Command Menu"
-        className="command-dialog"
-      >
-        <Command.Input 
-          value={search}
-          onValueChange={setSearch}
-          placeholder="Search accounts or type '>' for commands..."
-          className="command-input"
-          autoFocus
-        />
-
-        <Command.List className="command-list">
-          <Command.Empty>No results found.</Command.Empty>
-
+      {(open || showResults) && (
+        <div className="search-results">
           {!search.startsWith('>') && accounts.map((account) => (
-            <Command.Item
+            <div
               key={account.accountid}
-              onSelect={() => {
-                navigate(`/residual-details/${account.accountid}`);
-                setOpen(false);
-              }}
-              className="command-item"
+              className="search-result-item"
+              onClick={() => handleItemSelect(`/residual-details/${account.accountid}`)}
             >
               <span>{account.name}</span>
-            </Command.Item>
+            </div>
           ))}
 
           {search.startsWith('>') && pages.map((page) => (
-            <Command.Item
+            <div
               key={page.path}
-              onSelect={() => {
-                navigate(page.path);
-                setOpen(false);
-              }}
-              className="command-item"
+              className="search-result-item"
+              onClick={() => handleItemSelect(page.path)}
             >
               <span>{page.name}</span>
-            </Command.Item>
+            </div>
           ))}
-        </Command.List>
-      </Command.Dialog>
+
+          {search && accounts.length === 0 && !search.startsWith('>') && (
+            <div className="search-result-item no-results">
+              No results found
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
