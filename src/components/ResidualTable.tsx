@@ -155,7 +155,6 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
 
         return residualRecord ? (
           <>
-            Billing Number: {residualRecord.foxyflow_billingnumber}<br />
             Code: {residualRecord.foxyflow_charge_item_code}
           </>
         ) : null;
