@@ -2,6 +2,7 @@ import React from 'react';
 import { Layout, Menu } from 'antd';
 import { UserOutlined, UnorderedListOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
+import CommandPalette from './CommandPalette';
 
 const { Header } = Layout;
 
@@ -73,7 +74,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
         style={{ flex: 1, minWidth: 0, height: '48px', lineHeight: '48px' }} 
         items={getMenuItems()} 
       />
-      <div style={{ marginLeft: 'auto' }}>
+      <CommandPalette />
+      <div style={{ marginLeft: '16px' }}>
         <UserOutlined style={{ color: 'white', fontSize: '18px' }} />
       </div>
     </Header>
