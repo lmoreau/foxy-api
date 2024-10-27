@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, UnorderedListOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 
 const { Header } = Layout;
@@ -25,14 +25,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
   const getMenuItems = () => {
     if (location.pathname === '/residual-check') {
       return [
-        { key: 'residual-check', label: <Link to="/residual-check">Residual Check</Link> }
+        { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> }
       ];
     }
 
     if (location.pathname.includes('/residual-details')) {
       return [
-        { key: 'residual-details', label: 'Residual Details' },
-        { key: 'residual-check', label: <Link to="/residual-check">Residual Check</Link> }
+        { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> },
+        { key: 'residual-details', label: <><FileTextOutlined /> <span style={{ marginLeft: '8px' }}>Residual Details</span></> }
       ];
     }
 
