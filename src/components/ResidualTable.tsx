@@ -15,9 +15,15 @@ const formatDate = (dateStr: string) => {
 };
 
 const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate, endDate }) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const endDateObj = new Date(endDate);
+  endDateObj.setHours(0, 0, 0, 0);
+  const endDateColor = endDateObj < today ? 'red' : 'green';
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <Tag color="purple">{formatDate(startDate)}</Tag>
+      <Tag color="blue">{formatDate(startDate)}</Tag>
       <span style={{ 
         color: '#666', 
         margin: '0 4px',
@@ -26,7 +32,7 @@ const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate
       }}>
         ⟶
       </span>
-      <Tag color="red">{formatDate(endDate)}</Tag>
+      <Tag color={endDateColor}>{formatDate(endDate)}</Tag>
     </div>
   );
 };
