@@ -85,7 +85,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         </div>
       ),
       key: 'description',
-      width: '35%',
+      width: '45%',
       render: (_, record, index) => {
         if ('children' in record) {
           const residualTotal = record.totalResidualAmount;
@@ -120,7 +120,8 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
               </div>
             ),
             props: {
-              colSpan: 5
+              colSpan: 5,
+              style: { backgroundColor: '#fafafa' }
             }
           };
         }
