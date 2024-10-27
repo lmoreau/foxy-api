@@ -3,6 +3,7 @@ import { Table, Tag, Tooltip, Switch, Alert } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRecord, WirelineRecord, ResidualRecord, MergedRecord } from '../types/residualTypes';
 import { formatDescription } from '../utils/residualUtils';
+import DescriptionProductColumn from './DescriptionProductColumn';
 
 interface ResidualTableProps {
   data: TableRecord[];
@@ -84,40 +85,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
           );
         }
 
-        const isMerged = record.type === 'merged';
-        const isWireline = record.type === 'wireline';
-        const mergedRecord = record as MergedRecord;
-        const wirelineRecord = isWireline ? record as WirelineRecord : undefined;
-        const residualRecord = record.type === 'residual' ? record as ResidualRecord : undefined;
-
-        if (isMerged || isWireline) {
-          const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
-          return (
-            <>
-              <Tag color={isMerged ? 'purple' : 'green'}>
-                {isMerged ? 'Merged' : 'Wireline'}
-              </Tag>
-              <span>&nbsp;</span>
-              {r.foxy_description || 'No Description'}
-              {r.foxy_serviceid && (
-                <>
-                  {' '}
-                  <Tag color="blue">({r.foxy_serviceid})</Tag>
-                </>
-              )}
-              {r.foxy_quantity > 1 && ` x ${r.foxy_quantity}`}
-              {r.foxy_contractterm && ` - ${r.foxy_contractterm} months`}
-            </>
-          );
-        }
-
-        return (
-          <>
-            <Tag color="blue">Residual</Tag>
-            <span>&nbsp;</span>
-            {residualRecord?.foxyflow_product}
-          </>
-        );
+        return <DescriptionProductColumn record={record} />;
       },
     },
     {
