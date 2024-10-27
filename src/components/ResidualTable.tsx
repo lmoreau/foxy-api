@@ -55,6 +55,18 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
     setIsCollapsed(keys.length === 0);
   };
 
+  const getTotalsDifference = (residualTotal: number, wirelineTotal: number) => {
+    if (wirelineTotal === 0) return "No wireline records found";
+    if (residualTotal === 0) return "No residual records found";
+    
+    const diff = residualTotal - wirelineTotal;
+    if (diff > 0) {
+      return `Residuals are ${diff.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} higher`;
+    } else {
+      return `Wireline is ${Math.abs(diff).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} higher`;
+    }
+  };
+
   const columns: ColumnsType<TableRecord> = [
     {
       title: () => (
@@ -76,6 +88,10 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
       width: '35%',
       render: (_, record) => {
         if ('children' in record) {
+          const residualTotal = record.totalResidualAmount;
+          const wirelineTotal = record.totalWirelineCharges;
+          const totalsMatch = Math.abs(residualTotal - wirelineTotal) < 0.01;
+
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ fontWeight: 'bold' }}>
@@ -83,8 +99,23 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
                 {' - '}
                 <span>{record.companyName}</span>
               </div>
-              <Tag color="blue">Residual Total: {record.totalResidualAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
-              <Tag color="green">Wireline Total: {record.totalWirelineCharges.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</Tag>
+              {totalsMatch ? (
+                <Tag color="purple">
+                  Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                </Tag>
+              ) : (
+                <>
+                  <Tag color="blue">
+                    Residual Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                  </Tag>
+                  <Tag color="green">
+                    Wireline Total: <span style={{ fontWeight: 'bold' }}>{wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                  </Tag>
+                  <Tag color="orange">
+                    {getTotalsDifference(residualTotal, wirelineTotal)}
+                  </Tag>
+                </>
+              )}
             </div>
           );
         }
