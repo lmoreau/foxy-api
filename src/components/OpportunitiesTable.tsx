@@ -68,7 +68,7 @@ const opportunityColumns: ColumnsType<OpportunityRecord> = [
       else color = 'blue';                             // OPEN
 
       return (
-        <Tag color={color}>
+        <Tag color={color} style={{ fontWeight: 'bold' }}>
           {formatCurrency(value)}
         </Tag>
       );
@@ -139,4 +139,4 @@ export const OpportunitiesTable: React.FC<OpportunitiesTableProps> = ({
       />
     </div>
   );
-};
+}

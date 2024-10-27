@@ -232,7 +232,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         if (!value) return null;
         const num = parseFloat(value.toString());
         return (
-          <Tag color={isMerged ? 'purple' : isWireline ? 'green' : 'blue'}>
+          <Tag color={isMerged ? 'purple' : isWireline ? 'green' : 'blue'} style={{ fontWeight: 'bold' }}>
             {num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
           </Tag>
         );
