@@ -146,8 +146,8 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
           const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
           return (
             r.foxy_addressline1 && (
-              <Tooltip title={`${r.foxy_city}, ${r.foxy_province} ${r.foxy_postalcode}`}>
-                {r.foxy_addressline1}
+              <Tooltip title={`${r.foxy_addressline1}, ${r.foxy_city}, ${r.foxy_province} ${r.foxy_postalcode}`}>
+                {`${r.foxy_addressline1}, ${r.foxy_city}, ${r.foxy_province}`}
               </Tooltip>
             )
           );
