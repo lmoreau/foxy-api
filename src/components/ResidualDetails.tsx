@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tabs, Card, Space, Typography } from 'antd';
+import { Tabs, Card, Space, Typography, Collapse } from 'antd';
+import { PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
@@ -11,7 +12,13 @@ import { OpportunitiesTable } from './OpportunitiesTable';
 import { AuditTable } from './AuditTable';
 import { formatCurrency } from '../utils/formatters';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
+const { Panel } = Collapse;
+
+// Custom panel header component to maintain heading styling
+const PanelHeader: React.FC<{ title: string }> = ({ title }) => (
+  <Title level={4} style={{ margin: 0, fontWeight: 500 }}>{title}</Title>
+);
 
 interface State {
   accountData: AccountData | null;
@@ -186,26 +193,53 @@ export const ResidualDetails: React.FC = () => {
             key: '1',
             label: 'Billing Profile',
             children: (
-              <>
-                <h2>Billing Services</h2>
-                <div style={{ marginTop: '20px', marginBottom: '24px' }}>
-                  <ResidualTable data={combinedData} />
-                </div>
+              <div className="custom-collapse">
+                <style>
+                  {`
+                    .custom-collapse .ant-collapse-content-box {
+                      padding-left: 0 !important;
+                      padding-right: 0 !important;
+                    }
+                    .custom-collapse .ant-collapse-header {
+                      padding-left: 0 !important;
+                    }
+                    .custom-collapse .ant-collapse-expand-icon {
+                      padding-right: 8px !important;
+                    }
+                  `}
+                </style>
+                <Collapse 
+                  defaultActiveKey={['1', '2', '3']} 
+                  ghost
+                  expandIcon={({ isActive }) => 
+                    isActive ? 
+                      <MinusSquareOutlined style={{ fontSize: '16px' }} /> : 
+                      <PlusSquareOutlined style={{ fontSize: '16px' }} />
+                  }
+                >
+                  <Panel header={<PanelHeader title="Billing Services" />} key="1">
+                    <div style={{ marginBottom: '24px' }}>
+                      <ResidualTable data={combinedData} />
+                    </div>
+                  </Panel>
 
-                <h2>Opportunities</h2>
-                <OpportunitiesTable
-                  opportunities={state.opportunities}
-                  loading={state.opportunitiesLoading}
-                  error={state.opportunitiesError}
-                />
+                  <Panel header={<PanelHeader title="Opportunities" />} key="2">
+                    <OpportunitiesTable
+                      opportunities={state.opportunities}
+                      loading={state.opportunitiesLoading}
+                      error={state.opportunitiesError}
+                    />
+                  </Panel>
 
-                <h2>Residual Audit History</h2>
-                <AuditTable
-                  auditData={state.auditData}
-                  loading={state.auditLoading}
-                  error={state.auditError}
-                />
-              </>
+                  <Panel header={<PanelHeader title="Residual Audit History" />} key="3">
+                    <AuditTable
+                      auditData={state.auditData}
+                      loading={state.auditLoading}
+                      error={state.auditError}
+                    />
+                  </Panel>
+                </Collapse>
+              </div>
             ),
           },
           {
