@@ -7,6 +7,8 @@ import DescriptionProductColumn from './DescriptionProductColumn';
 
 interface ResidualTableProps {
   data: TableRecord[];
+  showUnmerged?: boolean;
+  onToggleUnmerged?: (checked: boolean) => void;
 }
 
 const formatDate = (dateStr: string) => {
@@ -37,7 +39,7 @@ const DateRange: React.FC<{ startDate: string; endDate: string }> = ({ startDate
   );
 };
 
-export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
+export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged, onToggleUnmerged }) => {
   const allParentKeys = useMemo(() => 
     data.filter(record => 'children' in record).map(record => record.key)
   , [data]);
@@ -73,6 +75,18 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>Description/Product</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
+            {onToggleUnmerged && (
+              <>
+                <Switch 
+                  size="small"
+                  checked={showUnmerged}
+                  onChange={onToggleUnmerged}
+                />
+                <span style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+                  De-merge Records
+                </span>
+              </>
+            )}
             <Switch 
               size="small"
               checked={isCollapsed}
@@ -182,7 +196,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
           );
         }
 
-        return null; // Return null for residual records
+        return null;
       },
     },
     {
@@ -230,16 +244,35 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
 
         if (!value) return null;
         const num = parseFloat(value.toString());
+        
+        let tagColor = 'blue';
+        let tagText = '';
+        
+        if (isMerged) {
+          const isAutoMerged = mergedRecord.isAutoMerged;
+          tagColor = isAutoMerged ? 'warning' : 'purple';
+          tagText = isAutoMerged ? 'Auto-Merged' : 'Merged';
+        } else if (isWireline) {
+          tagColor = 'green';
+          tagText = 'Wireline';
+        } else {
+          tagColor = 'blue';
+          tagText = 'Residual';
+        }
+
         return (
-          <Tag color={isMerged ? 'purple' : isWireline ? 'green' : 'blue'} style={{ fontWeight: 'bold' }}>
-            {num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-          </Tag>
+          <div>
+            <Tag color={tagColor} style={{ fontWeight: 'bold' }}>
+              {num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </Tag>
+            <Tag color={tagColor}>{tagText}</Tag>
+          </div>
         );
       },
     }
   ];
 
-  const { processedData, showMatchAlert } = useMemo(() => {
+  const { processedData, showMatchAlert, hasAutoMerged } = useMemo(() => {
     const processed = data.map(accountGroup => {
       if (!('children' in accountGroup)) return accountGroup;
 
@@ -272,7 +305,13 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
     const hasMatchingTotals = processed.every(group => {
       if (!('children' in group)) return false;
       return group.children.length > 0 && 
-             Math.abs(group.totalResidualAmount - group.totalWirelineCharges) < 0.01; // Account for floating point precision
+             Math.abs(group.totalResidualAmount - group.totalWirelineCharges) < 0.01;
+    });
+
+    // Check if any records are auto-merged
+    const autoMerged = processed.some(group => {
+      if (!('children' in group)) return false;
+      return group.hasAutoMerged;
     });
 
     // Only show alert if there are rows and totals match
@@ -280,7 +319,8 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
 
     return {
       processedData: processed,
-      showMatchAlert: showAlert
+      showMatchAlert: showAlert,
+      hasAutoMerged: autoMerged
     };
   }, [data]);
 
@@ -288,8 +328,9 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data }) => {
     <>
       {showMatchAlert && (
         <Alert
-          message="Perfect Match!"
-          type="success"
+          message={hasAutoMerged ? "Auto-Mapped Records" : "Perfect Match!"}
+          description={hasAutoMerged ? "Some records have been automatically mapped based on matching amounts. Use the De-merge toggle to review individual records." : undefined}
+          type={hasAutoMerged ? "warning" : "success"}
           showIcon
           style={{ marginBottom: 16 }}
         />

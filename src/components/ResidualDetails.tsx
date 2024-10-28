@@ -36,6 +36,7 @@ interface State {
   selectedValue: string;
   notes: string;
   updating: boolean;
+  showUnmerged: boolean;
 }
 
 const initialState: State = {
@@ -53,7 +54,8 @@ const initialState: State = {
   isModalVisible: false,
   selectedValue: '',
   notes: '',
-  updating: false
+  updating: false,
+  showUnmerged: false
 };
 
 export const ResidualDetails: React.FC = () => {
@@ -132,9 +134,13 @@ export const ResidualDetails: React.FC = () => {
     }));
   };
 
+  const handleToggleUnmerged = (checked: boolean) => {
+    setState(prev => ({ ...prev, showUnmerged: checked }));
+  };
+
   const combinedData = React.useMemo(() => 
-    combineResidualData(state.residualData, state.wirelineData),
-    [state.residualData, state.wirelineData]
+    combineResidualData(state.residualData, state.wirelineData, state.showUnmerged),
+    [state.residualData, state.wirelineData, state.showUnmerged]
   );
 
   const opportunityStats = React.useMemo(() => {
@@ -219,7 +225,11 @@ export const ResidualDetails: React.FC = () => {
                 >
                   <Panel header={<PanelHeader title="Billing Services" />} key="1">
                     <div style={{ marginBottom: '24px' }}>
-                      <ResidualTable data={combinedData} />
+                      <ResidualTable 
+                        data={combinedData} 
+                        showUnmerged={state.showUnmerged}
+                        onToggleUnmerged={handleToggleUnmerged}
+                      />
                     </div>
                   </Panel>
 

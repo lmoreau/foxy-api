@@ -48,6 +48,7 @@ export interface WirelineRecord {
 export interface MergedRecord {
   key: string;
   type: 'merged';
+  isAutoMerged?: boolean;
   // From WirelineRecord
   foxy_serviceid: string;
   foxy_description: string;
@@ -76,6 +77,7 @@ export interface GroupedAccountData {
   companyName: string;
   totalResidualAmount: number;
   totalWirelineCharges: number;
+  hasAutoMerged?: boolean;
   children: (ResidualRecord | WirelineRecord | MergedRecord)[];
 }
 
