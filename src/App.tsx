@@ -6,6 +6,7 @@ import QuotePage from './components/QuotePage';
 import ProductsPage from './components/ProductsPage';
 import ResidualCheck from './components/ResidualCheck';
 import { ResidualDetails } from './components/ResidualDetails';
+import ResidualUpload from './components/ResidualUpload';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -62,6 +63,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ResidualDetails />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/residual-upload" 
+                element={
+                  <ProtectedRoute>
+                    <ResidualUpload />
                   </ProtectedRoute>
                 } 
               />
