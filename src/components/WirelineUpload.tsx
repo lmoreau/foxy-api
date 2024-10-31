@@ -27,13 +27,13 @@ const WirelineUpload: React.FC = (): JSX.Element => {
 
   const excelDateToYYYYMMDD = (excelDate: number): string => {
     try {
-      if (!excelDate) return '';
+      if (!excelDate) return '1900-01-01';
       
       // Excel dates are number of days since 1899-12-30
       const date = new Date((excelDate - 25569) * 86400 * 1000);
       
       // Check if date is valid
-      if (isNaN(date.getTime())) return '';
+      if (isNaN(date.getTime())) return '1900-01-01';
       
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -42,7 +42,7 @@ const WirelineUpload: React.FC = (): JSX.Element => {
       return `${year}-${month}-${day}`;
     } catch (error) {
       console.error('Error converting date:', error);
-      return '';
+      return '1900-01-01';
     }
   };
 

@@ -98,6 +98,13 @@ export const listAccountsForResidualCheck = async () => {
   return response.data;
 };
 
+export const listWonServices = async () => {
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listWonServices`;
+  const response = await axios.get(url, { headers });
+  return response.data;
+};
+
 export const updateAccountWirelineResiduals = async (accountId: string, value: string) => {
   try {
     const headers = await getAuthHeaders();

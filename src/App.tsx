@@ -8,6 +8,7 @@ import ResidualCheck from './components/ResidualCheck';
 import { ResidualDetails } from './components/ResidualDetails';
 import ResidualUpload from './components/ResidualUpload';
 import WirelineUpload from './components/WirelineUpload';
+import WonServicesPage from './components/WonServicesPage';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -80,6 +81,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <WirelineUpload />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/won-services" 
+                element={
+                  <ProtectedRoute>
+                    <WonServicesPage />
                   </ProtectedRoute>
                 } 
               />

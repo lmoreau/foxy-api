@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { UserOutlined, UnorderedListOutlined, FileTextOutlined } from '@ant-design/icons';
+import { UserOutlined, UnorderedListOutlined, FileTextOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
 
@@ -24,15 +24,17 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
   };
 
   const getMenuItems = () => {
-    if (location.pathname === '/residual-check') {
+    if (location.pathname === '/residual-check' || location.pathname === '/won-services') {
       return [
-        { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> }
+        { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> },
+        { key: 'won-services', label: <Link to="/won-services"><CheckCircleOutlined /> <span style={{ marginLeft: '8px' }}>Won Services</span></Link> }
       ];
     }
 
     if (location.pathname.includes('/residual-details')) {
       return [
         { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> },
+        { key: 'won-services', label: <Link to="/won-services"><CheckCircleOutlined /> <span style={{ marginLeft: '8px' }}>Won Services</span></Link> },
         { key: 'residual-details', label: <><FileTextOutlined /> <span style={{ marginLeft: '8px' }}>Residual Details</span></> }
       ];
     }
@@ -48,6 +50,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
   const getSelectedKey = () => {
     if (location.pathname === '/residual-check') {
       return 'residual-check';
+    }
+    if (location.pathname === '/won-services') {
+      return 'won-services';
     }
     if (location.pathname.includes('/residual-details')) {
       return 'residual-details';

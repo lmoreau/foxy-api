@@ -21,6 +21,7 @@ import "./functions/listQuoteLocationRows";
 import "./functions/listResidualAuditByRows";
 import "./functions/listRogersWirelineRecords";
 import "./functions/listWirelineResidualRows";
+import "./functions/listWonServices";
 import "./functions/updateAccountWirelineResiduals";
 import "./functions/helloWorld";  // Add the new hello world function
 
