@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Input, Space, Tag } from 'antd';
+import { Table, Input, Space, Tag, Tooltip } from 'antd';
 import { listWonServices } from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
 import type { TableProps } from 'antd';
@@ -46,6 +46,7 @@ interface GroupedData {
     foxy_sfdcoppid: string;
     opportunity_name: string;
     actualvalue: number;
+    actualclosedate: string;
     children?: WonService[];
     isGroup: true;
 }
@@ -84,6 +85,7 @@ const WonServicesPage: React.FC = () => {
                                     foxy_sfdcoppid: oppId,
                                     opportunity_name: item.foxy_Opportunity.name,
                                     actualvalue: item.foxy_Opportunity.actualvalue,
+                                    actualclosedate: item.foxy_Opportunity.actualclosedate,
                                     children: [],
                                     isGroup: true
                                 };
@@ -127,7 +129,8 @@ const WonServicesPage: React.FC = () => {
             title: 'Product',
             dataIndex: ['foxy_Product', 'name'],
             key: 'product_name',
-            width: 250,
+            width: 350,
+            ellipsis: true,
             sorter: (a: any, b: any) => {
                 if (isGroupData(a) && isGroupData(b)) {
                     return a.opportunity_name.localeCompare(b.opportunity_name);
@@ -148,12 +151,19 @@ const WonServicesPage: React.FC = () => {
                     return (
                         <Space size="small">
                             <Tag color="blue">{record.foxy_sfdcoppid}</Tag>
+                            <Tag color="green">{record.actualclosedate}</Tag>
                             <span>{record.opportunity_name}</span>
                             <Tag color="blue">{formatCurrency(record.actualvalue)}</Tag>
                         </Space>
                     );
                 }
-                return text || '-';
+                return (
+                    <Tooltip title={text}>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {text || '-'}
+                        </div>
+                    </Tooltip>
+                );
             },
         },
         {
