@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table } from 'antd';
 import { listWonServices } from '../utils/api';
+import { formatCurrency } from '../utils/formatters';
 import './table.css';
 
 interface WonService {
@@ -56,7 +57,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_expectedcomp',
             key: 'foxy_expectedcomp',
             width: 120,
-            render: (value: number) => value?.toFixed(2) || '-',
+            render: (value: number) => value ? formatCurrency(value) : '-',
         },
         {
             title: 'Term',
@@ -69,7 +70,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_tcv',
             key: 'foxy_tcv',
             width: 120,
-            render: (value: number) => value?.toFixed(2) || '-',
+            render: (value: number) => value ? formatCurrency(value) : '-',
         },
         {
             title: 'Access',
@@ -82,7 +83,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_mrr',
             key: 'foxy_mrr',
             width: 120,
-            render: (value: number) => value?.toFixed(2) || '-',
+            render: (value: number) => value ? formatCurrency(value) : '-',
         },
         {
             title: 'Quantity',
