@@ -1,5 +1,6 @@
 import React from 'react';
 import { Space, Tag, Tooltip } from 'antd';
+import { CheckCircleFilled } from '@ant-design/icons';
 import type { TableProps } from 'antd';
 import { formatCurrency } from '../../utils/formatters';
 import { getRenewalDisposition } from '../../utils/constants/renewalDispositionMapper';
@@ -194,15 +195,16 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         }),
     },
     {
-        title: 'Solo Line',
+        title: 'Solo',
         dataIndex: 'foxy_sololine',
         key: 'foxy_sololine',
-        width: 100,
+        width: 80,
+        align: 'center',
         sorter: (a: any, b: any) => (a.foxy_sololine ? 1 : 0) - (b.foxy_sololine ? 1 : 0),
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
-        render: (value: boolean) => value ? 'Yes' : 'No',
+        render: (value: boolean) => value ? <CheckCircleFilled style={{ color: '#52c41a' }} /> : null,
     },
     {
         title: 'Revenue Type',

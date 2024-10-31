@@ -1,0 +1,11 @@
+.won-services-table .ant-table-row-level-0 .ant-checkbox-wrapper {
+    display: none !important;
+}
+
+.won-services-table .ant-table-row {
+    height: 32px;
+}
+
+.won-services-table .ant-table-cell {
+    padding: 8px 16px !important;
+}
