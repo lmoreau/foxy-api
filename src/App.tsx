@@ -7,6 +7,7 @@ import ProductsPage from './components/ProductsPage';
 import ResidualCheck from './components/ResidualCheck';
 import { ResidualDetails } from './components/ResidualDetails';
 import ResidualUpload from './components/ResidualUpload';
+import WirelineUpload from './components/WirelineUpload';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -71,6 +72,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ResidualUpload />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/wireline-upload" 
+                element={
+                  <ProtectedRoute>
+                    <WirelineUpload />
                   </ProtectedRoute>
                 } 
               />

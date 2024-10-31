@@ -3,31 +3,66 @@ import * as XLSX from 'xlsx';
 import { Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 
-interface ResidualRow {
-  Period: string;
-  Duns: string;
-  BAN: string;
-  'Subscriber Last Name': string;
-  'Customer Segmentation': string;
-  'Product Desc': string;
-  'Billed Revenue': number;
-  'Billed Month/Year': string;
+interface WirelineRow {
+  'SIGN ACCT': string;
+  'COMPANY NAME': string;
+  'SITE NAME': string;
+  'Address Line 1': string;
+  'Province': string;
+  'City': string;
+  'Postal Code': string;
+  'SERVICE ID': string;
+  'Billing Effective Date': string;
+  'Contract Term': number;
+  'Estimated End Date': string;
+  'Description': string;
+  'Charges': number;
+  'Quantity': number;
+  'MAL ID': string;
 }
 
-const ResidualUpload: React.FC = (): JSX.Element => {
-  const [data, setData] = useState<ResidualRow[]>([]);
+const WirelineUpload: React.FC = (): JSX.Element => {
+  const [data, setData] = useState<WirelineRow[]>([]);
   const [status, setStatus] = useState<string>('');
 
-  const transformExcelData = (rawData: any[]): ResidualRow[] => {
+  const excelDateToYYYYMMDD = (excelDate: number): string => {
+    try {
+      if (!excelDate) return '';
+      
+      // Excel dates are number of days since 1899-12-30
+      const date = new Date((excelDate - 25569) * 86400 * 1000);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) return '';
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('Error converting date:', error);
+      return '';
+    }
+  };
+
+  const transformExcelData = (rawData: any[]): WirelineRow[] => {
     return rawData.map(row => ({
-      Period: String(row['Period'] || ''),
-      Duns: String(row['Duns'] || ''),
-      BAN: String(row['BAN'] || ''),
-      'Subscriber Last Name': String(row['Subscriber Last Name'] || ''),
-      'Customer Segmentation': String(row['Customer Segmentation'] || ''),
-      'Product Desc': String(row['Product Desc'] || ''),
-      'Billed Revenue': Number(row['Billed Revenue'] || 0),
-      'Billed Month/Year': String(row['Billed Month/Year'] || '')
+      'SIGN ACCT': String(row['SIGN ACCT'] || ''),
+      'COMPANY NAME': String(row['COMPANY NAME'] || ''),
+      'SITE NAME': String(row['SITE NAME'] || ''),
+      'Address Line 1': String(row['Address Line 1'] || ''),
+      'Province': String(row['Province'] || ''),
+      'City': String(row['City'] || ''),
+      'Postal Code': String(row['Postal Code'] || ''),
+      'SERVICE ID': String(row['SERVICE ID'] || ''),
+      'Billing Effective Date': excelDateToYYYYMMDD(Number(row['Billing Effective Date'])),
+      'Contract Term': Number(row['Contract Term'] || 0),
+      'Estimated End Date': excelDateToYYYYMMDD(Number(row['Estimated End Date'])),
+      'Description': String(row['Description'] || ''),
+      'Charges': Number(row['Charges'] || 0),
+      'Quantity': Number(row['Quantity'] || 0),
+      'MAL ID': String(row['MAL ID'] || '')
     }));
   };
 
@@ -43,6 +78,8 @@ const ResidualUpload: React.FC = (): JSX.Element => {
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
             const rawJson = XLSX.utils.sheet_to_json(firstSheet);
             const transformedData = transformExcelData(rawJson);
+            console.log('Raw data sample:', rawJson[0]);
+            console.log('Transformed data sample:', transformedData[0]);
             setData(transformedData);
             message.success(`File uploaded successfully with ${transformedData.length} rows`);
           } catch (error) {
@@ -62,7 +99,7 @@ const ResidualUpload: React.FC = (): JSX.Element => {
     }
 
     try {
-      const response = await fetch('https://prod-23.canadacentral.logic.azure.com:443/workflows/00a158236115474eb218b3bd6c3e1397/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Ow9L9uDn5QmWHM3dSMX4Pkuu8dl6Qxtwm0LFgHfw7as', {
+      const response = await fetch('https://prod-07.canadacentral.logic.azure.com:443/workflows/31e43d72fbd1412f8132e1de5f504baa/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=nljKdESTJivI1y_6AiqVBw_xNORtD_0bWxr50e0tHo8', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -93,7 +130,7 @@ const ResidualUpload: React.FC = (): JSX.Element => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <h1>Residual Upload</h1>
+      <h1>Wireline Upload</h1>
       <div style={{ marginBottom: '20px' }}>
         <input 
           type="file" 
@@ -150,4 +187,4 @@ const ResidualUpload: React.FC = (): JSX.Element => {
   );
 };
 
-export default ResidualUpload;
+export default WirelineUpload;
