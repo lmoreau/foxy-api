@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Input, Space, Tag, Tooltip } from 'antd';
+import { Table, Input, Space, Tag, Tooltip, DatePicker } from 'antd';
 import { listWonServices } from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
 import type { TableProps } from 'antd';
 import './table.css';
+import dayjs from 'dayjs';
 
 const { Search } = Input;
 
@@ -66,55 +67,60 @@ const WonServicesPage: React.FC = () => {
     const [searchText, setSearchText] = useState('');
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const [startDate, setStartDate] = useState(dayjs().subtract(1, 'year'));
+    const [endDate, setEndDate] = useState(dayjs());
+
+    const fetchData = async () => {
+        try {
+            const response = await listWonServices(
+                startDate.format('YYYY-MM-DD'),
+                endDate.format('YYYY-MM-DD')
+            );
+            if (response.value) {
+                const services = response.value as WonService[];
+                // Group the data by SFDC Opp ID
+                const grouped = Object.values(
+                    services.reduce((acc: { [key: string]: GroupedData }, item: WonService) => {
+                        const oppId = item.foxy_Opportunity?.foxy_sfdcoppid;
+                        if (!oppId) return acc;
+
+                        if (!acc[oppId]) {
+                            acc[oppId] = {
+                                key: oppId,
+                                foxy_sfdcoppid: oppId,
+                                opportunity_name: item.foxy_Opportunity.name,
+                                actualvalue: item.foxy_Opportunity.actualvalue,
+                                actualclosedate: item.foxy_Opportunity.actualclosedate,
+                                children: [],
+                                isGroup: true
+                            };
+                        }
+                        acc[oppId].children?.push(item);
+                        return acc;
+                    }, {})
+                );
+                // Sort the grouped data by actualclosedate in descending order
+                grouped.sort((a, b) => {
+                    const dateA = new Date(a.actualclosedate).getTime();
+                    const dateB = new Date(b.actualclosedate).getTime();
+                    return dateB - dateA;
+                });
+
+                setData(grouped);
+                setFilteredData(grouped);
+                // Set all groups to be expanded by default
+                setExpandedKeys(grouped.map(g => g.key));
+            }
+        } catch (error) {
+            console.error('Error fetching won services:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await listWonServices();
-                if (response.value) {
-                    const services = response.value as WonService[];
-                    // Group the data by SFDC Opp ID
-                    const grouped = Object.values(
-                        services.reduce((acc: { [key: string]: GroupedData }, item: WonService) => {
-                            const oppId = item.foxy_Opportunity?.foxy_sfdcoppid;
-                            if (!oppId) return acc;
-
-                            if (!acc[oppId]) {
-                                acc[oppId] = {
-                                    key: oppId,
-                                    foxy_sfdcoppid: oppId,
-                                    opportunity_name: item.foxy_Opportunity.name,
-                                    actualvalue: item.foxy_Opportunity.actualvalue,
-                                    actualclosedate: item.foxy_Opportunity.actualclosedate,
-                                    children: [],
-                                    isGroup: true
-                                };
-                            }
-                            acc[oppId].children?.push(item);
-                            return acc;
-                        }, {})
-                    );
-                    // Sort the grouped data by actualclosedate in descending order
-                    grouped.sort((a, b) => {
-                        const dateA = new Date(a.actualclosedate).getTime();
-                        const dateB = new Date(b.actualclosedate).getTime();
-                        return dateB - dateA;
-                    });
-    
-                    setData(grouped);
-                    setFilteredData(grouped);
-                    // Set all groups to be expanded by default
-                    setExpandedKeys(grouped.map(g => g.key));
-                }
-            } catch (error) {
-                console.error('Error fetching won services:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
-    }, []);
+    }, [startDate, endDate]);
 
     const handleSearch = (value: string) => {
         setSearchText(value);
@@ -301,15 +307,27 @@ const WonServicesPage: React.FC = () => {
         <div style={{ padding: '24px' }}>
             <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }}>
                 <h1>Won Services</h1>
-                <Search
-                    placeholder="Search by Opp ID, Service ID, Product, or Address"
-                    allowClear
-                    enterButton
-                    size="large"
-                    onSearch={handleSearch}
-                    onChange={e => handleSearch(e.target.value)}
-                    style={{ maxWidth: 600 }}
-                />
+                <Space size="middle">
+                    <DatePicker
+                        value={startDate}
+                        onChange={(date) => date && setStartDate(date)}
+                        placeholder="Start Date"
+                    />
+                    <DatePicker
+                        value={endDate}
+                        onChange={(date) => date && setEndDate(date)}
+                        placeholder="End Date"
+                    />
+                    <Search
+                        placeholder="Search by Opp ID, Service ID, Product, or Address"
+                        allowClear
+                        enterButton
+                        size="large"
+                        onSearch={handleSearch}
+                        onChange={e => handleSearch(e.target.value)}
+                        style={{ width: 400 }}
+                    />
+                </Space>
             </Space>
             <Table
                 rowSelection={rowSelection}
