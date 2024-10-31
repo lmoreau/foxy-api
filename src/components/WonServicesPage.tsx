@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Table } from 'antd';
+import { Table, Input, Space } from 'antd';
 import { listWonServices } from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
+import type { TableProps } from 'antd';
 import './table.css';
+
+const { Search } = Input;
 
 interface WonService {
     foxy_serviceid: string;
@@ -41,20 +44,16 @@ interface WonService {
 const WonServicesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<WonService[]>([]);
+    const [filteredData, setFilteredData] = useState<WonService[]>([]);
+    const [searchText, setSearchText] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await listWonServices();
-                console.log('Full API Response:', response);
-                if (response.value && response.value.length > 0) {
-                    console.log('First item:', response.value[0]);
-                    console.log('Product name:', response.value[0]?.foxy_Product?.name);
-                    console.log('Opportunity:', response.value[0]?.foxy_Opportunity);
-                    console.log('Building address:', response.value[0]?.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress);
-                }
                 if (response.value) {
                     setData(response.value);
+                    setFilteredData(response.value);
                 }
             } catch (error) {
                 console.error('Error fetching won services:', error);
@@ -66,12 +65,26 @@ const WonServicesPage: React.FC = () => {
         fetchData();
     }, []);
 
-    const columns = [
+    const handleSearch = (value: string) => {
+        setSearchText(value);
+        const searchLower = value.toLowerCase();
+        const filtered = data.filter(item => 
+            item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
+            item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
+            item.foxy_Opportunity?.name?.toLowerCase().includes(searchLower) ||
+            item.foxy_Opportunity?.foxy_sfdcoppid?.toLowerCase().includes(searchLower) ||
+            item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower)
+        );
+        setFilteredData(filtered);
+    };
+
+    const columns: TableProps<WonService>['columns'] = [
         {
             title: 'Service ID',
             dataIndex: 'foxy_serviceid',
             key: 'foxy_serviceid',
             width: 120,
+            sorter: (a, b) => (a.foxy_serviceid || '').localeCompare(b.foxy_serviceid || ''),
         },
         {
             title: 'Product',
@@ -79,6 +92,7 @@ const WonServicesPage: React.FC = () => {
             key: 'product_name',
             width: 200,
             render: (text: string) => text || '-',
+            sorter: (a, b) => (a.foxy_Product?.name || '').localeCompare(b.foxy_Product?.name || ''),
         },
         {
             title: 'Opportunity',
@@ -86,6 +100,7 @@ const WonServicesPage: React.FC = () => {
             key: 'opportunity_name',
             width: 200,
             render: (text: string) => text || '-',
+            sorter: (a, b) => (a.foxy_Opportunity?.name || '').localeCompare(b.foxy_Opportunity?.name || ''),
         },
         {
             title: 'SFDC Opp ID',
@@ -100,6 +115,7 @@ const WonServicesPage: React.FC = () => {
             key: 'actual_value',
             width: 120,
             render: (value: number) => value ? formatCurrency(value) : '-',
+            sorter: (a, b) => (a.foxy_Opportunity?.actualvalue || 0) - (b.foxy_Opportunity?.actualvalue || 0),
         },
         {
             title: 'Address',
@@ -114,6 +130,7 @@ const WonServicesPage: React.FC = () => {
             key: 'foxy_comprate',
             width: 100,
             render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
+            sorter: (a, b) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
         },
         {
             title: 'Expected Comp',
@@ -121,12 +138,14 @@ const WonServicesPage: React.FC = () => {
             key: 'foxy_expectedcomp',
             width: 120,
             render: (value: number) => value ? formatCurrency(value) : '-',
+            sorter: (a, b) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
         },
         {
             title: 'Term',
             dataIndex: 'foxy_term',
             key: 'foxy_term',
             width: 80,
+            sorter: (a, b) => (a.foxy_term || 0) - (b.foxy_term || 0),
         },
         {
             title: 'TCV',
@@ -134,12 +153,14 @@ const WonServicesPage: React.FC = () => {
             key: 'foxy_tcv',
             width: 120,
             render: (value: number) => value ? formatCurrency(value) : '-',
+            sorter: (a, b) => (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
         },
         {
             title: 'Access',
             dataIndex: 'foxy_access',
             key: 'foxy_access',
             width: 120,
+            sorter: (a, b) => (a.foxy_access || '').localeCompare(b.foxy_access || ''),
         },
         {
             title: 'MRR',
@@ -147,12 +168,14 @@ const WonServicesPage: React.FC = () => {
             key: 'foxy_mrr',
             width: 120,
             render: (value: number) => value ? formatCurrency(value) : '-',
+            sorter: (a, b) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
         },
         {
             title: 'Quantity',
             dataIndex: 'foxy_quantity',
             key: 'foxy_quantity',
             width: 80,
+            sorter: (a, b) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
         },
         {
             title: 'Line Margin',
@@ -160,24 +183,37 @@ const WonServicesPage: React.FC = () => {
             key: 'foxy_linemargin',
             width: 100,
             render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
+            sorter: (a, b) => (a.foxy_linemargin || 0) - (b.foxy_linemargin || 0),
         },
     ];
 
     return (
         <div style={{ padding: '24px' }}>
-            <h1>Won Services</h1>
+            <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }}>
+                <h1>Won Services</h1>
+                <Search
+                    placeholder="Search by Service ID, Product, Opportunity, SFDC ID, or Address"
+                    allowClear
+                    enterButton
+                    size="large"
+                    onSearch={handleSearch}
+                    onChange={e => handleSearch(e.target.value)}
+                    style={{ maxWidth: 600 }}
+                />
+            </Space>
             <Table
                 columns={columns}
-                dataSource={data}
+                dataSource={filteredData}
                 loading={loading}
                 rowKey="foxy_wonserviceid"
-                scroll={{ x: 'max-content' }}
+                scroll={{ x: 'max-content', y: 'calc(100vh - 300px)' }}
                 className="custom-table"
                 size="middle"
                 pagination={{ 
                     pageSize: 50,
                     showSizeChanger: true,
-                    showTotal: (total) => `Total ${total} items`
+                    showTotal: (total) => `Total ${total} items`,
+                    showQuickJumper: true
                 }}
             />
         </div>

@@ -98,10 +98,21 @@ export const listAccountsForResidualCheck = async () => {
   return response.data;
 };
 
+let cachedWonServices: any = null;
+let lastFetchTime: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export const listWonServices = async () => {
+  const now = Date.now();
+  if (cachedWonServices && (now - lastFetchTime < CACHE_DURATION)) {
+    return cachedWonServices;
+  }
+
   const headers = await getAuthHeaders();
   const url = `${API_BASE_URL}/listWonServices`;
   const response = await axios.get(url, { headers });
+  cachedWonServices = response.data;
+  lastFetchTime = now;
   return response.data;
 };
 
