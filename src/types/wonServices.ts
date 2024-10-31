@@ -10,7 +10,6 @@ export interface WonService {
     foxy_linemargin: number;
     foxy_wonserviceid: string;
     foxy_renewaldisposition: number;
-    foxy_infusionpaymentstatus: number;
     foxy_renewaltype: string;
     foxy_sololine: boolean;
     foxy_revenuetype: number;

@@ -3,6 +3,8 @@ import { Space, Tag, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 import { formatCurrency } from '../../utils/formatters';
 import { getRenewalDisposition } from '../../utils/constants/renewalDispositionMapper';
+import { getInPaymentStatus } from '../../utils/constants/inPaymentStatusMapper';
+import { getRevenueType } from '../../utils/constants/revenueTypeMapper';
 import { GroupedData, WonService, isGroupData } from '../../types/wonServices';
 
 export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['columns'] => [
@@ -21,7 +23,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             return aName.localeCompare(bName);
         },
         onCell: (record) => ({
-            colSpan: isGroupData(record) ? 17 : 1,
+            colSpan: isGroupData(record) ? 16 : 1,
             style: isGroupData(record) ? { 
                 backgroundColor: '#f5f5f5',
                 fontWeight: 'bold'
@@ -178,16 +180,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         render: (value: number) => getRenewalDisposition(value),
     },
     {
-        title: 'Infusion Payment Status',
-        dataIndex: 'foxy_infusionpaymentstatus',
-        key: 'foxy_infusionpaymentstatus',
-        width: 150,
-        sorter: (a: any, b: any) => (a.foxy_infusionpaymentstatus || 0) - (b.foxy_infusionpaymentstatus || 0),
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-    },
-    {
         title: 'Renewal Type',
         dataIndex: 'foxy_renewaltype',
         key: 'foxy_renewaltype',
@@ -217,20 +209,30 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         dataIndex: 'foxy_revenuetype',
         key: 'foxy_revenuetype',
         width: 120,
-        sorter: (a: any, b: any) => (a.foxy_revenuetype || 0) - (b.foxy_revenuetype || 0),
+        sorter: (a: any, b: any) => {
+            const aType = getRevenueType(a.foxy_revenuetype || 0);
+            const bType = getRevenueType(b.foxy_revenuetype || 0);
+            return aType.localeCompare(bType);
+        },
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
+        render: (value: number) => getRevenueType(value),
     },
     {
         title: 'In Payment Status',
         dataIndex: 'foxy_inpaymentstatus',
         key: 'foxy_inpaymentstatus',
         width: 150,
-        sorter: (a: any, b: any) => (a.foxy_inpaymentstatus || 0) - (b.foxy_inpaymentstatus || 0),
+        sorter: (a: any, b: any) => {
+            const aStatus = getInPaymentStatus(a.foxy_inpaymentstatus || 0);
+            const bStatus = getInPaymentStatus(b.foxy_inpaymentstatus || 0);
+            return aStatus.localeCompare(bStatus);
+        },
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
+        render: (value: number) => getInPaymentStatus(value),
     },
     {
         title: 'MRR Uptick',
