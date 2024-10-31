@@ -15,6 +15,27 @@ interface WonService {
     foxy_quantity: number;
     foxy_linemargin: number;
     foxy_wonserviceid: string;
+    foxy_Product: {
+        name: string;
+        productid: string;
+    };
+    foxy_Account: {
+        name: string;
+        accountid: string;
+    };
+    foxy_Opportunity: {
+        name: string;
+        foxy_sfdcoppid: string;
+        actualclosedate: string;
+        actualvalue: number;
+        opportunityid: string;
+    };
+    foxy_AccountLocation: {
+        foxy_Building: {
+            foxy_fulladdress: string;
+            foxy_buildingid: string;
+        };
+    };
 }
 
 const WonServicesPage: React.FC = () => {
@@ -25,6 +46,13 @@ const WonServicesPage: React.FC = () => {
         const fetchData = async () => {
             try {
                 const response = await listWonServices();
+                console.log('Full API Response:', response);
+                if (response.value && response.value.length > 0) {
+                    console.log('First item:', response.value[0]);
+                    console.log('Product name:', response.value[0]?.foxy_Product?.name);
+                    console.log('Opportunity:', response.value[0]?.foxy_Opportunity);
+                    console.log('Building address:', response.value[0]?.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress);
+                }
                 if (response.value) {
                     setData(response.value);
                 }
@@ -44,6 +72,41 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_serviceid',
             key: 'foxy_serviceid',
             width: 120,
+        },
+        {
+            title: 'Product',
+            dataIndex: ['foxy_Product', 'name'],
+            key: 'product_name',
+            width: 200,
+            render: (text: string) => text || '-',
+        },
+        {
+            title: 'Opportunity',
+            dataIndex: ['foxy_Opportunity', 'name'],
+            key: 'opportunity_name',
+            width: 200,
+            render: (text: string) => text || '-',
+        },
+        {
+            title: 'SFDC Opp ID',
+            dataIndex: ['foxy_Opportunity', 'foxy_sfdcoppid'],
+            key: 'sfdc_opp_id',
+            width: 120,
+            render: (text: string) => text || '-',
+        },
+        {
+            title: 'Opp Value',
+            dataIndex: ['foxy_Opportunity', 'actualvalue'],
+            key: 'actual_value',
+            width: 120,
+            render: (value: number) => value ? formatCurrency(value) : '-',
+        },
+        {
+            title: 'Address',
+            dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
+            key: 'address',
+            width: 300,
+            render: (text: string) => text || '-',
         },
         {
             title: 'Comp Rate',
