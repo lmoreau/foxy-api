@@ -170,7 +170,8 @@ const WonServicesPage: React.FC = () => {
             title: 'Address',
             dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
             key: 'address',
-            width: 300,
+            width: 450,
+            ellipsis: true,
             sorter: (a: any, b: any) => {
                 const aAddress = a.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
                 const bAddress = b.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
@@ -178,9 +179,18 @@ const WonServicesPage: React.FC = () => {
             },
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1,
-                style: { paddingLeft: '20px' }
+                style: { 
+                    paddingLeft: '20px',
+                    maxWidth: '450px'
+                }
             }),
-            render: (text: string) => text || '-',
+            render: (text: string) => (
+                <Tooltip title={text}>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {text || '-'}
+                    </div>
+                </Tooltip>
+            ),
         },
         {
             title: 'Comp Rate',
