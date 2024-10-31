@@ -64,6 +64,7 @@ const WonServicesPage: React.FC = () => {
     const [filteredData, setFilteredData] = useState<GroupedData[]>([]);
     const [searchText, setSearchText] = useState('');
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -123,39 +124,29 @@ const WonServicesPage: React.FC = () => {
 
     const columns: TableProps<GroupedData | WonService>['columns'] = [
         {
-            title: 'Service ID',
-            dataIndex: 'foxy_sfdcoppid',
-            key: 'foxy_sfdcoppid',
-            width: 150,
-            onCell: (record) => ({
-                colSpan: isGroupData(record) ? 11 : 1,
-                style: isGroupData(record) ? { 
-                    backgroundColor: '#f5f5f5',
-                    fontWeight: 'bold'
-                } : {}
-            }),
-            render: (value: string, record: GroupedData | WonService) => {
-                if (isGroupData(record)) {
-                    return (
-                        <Space size="small">
-                            <Tag color="blue">{value}</Tag>
-                            <span>{record.opportunity_name}</span>
-                            <Tag color="blue">{formatCurrency(record.actualvalue)}</Tag>
-                        </Space>
-                    );
-                }
-                return record.foxy_serviceid;
-            },
-        },
-        {
             title: 'Product',
             dataIndex: ['foxy_Product', 'name'],
             key: 'product_name',
             width: 200,
             onCell: (record) => ({
-                colSpan: isGroupData(record) ? 0 : 1
+                colSpan: isGroupData(record) ? 10 : 1,
+                style: isGroupData(record) ? { 
+                    backgroundColor: '#f5f5f5',
+                    fontWeight: 'bold'
+                } : {}
             }),
-            render: (text: string) => text || '-',
+            render: (text: string, record: GroupedData | WonService) => {
+                if (isGroupData(record)) {
+                    return (
+                        <Space size="small">
+                            <Tag color="blue">{record.foxy_sfdcoppid}</Tag>
+                            <span>{record.opportunity_name}</span>
+                            <Tag color="blue">{formatCurrency(record.actualvalue)}</Tag>
+                        </Space>
+                    );
+                }
+                return text || '-';
+            },
         },
         {
             title: 'Address',
@@ -246,6 +237,13 @@ const WonServicesPage: React.FC = () => {
         },
     ];
 
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: (newSelectedRowKeys: React.Key[]) => {
+            setSelectedRowKeys(newSelectedRowKeys);
+        },
+    };
+
     return (
         <div style={{ padding: '24px' }}>
             <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }}>
@@ -261,6 +259,7 @@ const WonServicesPage: React.FC = () => {
                 />
             </Space>
             <Table
+                rowSelection={rowSelection}
                 columns={columns}
                 dataSource={filteredData}
                 loading={loading}
