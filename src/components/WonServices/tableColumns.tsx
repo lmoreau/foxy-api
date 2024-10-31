@@ -27,18 +27,26 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 16 : 1,
             style: isGroupData(record) ? { 
                 backgroundColor: '#f5f5f5',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                padding: '8px 16px'
             } : {}
         }),
         render: (text: string, record: GroupedData | WonService) => {
             if (isGroupData(record)) {
                 return (
-                    <Space size="small">
-                        <Tag color="blue">{record.foxy_sfdcoppid}</Tag>
-                        <Tag color="green">{record.actualclosedate}</Tag>
-                        <span>{record.opportunity_name}</span>
-                        <Tag color="blue">{formatCurrency(record.actualvalue)}</Tag>
-                    </Space>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <Space size="small">
+                            <Tag color="blue">{record.foxy_sfdcoppid}</Tag>
+                            <Tag color="green">{record.actualclosedate}</Tag>
+                            <Tag color="blue">{formatCurrency(record.actualvalue)}</Tag>
+                        </Space>
+                        <div style={{ fontSize: '0.9em', color: '#666' }}>
+                            {record.children?.[0]?.foxy_Account?.name || ''}
+                        </div>
+                        <div>
+                            {record.opportunity_name}
+                        </div>
+                    </div>
                 );
             }
             return (
