@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Input, Space } from 'antd';
+import { Table, Input, Space, Tag } from 'antd';
 import { listWonServices } from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
 import type { TableProps } from 'antd';
@@ -123,10 +123,10 @@ const WonServicesPage: React.FC = () => {
 
     const columns: TableProps<GroupedData | WonService>['columns'] = [
         {
-            title: 'SFDC Opp ID / Service ID',
+            title: 'Service ID',
             dataIndex: 'foxy_sfdcoppid',
             key: 'foxy_sfdcoppid',
-            width: 600,
+            width: 150,
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 11 : 1,
                 style: isGroupData(record) ? { 
@@ -137,10 +137,10 @@ const WonServicesPage: React.FC = () => {
             render: (value: string, record: GroupedData | WonService) => {
                 if (isGroupData(record)) {
                     return (
-                        <Space size="large">
-                            <span><strong>ID:</strong> {value}</span>
-                            <span><strong>Name:</strong> {record.opportunity_name}</span>
-                            <span><strong>Value:</strong> {formatCurrency(record.actualvalue)}</span>
+                        <Space size="small">
+                            <Tag color="blue">{value}</Tag>
+                            <span>{record.opportunity_name}</span>
+                            <Tag color="blue">{formatCurrency(record.actualvalue)}</Tag>
                         </Space>
                     );
                 }
