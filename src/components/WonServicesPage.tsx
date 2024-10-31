@@ -3,6 +3,7 @@ import { Table, Input, Space, Tag, Tooltip, DatePicker, Button } from 'antd';
 import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { listWonServices } from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
+import { getRenewalDisposition } from '../utils/constants/renewalDispositionMapper';
 import type { TableProps } from 'antd';
 import './table.css';
 import dayjs from 'dayjs';
@@ -20,6 +21,13 @@ interface WonService {
     foxy_quantity: number;
     foxy_linemargin: number;
     foxy_wonserviceid: string;
+    foxy_renewaldisposition: number;
+    foxy_infusionpaymentstatus: number;
+    foxy_renewaltype: string;
+    foxy_sololine: boolean;
+    foxy_revenuetype: number;
+    foxy_inpaymentstatus: number;
+    foxy_mrruptick: number | null;
     foxy_Product: {
         name: string;
         productid: string;
@@ -162,7 +170,7 @@ const WonServicesPage: React.FC = () => {
                 return aName.localeCompare(bName);
             },
             onCell: (record) => ({
-                colSpan: isGroupData(record) ? 10 : 1,
+                colSpan: isGroupData(record) ? 17 : 1,
                 style: isGroupData(record) ? { 
                     backgroundColor: '#f5f5f5',
                     fontWeight: 'bold'
@@ -215,22 +223,11 @@ const WonServicesPage: React.FC = () => {
             ),
         },
         {
-            title: 'Comp Rate',
-            dataIndex: 'foxy_comprate',
-            key: 'foxy_comprate',
-            width: 100,
-            sorter: (a: any, b: any) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
-            onCell: (record) => ({
-                colSpan: isGroupData(record) ? 0 : 1
-            }),
-            render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
-        },
-        {
-            title: 'Expected Comp',
-            dataIndex: 'foxy_expectedcomp',
-            key: 'foxy_expectedcomp',
+            title: 'MRR',
+            dataIndex: 'foxy_mrr',
+            key: 'foxy_mrr',
             width: 120,
-            sorter: (a: any, b: any) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
+            sorter: (a: any, b: any) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -258,6 +255,16 @@ const WonServicesPage: React.FC = () => {
             render: (value: number) => value ? formatCurrency(value) : '-',
         },
         {
+            title: 'Quantity',
+            dataIndex: 'foxy_quantity',
+            key: 'foxy_quantity',
+            width: 80,
+            sorter: (a: any, b: any) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+        },
+        {
             title: 'Access',
             dataIndex: 'foxy_access',
             key: 'foxy_access',
@@ -272,25 +279,26 @@ const WonServicesPage: React.FC = () => {
             }),
         },
         {
-            title: 'MRR',
-            dataIndex: 'foxy_mrr',
-            key: 'foxy_mrr',
+            title: 'Comp Rate',
+            dataIndex: 'foxy_comprate',
+            key: 'foxy_comprate',
+            width: 100,
+            sorter: (a: any, b: any) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+            render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
+        },
+        {
+            title: 'Expected Comp',
+            dataIndex: 'foxy_expectedcomp',
+            key: 'foxy_expectedcomp',
             width: 120,
-            sorter: (a: any, b: any) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
+            sorter: (a: any, b: any) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
             render: (value: number) => value ? formatCurrency(value) : '-',
-        },
-        {
-            title: 'Quantity',
-            dataIndex: 'foxy_quantity',
-            key: 'foxy_quantity',
-            width: 80,
-            sorter: (a: any, b: any) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
-            onCell: (record) => ({
-                colSpan: isGroupData(record) ? 0 : 1
-            }),
         },
         {
             title: 'Line Margin',
@@ -302,6 +310,87 @@ const WonServicesPage: React.FC = () => {
                 colSpan: isGroupData(record) ? 0 : 1
             }),
             render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
+        },
+        {
+            title: 'Renewal Disposition',
+            dataIndex: 'foxy_renewaldisposition',
+            key: 'foxy_renewaldisposition',
+            width: 150,
+            sorter: (a: any, b: any) => {
+                const aDisp = getRenewalDisposition(a.foxy_renewaldisposition || 0);
+                const bDisp = getRenewalDisposition(b.foxy_renewaldisposition || 0);
+                return aDisp.localeCompare(bDisp);
+            },
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+            render: (value: number) => getRenewalDisposition(value),
+        },
+        {
+            title: 'Infusion Payment Status',
+            dataIndex: 'foxy_infusionpaymentstatus',
+            key: 'foxy_infusionpaymentstatus',
+            width: 150,
+            sorter: (a: any, b: any) => (a.foxy_infusionpaymentstatus || 0) - (b.foxy_infusionpaymentstatus || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+        },
+        {
+            title: 'Renewal Type',
+            dataIndex: 'foxy_renewaltype',
+            key: 'foxy_renewaltype',
+            width: 200,
+            sorter: (a: any, b: any) => {
+                const aType = a.foxy_renewaltype || '';
+                const bType = b.foxy_renewaltype || '';
+                return aType.localeCompare(bType);
+            },
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+        },
+        {
+            title: 'Solo Line',
+            dataIndex: 'foxy_sololine',
+            key: 'foxy_sololine',
+            width: 100,
+            sorter: (a: any, b: any) => (a.foxy_sololine ? 1 : 0) - (b.foxy_sololine ? 1 : 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+            render: (value: boolean) => value ? 'Yes' : 'No',
+        },
+        {
+            title: 'Revenue Type',
+            dataIndex: 'foxy_revenuetype',
+            key: 'foxy_revenuetype',
+            width: 120,
+            sorter: (a: any, b: any) => (a.foxy_revenuetype || 0) - (b.foxy_revenuetype || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+        },
+        {
+            title: 'In Payment Status',
+            dataIndex: 'foxy_inpaymentstatus',
+            key: 'foxy_inpaymentstatus',
+            width: 150,
+            sorter: (a: any, b: any) => (a.foxy_inpaymentstatus || 0) - (b.foxy_inpaymentstatus || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+        },
+        {
+            title: 'MRR Uptick',
+            dataIndex: 'foxy_mrruptick',
+            key: 'foxy_mrruptick',
+            width: 120,
+            sorter: (a: any, b: any) => (a.foxy_mrruptick || 0) - (b.foxy_mrruptick || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
+            render: (value: number | null) => value ? formatCurrency(value) : '-',
         },
     ];
 
