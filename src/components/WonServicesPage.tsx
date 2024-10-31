@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Input, Space, Tag, Tooltip, DatePicker } from 'antd';
+import { Table, Input, Space, Tag, Tooltip, DatePicker, Button } from 'antd';
+import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { listWonServices } from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
 import type { TableProps } from 'antd';
@@ -135,6 +136,14 @@ const WonServicesPage: React.FC = () => {
             )
         );
         setFilteredData(filtered);
+    };
+
+    const toggleExpandAll = () => {
+        if (expandedKeys.length > 0) {
+            setExpandedKeys([]);
+        } else {
+            setExpandedKeys(filteredData.map(g => g.key));
+        }
     };
 
     const columns: TableProps<GroupedData | WonService>['columns'] = [
@@ -327,6 +336,13 @@ const WonServicesPage: React.FC = () => {
                         onChange={e => handleSearch(e.target.value)}
                         style={{ width: 400 }}
                     />
+                    <Button
+                        type="primary"
+                        onClick={toggleExpandAll}
+                        icon={expandedKeys.length > 0 ? <CompressOutlined /> : <ExpandOutlined />}
+                    >
+                        {expandedKeys.length > 0 ? 'Collapse All' : 'Expand All'}
+                    </Button>
                 </Space>
             </Space>
             <Table
