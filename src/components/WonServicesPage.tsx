@@ -14,6 +14,7 @@ const WonServicesPage: React.FC = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const [startDate, setStartDate] = useState(dayjs().subtract(1, 'year'));
     const [endDate, setEndDate] = useState(dayjs());
+    const [paymentStatuses, setPaymentStatuses] = useState<number[]>([]);
 
     const fetchData = async () => {
         try {
@@ -24,7 +25,7 @@ const WonServicesPage: React.FC = () => {
             if (response.value) {
                 const grouped = groupWonServicesByOpportunity(response.value as WonService[]);
                 setData(grouped);
-                setFilteredData(grouped);
+                filterData(grouped, '', paymentStatuses);
                 setExpandedKeys(grouped.map(g => g.key));
             }
         } catch (error) {
@@ -38,18 +39,38 @@ const WonServicesPage: React.FC = () => {
         fetchData();
     }, [startDate, endDate]);
 
-    const handleSearch = (value: string) => {
-        const searchLower = value.toLowerCase();
-        const filtered = data.filter(group => 
-            group.foxy_sfdcoppid.toLowerCase().includes(searchLower) ||
-            group.opportunity_name.toLowerCase().includes(searchLower) ||
-            group.children?.some(item =>
-                item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
-                item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
-                item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower)
-            )
-        );
+    const filterData = (sourceData: GroupedData[], searchValue: string, selectedStatuses: number[]) => {
+        let filtered = sourceData;
+
+        if (searchValue) {
+            const searchLower = searchValue.toLowerCase();
+            filtered = filtered.filter(group => 
+                group.foxy_sfdcoppid.toLowerCase().includes(searchLower) ||
+                group.opportunity_name.toLowerCase().includes(searchLower) ||
+                group.children?.some(item =>
+                    item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
+                    item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
+                    item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower)
+                )
+            );
+        }
+
+        if (selectedStatuses.length > 0) {
+            filtered = filtered.filter(group => 
+                group.children?.some(item => selectedStatuses.includes(item.foxy_inpaymentstatus))
+            );
+        }
+
         setFilteredData(filtered);
+    };
+
+    const handleSearch = (value: string) => {
+        filterData(data, value, paymentStatuses);
+    };
+
+    const handlePaymentStatusChange = (values: number[]) => {
+        setPaymentStatuses(values);
+        filterData(data, '', values);
     };
 
     const toggleExpandAll = () => {
@@ -70,6 +91,8 @@ const WonServicesPage: React.FC = () => {
                 onSearch={handleSearch}
                 onToggleExpand={toggleExpandAll}
                 isExpanded={expandedKeys.length > 0}
+                paymentStatuses={paymentStatuses}
+                onPaymentStatusChange={handlePaymentStatusChange}
             />
             <WonServicesTable
                 data={filteredData}
