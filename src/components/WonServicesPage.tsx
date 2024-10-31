@@ -94,6 +94,13 @@ const WonServicesPage: React.FC = () => {
                             return acc;
                         }, {})
                     );
+                    // Sort the grouped data by actualclosedate in descending order
+                    grouped.sort((a, b) => {
+                        const dateA = new Date(a.actualclosedate).getTime();
+                        const dateB = new Date(b.actualclosedate).getTime();
+                        return dateB - dateA;
+                    });
+    
                     setData(grouped);
                     setFilteredData(grouped);
                     // Set all groups to be expanded by default
