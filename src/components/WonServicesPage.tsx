@@ -127,7 +127,15 @@ const WonServicesPage: React.FC = () => {
             title: 'Product',
             dataIndex: ['foxy_Product', 'name'],
             key: 'product_name',
-            width: 200,
+            width: 250,
+            sorter: (a: any, b: any) => {
+                if (isGroupData(a) && isGroupData(b)) {
+                    return a.opportunity_name.localeCompare(b.opportunity_name);
+                }
+                const aName = a.foxy_Product?.name || '';
+                const bName = b.foxy_Product?.name || '';
+                return aName.localeCompare(bName);
+            },
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 10 : 1,
                 style: isGroupData(record) ? { 
@@ -153,8 +161,14 @@ const WonServicesPage: React.FC = () => {
             dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
             key: 'address',
             width: 300,
+            sorter: (a: any, b: any) => {
+                const aAddress = a.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
+                const bAddress = b.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
+                return aAddress.localeCompare(bAddress);
+            },
             onCell: (record) => ({
-                colSpan: isGroupData(record) ? 0 : 1
+                colSpan: isGroupData(record) ? 0 : 1,
+                style: { paddingLeft: '20px' }
             }),
             render: (text: string) => text || '-',
         },
@@ -163,6 +177,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_comprate',
             key: 'foxy_comprate',
             width: 100,
+            sorter: (a: any, b: any) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -173,6 +188,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_expectedcomp',
             key: 'foxy_expectedcomp',
             width: 120,
+            sorter: (a: any, b: any) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -183,6 +199,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_term',
             key: 'foxy_term',
             width: 80,
+            sorter: (a: any, b: any) => (a.foxy_term || 0) - (b.foxy_term || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -192,6 +209,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_tcv',
             key: 'foxy_tcv',
             width: 120,
+            sorter: (a: any, b: any) => (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -202,6 +220,11 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_access',
             key: 'foxy_access',
             width: 120,
+            sorter: (a: any, b: any) => {
+                const aAccess = a.foxy_access || '';
+                const bAccess = b.foxy_access || '';
+                return aAccess.localeCompare(bAccess);
+            },
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -211,6 +234,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_mrr',
             key: 'foxy_mrr',
             width: 120,
+            sorter: (a: any, b: any) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -221,6 +245,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_quantity',
             key: 'foxy_quantity',
             width: 80,
+            sorter: (a: any, b: any) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
@@ -230,6 +255,7 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_linemargin',
             key: 'foxy_linemargin',
             width: 100,
+            sorter: (a: any, b: any) => (a.foxy_linemargin || 0) - (b.foxy_linemargin || 0),
             onCell: (record) => ({
                 colSpan: isGroupData(record) ? 0 : 1
             }),
