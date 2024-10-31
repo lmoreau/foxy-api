@@ -41,19 +41,60 @@ interface WonService {
     };
 }
 
+interface GroupedData {
+    key: string;
+    foxy_sfdcoppid: string;
+    opportunity_name: string;
+    actualvalue: number;
+    children?: WonService[];
+    isGroup: true;
+}
+
+const isGroupData = (record: any): record is GroupedData => {
+    return record && record.isGroup === true;
+};
+
+const isWonService = (record: any): record is WonService => {
+    return record && 'foxy_wonserviceid' in record;
+};
+
 const WonServicesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<WonService[]>([]);
-    const [filteredData, setFilteredData] = useState<WonService[]>([]);
+    const [data, setData] = useState<GroupedData[]>([]);
+    const [filteredData, setFilteredData] = useState<GroupedData[]>([]);
     const [searchText, setSearchText] = useState('');
+    const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await listWonServices();
                 if (response.value) {
-                    setData(response.value);
-                    setFilteredData(response.value);
+                    const services = response.value as WonService[];
+                    // Group the data by SFDC Opp ID
+                    const grouped = Object.values(
+                        services.reduce((acc: { [key: string]: GroupedData }, item: WonService) => {
+                            const oppId = item.foxy_Opportunity?.foxy_sfdcoppid;
+                            if (!oppId) return acc;
+
+                            if (!acc[oppId]) {
+                                acc[oppId] = {
+                                    key: oppId,
+                                    foxy_sfdcoppid: oppId,
+                                    opportunity_name: item.foxy_Opportunity.name,
+                                    actualvalue: item.foxy_Opportunity.actualvalue,
+                                    children: [],
+                                    isGroup: true
+                                };
+                            }
+                            acc[oppId].children?.push(item);
+                            return acc;
+                        }, {})
+                    );
+                    setData(grouped);
+                    setFilteredData(grouped);
+                    // Set all groups to be expanded by default
+                    setExpandedKeys(grouped.map(g => g.key));
                 }
             } catch (error) {
                 console.error('Error fetching won services:', error);
@@ -68,60 +109,62 @@ const WonServicesPage: React.FC = () => {
     const handleSearch = (value: string) => {
         setSearchText(value);
         const searchLower = value.toLowerCase();
-        const filtered = data.filter(item => 
-            item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
-            item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
-            item.foxy_Opportunity?.name?.toLowerCase().includes(searchLower) ||
-            item.foxy_Opportunity?.foxy_sfdcoppid?.toLowerCase().includes(searchLower) ||
-            item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower)
+        const filtered = data.filter(group => 
+            group.foxy_sfdcoppid.toLowerCase().includes(searchLower) ||
+            group.opportunity_name.toLowerCase().includes(searchLower) ||
+            group.children?.some(item =>
+                item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
+                item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
+                item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower)
+            )
         );
         setFilteredData(filtered);
     };
 
-    const columns: TableProps<WonService>['columns'] = [
+    const columns: TableProps<GroupedData | WonService>['columns'] = [
         {
-            title: 'Service ID',
-            dataIndex: 'foxy_serviceid',
-            key: 'foxy_serviceid',
-            width: 120,
-            sorter: (a, b) => (a.foxy_serviceid || '').localeCompare(b.foxy_serviceid || ''),
+            title: 'SFDC Opp ID / Service ID',
+            dataIndex: 'foxy_sfdcoppid',
+            key: 'foxy_sfdcoppid',
+            width: 600,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 11 : 1,
+                style: isGroupData(record) ? { 
+                    backgroundColor: '#f5f5f5',
+                    fontWeight: 'bold'
+                } : {}
+            }),
+            render: (value: string, record: GroupedData | WonService) => {
+                if (isGroupData(record)) {
+                    return (
+                        <Space size="large">
+                            <span><strong>ID:</strong> {value}</span>
+                            <span><strong>Name:</strong> {record.opportunity_name}</span>
+                            <span><strong>Value:</strong> {formatCurrency(record.actualvalue)}</span>
+                        </Space>
+                    );
+                }
+                return record.foxy_serviceid;
+            },
         },
         {
             title: 'Product',
             dataIndex: ['foxy_Product', 'name'],
             key: 'product_name',
             width: 200,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (text: string) => text || '-',
-            sorter: (a, b) => (a.foxy_Product?.name || '').localeCompare(b.foxy_Product?.name || ''),
-        },
-        {
-            title: 'Opportunity',
-            dataIndex: ['foxy_Opportunity', 'name'],
-            key: 'opportunity_name',
-            width: 200,
-            render: (text: string) => text || '-',
-            sorter: (a, b) => (a.foxy_Opportunity?.name || '').localeCompare(b.foxy_Opportunity?.name || ''),
-        },
-        {
-            title: 'SFDC Opp ID',
-            dataIndex: ['foxy_Opportunity', 'foxy_sfdcoppid'],
-            key: 'sfdc_opp_id',
-            width: 120,
-            render: (text: string) => text || '-',
-        },
-        {
-            title: 'Opp Value',
-            dataIndex: ['foxy_Opportunity', 'actualvalue'],
-            key: 'actual_value',
-            width: 120,
-            render: (value: number) => value ? formatCurrency(value) : '-',
-            sorter: (a, b) => (a.foxy_Opportunity?.actualvalue || 0) - (b.foxy_Opportunity?.actualvalue || 0),
         },
         {
             title: 'Address',
             dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
             key: 'address',
             width: 300,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (text: string) => text || '-',
         },
         {
@@ -129,61 +172,77 @@ const WonServicesPage: React.FC = () => {
             dataIndex: 'foxy_comprate',
             key: 'foxy_comprate',
             width: 100,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
-            sorter: (a, b) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
         },
         {
             title: 'Expected Comp',
             dataIndex: 'foxy_expectedcomp',
             key: 'foxy_expectedcomp',
             width: 120,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (value: number) => value ? formatCurrency(value) : '-',
-            sorter: (a, b) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
         },
         {
             title: 'Term',
             dataIndex: 'foxy_term',
             key: 'foxy_term',
             width: 80,
-            sorter: (a, b) => (a.foxy_term || 0) - (b.foxy_term || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
         },
         {
             title: 'TCV',
             dataIndex: 'foxy_tcv',
             key: 'foxy_tcv',
             width: 120,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (value: number) => value ? formatCurrency(value) : '-',
-            sorter: (a, b) => (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
         },
         {
             title: 'Access',
             dataIndex: 'foxy_access',
             key: 'foxy_access',
             width: 120,
-            sorter: (a, b) => (a.foxy_access || '').localeCompare(b.foxy_access || ''),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
         },
         {
             title: 'MRR',
             dataIndex: 'foxy_mrr',
             key: 'foxy_mrr',
             width: 120,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (value: number) => value ? formatCurrency(value) : '-',
-            sorter: (a, b) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
         },
         {
             title: 'Quantity',
             dataIndex: 'foxy_quantity',
             key: 'foxy_quantity',
             width: 80,
-            sorter: (a, b) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
         },
         {
             title: 'Line Margin',
             dataIndex: 'foxy_linemargin',
             key: 'foxy_linemargin',
             width: 100,
+            onCell: (record) => ({
+                colSpan: isGroupData(record) ? 0 : 1
+            }),
             render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
-            sorter: (a, b) => (a.foxy_linemargin || 0) - (b.foxy_linemargin || 0),
         },
     ];
 
@@ -192,7 +251,7 @@ const WonServicesPage: React.FC = () => {
             <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }}>
                 <h1>Won Services</h1>
                 <Search
-                    placeholder="Search by Service ID, Product, Opportunity, SFDC ID, or Address"
+                    placeholder="Search by Opp ID, Service ID, Product, or Address"
                     allowClear
                     enterButton
                     size="large"
@@ -205,7 +264,9 @@ const WonServicesPage: React.FC = () => {
                 columns={columns}
                 dataSource={filteredData}
                 loading={loading}
-                rowKey="foxy_wonserviceid"
+                rowKey={(record: GroupedData | WonService) => 
+                    isGroupData(record) ? record.key : record.foxy_wonserviceid
+                }
                 scroll={{ x: 'max-content', y: 'calc(100vh - 300px)' }}
                 className="custom-table"
                 size="middle"
@@ -214,6 +275,10 @@ const WonServicesPage: React.FC = () => {
                     showSizeChanger: true,
                     showTotal: (total) => `Total ${total} items`,
                     showQuickJumper: true
+                }}
+                expandable={{
+                    expandedRowKeys: expandedKeys,
+                    onExpandedRowsChange: (keys) => setExpandedKeys(keys as string[]),
                 }}
             />
         </div>
