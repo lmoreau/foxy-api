@@ -35,7 +35,7 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
             rowKey={(record: GroupedData | WonService) => 
                 isGroupData(record) ? record.key : record.foxy_wonserviceid
             }
-            scroll={{ x: 'max-content', y: 'calc(100vh - 300px)' }}
+            scroll={{ x: 'max-content', y: 'calc(100vh - 350px)' }} // Adjusted height
             className="custom-table"
             size="middle"
             pagination={{ 

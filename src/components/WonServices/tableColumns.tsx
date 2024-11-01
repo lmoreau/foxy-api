@@ -49,10 +49,14 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
                     </div>
                 );
             }
+            const revenueType = getRevenueType(record.foxy_revenuetype || 0);
+            const tagColor = record.foxy_revenuetype === 1 ? 'purple' : 
+                           record.foxy_revenuetype === 2 ? 'orange' :
+                           record.foxy_revenuetype === 3 ? 'cyan' : 'default';
             return (
                 <Tooltip title={text}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {text || '-'}
+                        {text || '-'} <Tag color={tagColor}>{revenueType}</Tag>
                     </div>
                 </Tooltip>
             );
@@ -194,21 +198,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
-    },
-    {
-        title: 'Revenue Type',
-        dataIndex: 'foxy_revenuetype',
-        key: 'foxy_revenuetype',
-        width: 120,
-        sorter: (a: any, b: any) => {
-            const aType = getRevenueType(a.foxy_revenuetype || 0);
-            const bType = getRevenueType(b.foxy_revenuetype || 0);
-            return aType.localeCompare(bType);
-        },
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: number) => getRevenueType(value),
     },
     {
         title: 'In Payment Status',

@@ -44,7 +44,8 @@ const WonServicesPage: React.FC = () => {
     const matchesSearch = (item: WonService, searchLower: string) => 
         item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
         item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
-        item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower);
+        item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower) ||
+        item.foxy_Opportunity?.foxy_sfdcoppid?.toLowerCase().includes(searchLower);
 
     const filterData = (sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
         let filtered = sourceData;
