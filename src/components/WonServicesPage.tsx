@@ -6,6 +6,7 @@ import { groupWonServicesByOpportunity } from '../utils/wonServicesUtils';
 import { GroupedData, WonService } from '../types/wonServices';
 import WonServicesFilters from './WonServices/WonServicesFilters';
 import WonServicesTable from './WonServices/WonServicesTable';
+import { AxiosError } from 'axios';
 
 const WonServicesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -34,6 +35,7 @@ const WonServicesPage: React.FC = () => {
             }
         } catch (error) {
             console.error('Error fetching won services:', error);
+            message.error('Failed to fetch won services');
         } finally {
             setLoading(false);
         }
@@ -47,12 +49,18 @@ const WonServicesPage: React.FC = () => {
 
         setCalculating(true);
         try {
-            await calculateWonServicesComp(selectedRowKeys as string[]);
+            const result = await calculateWonServicesComp(selectedRowKeys as string[]);
+            console.log('Calculation result:', result); // Log the result for debugging
             message.success('Successfully calculated compensation');
-            fetchData(); // Refresh the data
+            await fetchData(); // Refresh the data
         } catch (error) {
             console.error('Error calculating compensation:', error);
-            message.error('Failed to calculate compensation');
+            const axiosError = error as AxiosError<{ error: string }>;
+            if (axiosError.response?.data?.error) {
+                message.error(`Failed to calculate compensation: ${axiosError.response.data.error}`);
+            } else {
+                message.error('Failed to calculate compensation');
+            }
         } finally {
             setCalculating(false);
         }
