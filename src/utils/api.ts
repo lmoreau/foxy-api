@@ -123,6 +123,23 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
   }
 };
 
+export const calculateWonServicesComp = async (ids: string[]) => {
+  try {
+    const headers = await getAuthHeaders();
+    const url = `${API_BASE_URL}/calculateWonServicesComp`;
+    const response = await axios.post(
+      url,
+      { ids },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to calculate compensation:', err.response?.data);
+    throw error;
+  }
+};
+
 export const createResidualScrubAudit = async (accountId: string, status: string, note?: string) => {
   try {
     const headers = await getAuthHeaders();

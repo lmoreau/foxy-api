@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { listWonServices } from '../utils/api';
+import { Button, message } from 'antd';
+import { listWonServices, calculateWonServicesComp } from '../utils/api';
 import { groupWonServicesByOpportunity } from '../utils/wonServicesUtils';
 import { GroupedData, WonService } from '../types/wonServices';
 import WonServicesFilters from './WonServices/WonServicesFilters';
@@ -8,6 +9,7 @@ import WonServicesTable from './WonServices/WonServicesTable';
 
 const WonServicesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
+    const [calculating, setCalculating] = useState(false);
     const [data, setData] = useState<GroupedData[]>([]);
     const [filteredData, setFilteredData] = useState<GroupedData[]>([]);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
@@ -34,6 +36,25 @@ const WonServicesPage: React.FC = () => {
             console.error('Error fetching won services:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCalculateComp = async () => {
+        if (selectedRowKeys.length === 0) {
+            message.warning('Please select at least one service to calculate compensation');
+            return;
+        }
+
+        setCalculating(true);
+        try {
+            await calculateWonServicesComp(selectedRowKeys as string[]);
+            message.success('Successfully calculated compensation');
+            fetchData(); // Refresh the data
+        } catch (error) {
+            console.error('Error calculating compensation:', error);
+            message.error('Failed to calculate compensation');
+        } finally {
+            setCalculating(false);
         }
     };
 
@@ -112,20 +133,31 @@ const WonServicesPage: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <WonServicesFilters
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={(date) => date && setStartDate(date)}
-                onEndDateChange={(date) => date && setEndDate(date)}
-                onSearch={handleSearch}
-                onToggleExpand={toggleExpandAll}
-                isExpanded={expandedKeys.length > 0}
-                paymentStatuses={paymentStatuses}
-                onPaymentStatusChange={handlePaymentStatusChange}
-                strictMode={strictMode}
-                onStrictModeChange={handleStrictModeChange}
-                data={filteredData}
-            />
+            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <WonServicesFilters
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartDateChange={(date) => date && setStartDate(date)}
+                    onEndDateChange={(date) => date && setEndDate(date)}
+                    onSearch={handleSearch}
+                    onToggleExpand={toggleExpandAll}
+                    isExpanded={expandedKeys.length > 0}
+                    paymentStatuses={paymentStatuses}
+                    onPaymentStatusChange={handlePaymentStatusChange}
+                    strictMode={strictMode}
+                    onStrictModeChange={handleStrictModeChange}
+                    data={filteredData}
+                />
+                {selectedRowKeys.length > 0 && (
+                    <Button 
+                        type="primary"
+                        onClick={handleCalculateComp}
+                        loading={calculating}
+                    >
+                        Calculate Compensation ({selectedRowKeys.length} selected)
+                    </Button>
+                )}
+            </div>
             <WonServicesTable
                 data={filteredData}
                 loading={loading}
