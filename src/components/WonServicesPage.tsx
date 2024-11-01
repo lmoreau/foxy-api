@@ -123,6 +123,7 @@ const WonServicesPage: React.FC = () => {
                 onPaymentStatusChange={handlePaymentStatusChange}
                 strictMode={strictMode}
                 onStrictModeChange={handleStrictModeChange}
+                data={filteredData}
             />
             <WonServicesTable
                 data={filteredData}

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Space, Input, DatePicker, Button, Select, Switch, Tooltip } from 'antd';
+import { Space, Input, DatePicker, Button, Select, Switch, Tooltip, Typography } from 'antd';
 import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { Dayjs } from 'dayjs';
 import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
+import { GroupedData } from '../../types/wonServices';
 
 const { Search } = Input;
+const { Title, Text } = Typography;
 
 interface WonServicesFiltersProps {
     startDate: Dayjs;
@@ -18,6 +20,7 @@ interface WonServicesFiltersProps {
     onPaymentStatusChange?: (values: number[]) => void;
     strictMode: boolean;
     onStrictModeChange: (checked: boolean) => void;
+    data: GroupedData[];
 }
 
 const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
@@ -31,16 +34,23 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
     paymentStatuses = [],
     onPaymentStatusChange,
     strictMode,
-    onStrictModeChange
+    onStrictModeChange,
+    data
 }) => {
     const paymentStatusOptions = Object.entries(inPaymentStatusMapper).map(([value, label]) => ({
         value: parseInt(value),
         label
     }));
 
+    const opportunityCount = data.length;
+    const serviceCount = data.reduce((sum, group) => sum + (group.children?.length || 0), 0);
+
     return (
-        <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }}>
-            <h1>Won Services</h1>
+        <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }} size={0}>
+            <Title level={4} style={{ marginBottom: '4px' }}>Won Services</Title>
+            <Text type="secondary" style={{ marginBottom: '16px' }}>
+                Opportunities: {opportunityCount} · Won Services: {serviceCount}
+            </Text>
             <Space size="middle">
                 <DatePicker
                     value={startDate}
