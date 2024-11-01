@@ -24,7 +24,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             return aName.localeCompare(bName);
         },
         onCell: (record) => ({
-            colSpan: isGroupData(record) ? 15 : 1,
+            colSpan: isGroupData(record) ? 16 : 1,
             style: isGroupData(record) ? { 
                 backgroundColor: '#f5f5f5',
                 fontWeight: 'bold',
@@ -125,6 +125,17 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1
         }),
         render: (value: number) => value ? formatCurrency(value) : '-',
+    },
+    {
+        title: 'Existing MRR',
+        dataIndex: 'crc9f_existingmrr',
+        key: 'crc9f_existingmrr',
+        width: 120,
+        sorter: (a: any, b: any) => (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
+        onCell: (record) => ({
+            colSpan: isGroupData(record) ? 0 : 1
+        }),
+        render: (value: number | null) => value ? formatCurrency(value) : '-',
     },
     {
         title: 'MRR Uptick',

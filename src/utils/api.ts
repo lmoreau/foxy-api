@@ -17,6 +17,7 @@ const getAuthHeaders = async () => {
     return {
       Authorization: bearerToken,
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
     };
   } catch (error) {
     throw error;
@@ -98,36 +99,10 @@ export const listAccountsForResidualCheck = async () => {
   return response.data;
 };
 
-interface WonServicesCache {
-  data: any;
-  startDate: string;
-  endDate: string;
-  timestamp: number;
-}
-
-let wonServicesCache: WonServicesCache | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
 export const listWonServices = async (startDate: string, endDate: string) => {
-  const now = Date.now();
-  if (wonServicesCache && 
-      wonServicesCache.startDate === startDate && 
-      wonServicesCache.endDate === endDate && 
-      (now - wonServicesCache.timestamp < CACHE_DURATION)) {
-    return wonServicesCache.data;
-  }
-
   const headers = await getAuthHeaders();
   const url = `${API_BASE_URL}/listWonServices?startDate=${startDate}&endDate=${endDate}`;
   const response = await axios.get(url, { headers });
-  
-  wonServicesCache = {
-    data: response.data,
-    startDate,
-    endDate,
-    timestamp: now
-  };
-  
   return response.data;
 };
 
