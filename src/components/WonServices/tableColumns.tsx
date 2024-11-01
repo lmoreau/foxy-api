@@ -24,7 +24,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             return aName.localeCompare(bName);
         },
         onCell: (record) => ({
-            colSpan: isGroupData(record) ? 16 : 1,
+            colSpan: isGroupData(record) ? 15 : 1,
             style: isGroupData(record) ? { 
                 backgroundColor: '#f5f5f5',
                 fontWeight: 'bold',
@@ -52,6 +52,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             const revenueType = getRevenueType(record.foxy_revenuetype || 0);
             let tagColor = 'default';
             let tagText = revenueType;
+            let tooltipText = text;
 
             switch (revenueType) {
                 case 'New':
@@ -66,12 +67,13 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
                     if (record.foxy_renewaltype === 'Early Renewal') {
                         tagText = 'Early Renewal';
                         tagColor = 'red';
+                        tooltipText = `${text}\nRenewal Type: ${record.foxy_renewaltype}`;
                     }
                     break;
             }
 
             return (
-                <Tooltip title={text}>
+                <Tooltip title={tooltipText}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {text || '-'} <Tag color={tagColor}>{tagText}</Tag>
                     </div>
@@ -201,20 +203,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1
         }),
         render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
-    },
-    {
-        title: 'Renewal Type',
-        dataIndex: 'foxy_renewaltype',
-        key: 'foxy_renewaltype',
-        width: 200,
-        sorter: (a: any, b: any) => {
-            const aType = a.foxy_renewaltype || '';
-            const bType = b.foxy_renewaltype || '';
-            return aType.localeCompare(bType);
-        },
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
     },
     {
         title: 'In Payment Status',

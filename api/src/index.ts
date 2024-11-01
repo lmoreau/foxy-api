@@ -23,6 +23,7 @@ import "./functions/listRogersWirelineRecords";
 import "./functions/listWirelineResidualRows";
 import "./functions/listWonServices";
 import "./functions/updateAccountWirelineResiduals";
+import "./functions/updateWonService";
 import "./functions/helloWorld";  // Add the new hello world function
 
 // Export the initialized app
