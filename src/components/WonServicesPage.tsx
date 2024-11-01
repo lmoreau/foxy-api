@@ -49,38 +49,39 @@ const WonServicesPage: React.FC = () => {
     const filterData = (sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
         let filtered = sourceData;
 
+        // Apply search filter
         if (search) {
             const searchLower = search.toLowerCase();
+            filtered = filtered.filter(group => 
+                group.children?.some(item => matchesSearch(item, searchLower))
+            );
+
             if (strict) {
-                // In strict mode, only show exact matches
+                // In strict mode, only show matching records
                 filtered = filtered.map(group => ({
                     ...group,
                     children: group.children?.filter(item => matchesSearch(item, searchLower))
-                })).filter(group => group.children && group.children.length > 0);
-            } else {
-                // In non-strict mode, show all children in groups that have at least one match
-                filtered = filtered.filter(group => 
-                    group.children?.some(item => matchesSearch(item, searchLower))
-                );
+                }));
             }
         }
 
+        // Apply payment status filter
         if (statuses.length > 0) {
+            filtered = filtered.filter(group => 
+                group.children?.some(item => statuses.includes(item.foxy_inpaymentstatus))
+            );
+
             if (strict) {
-                // In strict mode, only show exact matches
+                // In strict mode, only show matching records
                 filtered = filtered.map(group => ({
                     ...group,
-                    children: group.children?.filter(item =>
-                        statuses.includes(item.foxy_inpaymentstatus)
-                    )
-                })).filter(group => group.children && group.children.length > 0);
-            } else {
-                // In non-strict mode, show all children in groups that have at least one match
-                filtered = filtered.filter(group => 
-                    group.children?.some(item => statuses.includes(item.foxy_inpaymentstatus))
-                );
+                    children: group.children?.filter(item => statuses.includes(item.foxy_inpaymentstatus))
+                }));
             }
         }
+
+        // Remove any groups that ended up with no children
+        filtered = filtered.filter(group => group.children && group.children.length > 0);
 
         setFilteredData(filtered);
     };
