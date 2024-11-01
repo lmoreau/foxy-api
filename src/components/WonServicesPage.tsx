@@ -15,6 +15,8 @@ const WonServicesPage: React.FC = () => {
     const [startDate, setStartDate] = useState(dayjs().subtract(1, 'year'));
     const [endDate, setEndDate] = useState(dayjs());
     const [paymentStatuses, setPaymentStatuses] = useState<number[]>([]);
+    const [strictMode, setStrictMode] = useState(false);
+    const [searchText, setSearchText] = useState('');
 
     const fetchData = async () => {
         try {
@@ -25,7 +27,7 @@ const WonServicesPage: React.FC = () => {
             if (response.value) {
                 const grouped = groupWonServicesByOpportunity(response.value as WonService[]);
                 setData(grouped);
-                filterData(grouped, '', paymentStatuses);
+                filterData(grouped, searchText, paymentStatuses, strictMode);
                 setExpandedKeys(grouped.map(g => g.key));
             }
         } catch (error) {
@@ -39,38 +41,63 @@ const WonServicesPage: React.FC = () => {
         fetchData();
     }, [startDate, endDate]);
 
-    const filterData = (sourceData: GroupedData[], searchValue: string, selectedStatuses: number[]) => {
+    const matchesSearch = (item: WonService, searchLower: string) => 
+        item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
+        item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
+        item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower);
+
+    const filterData = (sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
         let filtered = sourceData;
 
-        if (searchValue) {
-            const searchLower = searchValue.toLowerCase();
-            filtered = filtered.filter(group => 
-                group.foxy_sfdcoppid.toLowerCase().includes(searchLower) ||
-                group.opportunity_name.toLowerCase().includes(searchLower) ||
-                group.children?.some(item =>
-                    item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
-                    item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
-                    item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower)
-                )
-            );
+        if (search) {
+            const searchLower = search.toLowerCase();
+            if (strict) {
+                // In strict mode, only show exact matches
+                filtered = filtered.map(group => ({
+                    ...group,
+                    children: group.children?.filter(item => matchesSearch(item, searchLower))
+                })).filter(group => group.children && group.children.length > 0);
+            } else {
+                // In non-strict mode, show all children in groups that have at least one match
+                filtered = filtered.filter(group => 
+                    group.children?.some(item => matchesSearch(item, searchLower))
+                );
+            }
         }
 
-        if (selectedStatuses.length > 0) {
-            filtered = filtered.filter(group => 
-                group.children?.some(item => selectedStatuses.includes(item.foxy_inpaymentstatus))
-            );
+        if (statuses.length > 0) {
+            if (strict) {
+                // In strict mode, only show exact matches
+                filtered = filtered.map(group => ({
+                    ...group,
+                    children: group.children?.filter(item =>
+                        statuses.includes(item.foxy_inpaymentstatus)
+                    )
+                })).filter(group => group.children && group.children.length > 0);
+            } else {
+                // In non-strict mode, show all children in groups that have at least one match
+                filtered = filtered.filter(group => 
+                    group.children?.some(item => statuses.includes(item.foxy_inpaymentstatus))
+                );
+            }
         }
 
         setFilteredData(filtered);
     };
 
     const handleSearch = (value: string) => {
-        filterData(data, value, paymentStatuses);
+        setSearchText(value);
+        filterData(data, value, paymentStatuses, strictMode);
     };
 
     const handlePaymentStatusChange = (values: number[]) => {
         setPaymentStatuses(values);
-        filterData(data, '', values);
+        filterData(data, searchText, values, strictMode);
+    };
+
+    const handleStrictModeChange = (checked: boolean) => {
+        setStrictMode(checked);
+        filterData(data, searchText, paymentStatuses, checked);
     };
 
     const toggleExpandAll = () => {
@@ -93,6 +120,8 @@ const WonServicesPage: React.FC = () => {
                 isExpanded={expandedKeys.length > 0}
                 paymentStatuses={paymentStatuses}
                 onPaymentStatusChange={handlePaymentStatusChange}
+                strictMode={strictMode}
+                onStrictModeChange={handleStrictModeChange}
             />
             <WonServicesTable
                 data={filteredData}

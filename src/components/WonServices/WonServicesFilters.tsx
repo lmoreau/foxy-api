@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Input, DatePicker, Button, Select } from 'antd';
+import { Space, Input, DatePicker, Button, Select, Switch, Tooltip } from 'antd';
 import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { Dayjs } from 'dayjs';
 import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
@@ -16,6 +16,8 @@ interface WonServicesFiltersProps {
     isExpanded: boolean;
     paymentStatuses?: number[];
     onPaymentStatusChange?: (values: number[]) => void;
+    strictMode: boolean;
+    onStrictModeChange: (checked: boolean) => void;
 }
 
 const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
@@ -27,7 +29,9 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
     onToggleExpand,
     isExpanded,
     paymentStatuses = [],
-    onPaymentStatusChange
+    onPaymentStatusChange,
+    strictMode,
+    onStrictModeChange
 }) => {
     const paymentStatusOptions = Object.entries(inPaymentStatusMapper).map(([value, label]) => ({
         value: parseInt(value),
@@ -58,14 +62,24 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
                     onChange={onPaymentStatusChange}
                     maxTagCount="responsive"
                 />
-                <Search
-                    placeholder="Search by Opp ID, Service ID, Product, or Address"
-                    allowClear
-                    enterButton
-                    onSearch={onSearch}
-                    onChange={e => onSearch(e.target.value)}
-                    style={{ width: 400 }}
-                />
+                <Space>
+                    <Search
+                        placeholder="Search by Opp ID, Service ID, Product, or Address"
+                        allowClear
+                        enterButton
+                        onSearch={onSearch}
+                        onChange={e => onSearch(e.target.value)}
+                        style={{ width: 400 }}
+                    />
+                    <Tooltip title={strictMode ? "Show exact matches only" : "Show all related records"}>
+                        <Switch
+                            checkedChildren="Exact"
+                            unCheckedChildren="All"
+                            checked={strictMode}
+                            onChange={onStrictModeChange}
+                        />
+                    </Tooltip>
+                </Space>
                 <Button
                     type="primary"
                     onClick={onToggleExpand}
