@@ -50,13 +50,30 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
                 );
             }
             const revenueType = getRevenueType(record.foxy_revenuetype || 0);
-            const tagColor = record.foxy_revenuetype === 1 ? 'purple' : 
-                           record.foxy_revenuetype === 2 ? 'orange' :
-                           record.foxy_revenuetype === 3 ? 'cyan' : 'default';
+            let tagColor = 'default';
+            let tagText = revenueType;
+
+            switch (revenueType) {
+                case 'New':
+                case 'Net New':
+                    tagColor = 'green';
+                    break;
+                case 'Upsell':
+                    tagColor = 'blue';
+                    break;
+                case 'Renewal':
+                    tagColor = 'purple';
+                    if (record.foxy_renewaltype === 'Early Renewal') {
+                        tagText = 'Early Renewal';
+                        tagColor = 'red';
+                    }
+                    break;
+            }
+
             return (
                 <Tooltip title={text}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {text || '-'} <Tag color={tagColor}>{revenueType}</Tag>
+                        {text || '-'} <Tag color={tagColor}>{tagText}</Tag>
                     </div>
                 </Tooltip>
             );
