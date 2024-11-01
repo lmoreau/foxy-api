@@ -13,6 +13,17 @@ interface WonService {
     foxy_mrruptick: number | null;
     foxy_tcv: number;
     foxy_linemargin: number;
+    foxy_term: number;
+    foxy_mrr: number;
+}
+
+function getCommissionRate(marginPercent: number): number {
+    if (marginPercent < 5) return 0;
+    if (marginPercent < 15) return 0.06;
+    if (marginPercent < 30) return 0.10;
+    if (marginPercent < 50) return 0.14;
+    if (marginPercent < 60) return 0.20;
+    return 0.22;
 }
 
 function calculateExpectedComp(service: WonService, context: InvocationContext): number {
@@ -21,44 +32,67 @@ function calculateExpectedComp(service: WonService, context: InvocationContext):
         renewaltype: service.foxy_renewaltype,
         mrruptick: service.foxy_mrruptick,
         tcv: service.foxy_tcv,
-        linemargin: service.foxy_linemargin
+        linemargin: service.foxy_linemargin,
+        term: service.foxy_term,
+        mrr: service.foxy_mrr
     });
 
-    // Rule 1 - Regular Renewal
-    if (service.foxy_revenuetype === 612100003) { // Renewal
-        context.log('Processing Renewal rule');
-        if (service.foxy_renewaltype !== "Early Renewal" && 
-            (!service.foxy_mrruptick || service.foxy_mrruptick <= 0)) {
+    // Convert margin to percentage for calculations
+    const marginPercent = service.foxy_linemargin * 100;
+    context.log('Line margin (%):', marginPercent);
+
+    // Handle UPSELL or RENEWAL with positive MRR uptick
+    if ((service.foxy_revenuetype === 612100002 || service.foxy_revenuetype === 612100003) && 
+        service.foxy_mrruptick && service.foxy_mrruptick > 0) {
+        
+        context.log('Processing Upsell/Renewal with positive MRR uptick');
+
+        // Only proceed with split calculation if it's not an Early Renewal for Renewals
+        if (service.foxy_revenuetype === 612100003 && service.foxy_renewaltype === "Early Renewal") {
+            context.log('Early Renewal detected, returning 0');
+            return 0;
+        }
+
+        // Calculate existing MRR (total MRR - uptick)
+        const existingMRR = service.foxy_mrr - service.foxy_mrruptick;
+        context.log('Existing MRR:', existingMRR);
+
+        // Calculate TCVs
+        const existingTCV = existingMRR * service.foxy_term;
+        const newTCV = service.foxy_mrruptick * service.foxy_term;
+        context.log('Existing TCV:', existingTCV);
+        context.log('New TCV:', newTCV);
+
+        // Calculate compensation for existing TCV (5%)
+        const existingComp = existingTCV * 0.05;
+        context.log('Existing TCV compensation:', existingComp);
+
+        // Calculate compensation for new TCV (based on margin)
+        const rate = getCommissionRate(marginPercent);
+        const newComp = newTCV * rate;
+        context.log('New TCV compensation:', newComp, 'using rate:', rate);
+
+        const totalComp = existingComp + newComp;
+        context.log('Total compensation:', totalComp);
+        return totalComp;
+    }
+
+    // Regular Renewal (including negative uptick cases)
+    if (service.foxy_revenuetype === 612100003) {
+        context.log('Processing Regular Renewal');
+        if (service.foxy_renewaltype !== "Early Renewal") {
             const comp = service.foxy_tcv * 0.05;
             context.log('Renewal compensation calculated:', comp);
             return comp;
         }
-        context.log('Renewal conditions not met, returning 0');
+        context.log('Early Renewal detected, returning 0');
         return 0;
     }
 
-    // Rule 2 - Regular New
-    if (service.foxy_revenuetype === 612100000 || service.foxy_revenuetype === 612100001) { // New or Net New
-        context.log('Processing New/Net New rule');
-        // Convert decimal margin to percentage
-        const marginPercent = service.foxy_linemargin * 100;
-        context.log('Line margin (%):', marginPercent);
-
-        let rate = 0;
-        if (marginPercent < 5) {
-            rate = 0;
-        } else if (marginPercent < 15) {
-            rate = 0.06; // 6%
-        } else if (marginPercent < 30) {
-            rate = 0.10; // 10%
-        } else if (marginPercent < 50) {
-            rate = 0.14; // 14%
-        } else if (marginPercent < 60) {
-            rate = 0.20; // 20%
-        } else {
-            rate = 0.22; // 22%
-        }
-
+    // Regular New/Net New
+    if (service.foxy_revenuetype === 612100000 || service.foxy_revenuetype === 612100001) {
+        context.log('Processing New/Net New');
+        const rate = getCommissionRate(marginPercent);
         context.log('Selected rate:', rate);
         const comp = service.foxy_tcv * rate;
         context.log('New/Net New compensation calculated:', comp);
@@ -103,7 +137,7 @@ export async function calculateWonServicesComp(request: HttpRequest, context: In
             const formattedId = id.replace(/[{}]/g, '');
             
             // First get the current service data
-            const getUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices(${formattedId})?$select=foxy_revenuetype,foxy_renewaltype,foxy_mrruptick,foxy_tcv,foxy_linemargin`;
+            const getUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices(${formattedId})?$select=foxy_revenuetype,foxy_renewaltype,foxy_mrruptick,foxy_tcv,foxy_linemargin,foxy_term,foxy_mrr`;
             const serviceResponse = await axios.get(getUrl, { headers });
             const service = serviceResponse.data as WonService;
 
@@ -122,7 +156,7 @@ export async function calculateWonServicesComp(request: HttpRequest, context: In
                 id, 
                 status: 'updated',
                 expectedComp,
-                serviceData: service // Include service data in results for debugging
+                serviceData: service
             });
         }
 
