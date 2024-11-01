@@ -50,7 +50,7 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
                 />
                 <Select
                     placeholder="Payment Status"
-                    style={{ width: 200 }}
+                    style={{ width: 400 }}
                     allowClear
                     mode="multiple"
                     options={paymentStatusOptions}
@@ -62,7 +62,6 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
                     placeholder="Search by Opp ID, Service ID, Product, or Address"
                     allowClear
                     enterButton
-                    size="large"
                     onSearch={onSearch}
                     onChange={e => onSearch(e.target.value)}
                     style={{ width: 400 }}

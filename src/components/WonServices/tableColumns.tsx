@@ -13,7 +13,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         title: 'Product',
         dataIndex: ['foxy_Product', 'name'],
         key: 'product_name',
-        width: 350,
+        width: 400,
         ellipsis: true,
         sorter: (a: any, b: any) => {
             if (isGroupData(a) && isGroupData(b)) {
