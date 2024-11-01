@@ -2,7 +2,7 @@ import { WonService, GroupedData } from '../types/wonServices';
 
 export const groupWonServicesByOpportunity = (services: WonService[]): GroupedData[] => {
     const grouped = Object.values(
-        services.reduce((acc: { [key: string]: GroupedData }, item: WonService) => {
+        services.reduce((acc: { [key: string]: GroupedData }, item: any) => {
             const oppId = item.foxy_Opportunity?.foxy_sfdcoppid;
             if (!oppId) return acc;
 
@@ -17,6 +17,7 @@ export const groupWonServicesByOpportunity = (services: WonService[]): GroupedDa
                     isGroup: true
                 };
             }
+            
             acc[oppId].children?.push(item);
             return acc;
         }, {})

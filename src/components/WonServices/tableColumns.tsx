@@ -24,7 +24,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             return aName.localeCompare(bName);
         },
         onCell: (record) => ({
-            colSpan: isGroupData(record) ? 16 : 1,
+            colSpan: isGroupData(record) ? 15 : 1,
             style: isGroupData(record) ? { 
                 backgroundColor: '#f5f5f5',
                 fontWeight: 'bold',
@@ -83,7 +83,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         title: 'Address',
         dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
         key: 'address',
-        width: 450,
+        width: 250,
         ellipsis: true,
         sorter: (a: any, b: any) => {
             const aAddress = a.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
@@ -94,7 +94,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1,
             style: { 
                 paddingLeft: '20px',
-                maxWidth: '450px'
+                maxWidth: '250px'
             }
         }),
         render: (text: string) => (
@@ -121,17 +121,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         key: 'foxy_mrr',
         width: 120,
         sorter: (a: any, b: any) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: number) => value ? formatCurrency(value) : '-',
-    },
-    {
-        title: 'Existing MRR',
-        dataIndex: 'crc9f_existingmrr',
-        key: 'crc9f_existingmrr',
-        width: 120,
-        sorter: (a: any, b: any) => (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
