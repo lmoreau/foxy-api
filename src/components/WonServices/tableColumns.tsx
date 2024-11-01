@@ -85,6 +85,16 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         ),
     },
     {
+        title: 'Qty',
+        dataIndex: 'foxy_quantity',
+        key: 'foxy_quantity',
+        width: 80,
+        sorter: (a: any, b: any) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
+        onCell: (record) => ({
+            colSpan: isGroupData(record) ? 0 : 1
+        }),
+    },
+    {
         title: 'MRR',
         dataIndex: 'foxy_mrr',
         key: 'foxy_mrr',
@@ -94,6 +104,28 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1
         }),
         render: (value: number) => value ? formatCurrency(value) : '-',
+    },
+    {
+        title: 'Existing MRR',
+        dataIndex: 'crc9f_existingmrr',
+        key: 'crc9f_existingmrr',
+        width: 120,
+        sorter: (a: any, b: any) => (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
+        onCell: (record) => ({
+            colSpan: isGroupData(record) ? 0 : 1
+        }),
+        render: (value: number) => value ? formatCurrency(value) : '-',
+    },
+    {
+        title: 'MRR Uptick',
+        dataIndex: 'foxy_mrruptick',
+        key: 'foxy_mrruptick',
+        width: 120,
+        sorter: (a: any, b: any) => (a.foxy_mrruptick || 0) - (b.foxy_mrruptick || 0),
+        onCell: (record) => ({
+            colSpan: isGroupData(record) ? 0 : 1
+        }),
+        render: (value: number | null) => value ? formatCurrency(value) : '-',
     },
     {
         title: 'Term',
@@ -115,30 +147,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1
         }),
         render: (value: number) => value ? formatCurrency(value) : '-',
-    },
-    {
-        title: 'Quantity',
-        dataIndex: 'foxy_quantity',
-        key: 'foxy_quantity',
-        width: 80,
-        sorter: (a: any, b: any) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-    },
-    {
-        title: 'Access',
-        dataIndex: 'foxy_access',
-        key: 'foxy_access',
-        width: 120,
-        sorter: (a: any, b: any) => {
-            const aAccess = a.foxy_access || '';
-            const bAccess = b.foxy_access || '';
-            return aAccess.localeCompare(bAccess);
-        },
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
     },
     {
         title: 'Comp Rate',
@@ -174,21 +182,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
     },
     {
-        title: 'Renewal Disposition',
-        dataIndex: 'foxy_renewaldisposition',
-        key: 'foxy_renewaldisposition',
-        width: 150,
-        sorter: (a: any, b: any) => {
-            const aDisp = getRenewalDisposition(a.foxy_renewaldisposition || 0);
-            const bDisp = getRenewalDisposition(b.foxy_renewaldisposition || 0);
-            return aDisp.localeCompare(bDisp);
-        },
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: number) => getRenewalDisposition(value),
-    },
-    {
         title: 'Renewal Type',
         dataIndex: 'foxy_renewaltype',
         key: 'foxy_renewaltype',
@@ -201,18 +194,6 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
-    },
-    {
-        title: 'Solo',
-        dataIndex: 'foxy_sololine',
-        key: 'foxy_sololine',
-        width: 80,
-        align: 'center',
-        sorter: (a: any, b: any) => (a.foxy_sololine ? 1 : 0) - (b.foxy_sololine ? 1 : 0),
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: boolean) => value ? <CheckCircleFilled style={{ color: '#52c41a' }} /> : null,
     },
     {
         title: 'Revenue Type',
@@ -243,16 +224,5 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1
         }),
         render: (value: number) => getInPaymentStatus(value),
-    },
-    {
-        title: 'MRR Uptick',
-        dataIndex: 'foxy_mrruptick',
-        key: 'foxy_mrruptick',
-        width: 120,
-        sorter: (a: any, b: any) => (a.foxy_mrruptick || 0) - (b.foxy_mrruptick || 0),
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: number | null) => value ? formatCurrency(value) : '-',
     },
 ];
