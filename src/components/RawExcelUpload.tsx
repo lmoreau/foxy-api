@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { message } from 'antd';
+import { message, Select, Input, Button } from 'antd';
+
+const { Option } = Select;
 
 const RawExcelUpload: React.FC = (): JSX.Element => {
+  const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<any[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>('');
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   const convertExcelDate = (serial: number): string => {
     if (!serial) return '';
@@ -137,31 +147,54 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
       delete filteredRow[field];
     });
 
+    // Add Callidus Statement field
+    const monthIndex = months.indexOf(selectedMonth) + 1;
+    const monthStr = monthIndex.toString().padStart(2, '0');
+    filteredRow['Callidus Statement'] = `${selectedYear}-${monthStr}-01`;
+
     return filteredRow;
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const bstr = evt.target?.result;
-        if (typeof bstr === 'string') {
-          try {
-            const workbook = XLSX.read(bstr, { type: 'binary' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawJson = XLSX.utils.sheet_to_json(firstSheet);
-            const transformedData = rawJson.map(transformRow);
-            setData(transformedData);
-            message.success(`File uploaded successfully with ${transformedData.length} rows`);
-          } catch (error) {
-            console.error('Error parsing Excel:', error);
-            message.error('Failed to parse Excel file');
-          }
-        }
-      };
-      reader.readAsBinaryString(file);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      message.success('File selected successfully');
     }
+  };
+
+  const handleParse = () => {
+    if (!file) {
+      message.error('Please select a file first');
+      return;
+    }
+    if (!selectedMonth || !selectedYear) {
+      message.error('Please select both month and year');
+      return;
+    }
+    if (!/^\d{4}$/.test(selectedYear)) {
+      message.error('Please enter a valid 4-digit year');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const bstr = evt.target?.result;
+      if (typeof bstr === 'string') {
+        try {
+          const workbook = XLSX.read(bstr, { type: 'binary' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rawJson = XLSX.utils.sheet_to_json(firstSheet);
+          const transformedData = rawJson.map(transformRow);
+          setData(transformedData);
+          message.success(`File parsed successfully with ${transformedData.length} rows`);
+        } catch (error) {
+          console.error('Error parsing Excel:', error);
+          message.error('Failed to parse Excel file');
+        }
+      }
+    };
+    reader.readAsBinaryString(file);
   };
 
   const getGroupedData = () => {
@@ -181,13 +214,36 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
   return (
     <div style={{ padding: '24px' }}>
       <h1>Raw Excel Upload</h1>
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '16px', alignItems: 'center' }}>
         <input 
           type="file" 
           accept=".xlsx,.xls" 
-          onChange={handleFileUpload}
+          onChange={handleFileSelect}
           style={{ marginRight: '16px' }}
         />
+        <Select
+          placeholder="Select month"
+          style={{ width: 120 }}
+          onChange={(value) => setSelectedMonth(value)}
+          value={selectedMonth || undefined}
+        >
+          {months.map(month => (
+            <Option key={month} value={month}>{month}</Option>
+          ))}
+        </Select>
+        <Input
+          placeholder="Enter year (YYYY)"
+          style={{ width: 120 }}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          value={selectedYear}
+        />
+        <Button 
+          type="primary"
+          onClick={handleParse}
+          disabled={!file || !selectedMonth || !selectedYear}
+        >
+          Parse File
+        </Button>
       </div>
       {data.length > 0 && (
         <div style={{ 
