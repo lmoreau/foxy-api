@@ -35,6 +35,7 @@ export async function listWonServices(request: HttpRequest, context: InvocationC
         const headers = getDataverseHeaders(authHeader);
         const selectFields = [
             'crc9f_existingmrr',
+            'crc9f_expectedcompbreakdown',
             'foxy_renewaldisposition',
             'statuscode',
             'foxyflow_internalnotes',

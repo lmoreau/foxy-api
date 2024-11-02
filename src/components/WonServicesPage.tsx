@@ -50,7 +50,7 @@ const WonServicesPage: React.FC = () => {
         setCalculating(true);
         try {
             const result = await calculateWonServicesComp(selectedRowKeys as string[]);
-            console.log('Calculation result:', result); // Log the result for debugging
+            console.log('Calculation result:', result);
             message.success('Successfully calculated compensation');
             await fetchData(); // Refresh the data
         } catch (error) {

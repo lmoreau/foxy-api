@@ -191,7 +191,16 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         onCell: (record) => ({
             colSpan: isGroupData(record) ? 0 : 1
         }),
-        render: (value: number) => value ? formatCurrency(value) : '-',
+        render: (value: number, record: GroupedData | WonService) => {
+            if (isGroupData(record)) return value ? formatCurrency(value) : '-';
+            
+            const wonService = record as WonService;
+            return (
+                <Tooltip title={wonService.crc9f_expectedcompbreakdown} placement="topLeft">
+                    <div>{value ? formatCurrency(value) : '-'}</div>
+                </Tooltip>
+            );
+        },
     },
     {
         title: 'Line Margin',

@@ -17,6 +17,19 @@ interface WonService {
     foxy_mrr: number;
 }
 
+interface CompBreakdown {
+    existingMRR: number;
+    existingTCV: number;
+    existingRate: number;
+    existingComp: number;
+    newMRR: number | null;
+    newTCV: number | null;
+    newRate: number | null;
+    newComp: number | null;
+    totalComp: number;
+    explanation: string;
+}
+
 function getCommissionRate(marginPercent: number): number {
     if (marginPercent < 5) return 0;
     if (marginPercent < 15) return 0.06;
@@ -26,16 +39,19 @@ function getCommissionRate(marginPercent: number): number {
     return 0.22;
 }
 
-function calculateExpectedComp(service: WonService, context: InvocationContext): number {
-    context.log('Calculating for service:', {
-        revenuetype: service.foxy_revenuetype,
-        renewaltype: service.foxy_renewaltype,
-        mrruptick: service.foxy_mrruptick,
-        tcv: service.foxy_tcv,
-        linemargin: service.foxy_linemargin,
-        term: service.foxy_term,
-        mrr: service.foxy_mrr
-    });
+function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+    }).format(amount);
+}
+
+function formatPercent(rate: number): string {
+    return (rate * 100).toFixed(0) + '%';
+}
+
+function calculateExpectedComp(service: WonService, context: InvocationContext): CompBreakdown {
+    context.log('Calculating for service:', service);
 
     // Convert margin to percentage for calculations
     const marginPercent = service.foxy_linemargin * 100;
@@ -49,58 +65,107 @@ function calculateExpectedComp(service: WonService, context: InvocationContext):
 
         // Only proceed with split calculation if it's not an Early Renewal for Renewals
         if (service.foxy_revenuetype === 612100003 && service.foxy_renewaltype === "Early Renewal") {
-            context.log('Early Renewal detected, returning 0');
-            return 0;
+            return {
+                existingMRR: service.foxy_mrr,
+                existingTCV: service.foxy_tcv,
+                existingRate: 0,
+                existingComp: 0,
+                newMRR: null,
+                newTCV: null,
+                newRate: null,
+                newComp: null,
+                totalComp: 0,
+                explanation: "Early Renewal - No compensation"
+            };
         }
 
         // Calculate existing MRR (total MRR - uptick)
         const existingMRR = service.foxy_mrr - service.foxy_mrruptick;
-        context.log('Existing MRR:', existingMRR);
-
-        // Calculate TCVs
         const existingTCV = existingMRR * service.foxy_term;
-        const newTCV = service.foxy_mrruptick * service.foxy_term;
-        context.log('Existing TCV:', existingTCV);
-        context.log('New TCV:', newTCV);
-
-        // Calculate compensation for existing TCV (5%)
         const existingComp = existingTCV * 0.05;
-        context.log('Existing TCV compensation:', existingComp);
 
-        // Calculate compensation for new TCV (based on margin)
-        const rate = getCommissionRate(marginPercent);
-        const newComp = newTCV * rate;
-        context.log('New TCV compensation:', newComp, 'using rate:', rate);
+        const newTCV = service.foxy_mrruptick * service.foxy_term;
+        const newRate = getCommissionRate(marginPercent);
+        const newComp = newTCV * newRate;
 
-        const totalComp = existingComp + newComp;
-        context.log('Total compensation:', totalComp);
-        return totalComp;
+        const explanation = `Existing: ${formatCurrency(existingMRR)}/mo * ${service.foxy_term} months * 5% = ${formatCurrency(existingComp)}\nNew: ${formatCurrency(service.foxy_mrruptick)}/mo * ${service.foxy_term} months * ${formatPercent(newRate)} = ${formatCurrency(newComp)}`;
+
+        return {
+            existingMRR,
+            existingTCV,
+            existingRate: 0.05,
+            existingComp,
+            newMRR: service.foxy_mrruptick,
+            newTCV,
+            newRate,
+            newComp,
+            totalComp: existingComp + newComp,
+            explanation
+        };
     }
 
-    // Regular Renewal (including negative uptick cases)
-    if (service.foxy_revenuetype === 612100003) {
-        context.log('Processing Regular Renewal');
+    // Regular Renewal or Upsell without uptick
+    if (service.foxy_revenuetype === 612100003 || service.foxy_revenuetype === 612100002) {
         if (service.foxy_renewaltype !== "Early Renewal") {
             const comp = service.foxy_tcv * 0.05;
-            context.log('Renewal compensation calculated:', comp);
-            return comp;
+            const type = service.foxy_revenuetype === 612100002 ? "Upsell (no uptick)" : "Regular Renewal";
+            return {
+                existingMRR: service.foxy_mrr,
+                existingTCV: service.foxy_tcv,
+                existingRate: 0.05,
+                existingComp: comp,
+                newMRR: null,
+                newTCV: null,
+                newRate: null,
+                newComp: null,
+                totalComp: comp,
+                explanation: `${type}: ${formatCurrency(service.foxy_mrr)}/mo * ${service.foxy_term} months * 5% = ${formatCurrency(comp)}`
+            };
         }
-        context.log('Early Renewal detected, returning 0');
-        return 0;
+        return {
+            existingMRR: service.foxy_mrr,
+            existingTCV: service.foxy_tcv,
+            existingRate: 0,
+            existingComp: 0,
+            newMRR: null,
+            newTCV: null,
+            newRate: null,
+            newComp: null,
+            totalComp: 0,
+            explanation: "Early Renewal - No compensation"
+        };
     }
 
     // Regular New/Net New
     if (service.foxy_revenuetype === 612100000 || service.foxy_revenuetype === 612100001) {
-        context.log('Processing New/Net New');
         const rate = getCommissionRate(marginPercent);
-        context.log('Selected rate:', rate);
         const comp = service.foxy_tcv * rate;
-        context.log('New/Net New compensation calculated:', comp);
-        return comp;
+        return {
+            existingMRR: service.foxy_mrr,
+            existingTCV: service.foxy_tcv,
+            existingRate: rate,
+            existingComp: comp,
+            newMRR: null,
+            newTCV: null,
+            newRate: null,
+            newComp: null,
+            totalComp: comp,
+            explanation: `New/Net New: ${formatCurrency(service.foxy_mrr)}/mo * ${service.foxy_term} months * ${formatPercent(rate)} = ${formatCurrency(comp)}`
+        };
     }
 
-    context.log('No matching rules, returning 0');
-    return 0;
+    return {
+        existingMRR: service.foxy_mrr,
+        existingTCV: service.foxy_tcv,
+        existingRate: 0,
+        existingComp: 0,
+        newMRR: null,
+        newTCV: null,
+        newRate: null,
+        newComp: null,
+        totalComp: 0,
+        explanation: "No matching compensation rules"
+    };
 }
 
 export async function calculateWonServicesComp(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -144,18 +209,20 @@ export async function calculateWonServicesComp(request: HttpRequest, context: In
             context.log('Retrieved service data:', service);
 
             // Calculate the expected compensation
-            const expectedComp = calculateExpectedComp(service, context);
+            const breakdown = calculateExpectedComp(service, context);
 
-            // Update the service with the calculated compensation
+            // Update the service with the calculated compensation and breakdown
             const updateUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices(${formattedId})`;
             await axios.patch(updateUrl, {
-                foxy_expectedcomp: expectedComp
+                foxy_expectedcomp: breakdown.totalComp,
+                crc9f_expectedcompbreakdown: breakdown.explanation
             }, { headers });
 
             results.push({ 
                 id, 
                 status: 'updated',
-                expectedComp,
+                expectedComp: breakdown.totalComp,
+                breakdown,
                 serviceData: service
             });
         }
