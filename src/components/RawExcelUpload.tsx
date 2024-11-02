@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { message, Select, Input, Button } from 'antd';
+import { message, Select, Input, Button, Alert, Typography } from 'antd';
 
 const { Option } = Select;
+const { Text } = Typography;
 
 const RawExcelUpload: React.FC = (): JSX.Element => {
   const [file, setFile] = useState<File | null>(null);
@@ -213,6 +214,16 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
 
   return (
     <div style={{ padding: '24px' }}>
+      <Alert
+        message={
+          <span>
+            Please upload the <Text strong>A02v2_CommissionDetail_v2_EN</Text> report from Callidus, in <Text strong>XLSX</Text> format. Select the date that matches the report date, not the published date.
+          </span>
+        }
+        type="info"
+        showIcon
+        style={{ marginBottom: '24px' }}
+      />
       <h1>Raw Excel Upload</h1>
       <div style={{ marginBottom: '20px', display: 'flex', gap: '16px', alignItems: 'center' }}>
         <input 
