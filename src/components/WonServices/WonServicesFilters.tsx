@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Space, Input, DatePicker, Button, Select, Switch, Tooltip, Typography } from 'antd';
 import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { Dayjs } from 'dayjs';
@@ -9,7 +9,7 @@ import { formatCurrency } from '../../utils/formatters';
 const { Search } = Input;
 const { Title, Text } = Typography;
 
-interface WonServicesFiltersProps {
+export interface WonServicesFiltersProps {
     startDate: Dayjs;
     endDate: Dayjs;
     onStartDateChange: (date: Dayjs | null) => void;
@@ -22,6 +22,7 @@ interface WonServicesFiltersProps {
     strictMode: boolean;
     onStrictModeChange: (checked: boolean) => void;
     data: GroupedData[];
+    actionButton?: ReactNode;
 }
 
 const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
@@ -36,7 +37,8 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
     onPaymentStatusChange,
     strictMode,
     onStrictModeChange,
-    data
+    data,
+    actionButton
 }) => {
     const paymentStatusOptions = Object.entries(inPaymentStatusMapper).map(([value, label]) => ({
         value: parseInt(value),
@@ -50,57 +52,60 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
             groupSum + (service.foxy_expectedcomp || 0), 0) || 0), 0);
 
     return (
-        <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }} size={0}>
+        <Space direction="vertical" style={{ width: '100%' }} size={0}>
             <Title level={4} style={{ marginBottom: '4px' }}>Won Services</Title>
             <Text type="secondary" style={{ marginBottom: '16px' }}>
                 Opportunities: {opportunityCount} · Won Services: {serviceCount} · Total Expected: {formatCurrency(totalExpected)}
             </Text>
-            <Space size="middle">
-                <DatePicker
-                    value={startDate}
-                    onChange={onStartDateChange}
-                    placeholder="Start Date"
-                />
-                <DatePicker
-                    value={endDate}
-                    onChange={onEndDateChange}
-                    placeholder="End Date"
-                />
-                <Select
-                    placeholder="Payment Status"
-                    style={{ width: 400 }}
-                    allowClear
-                    mode="multiple"
-                    options={paymentStatusOptions}
-                    value={paymentStatuses}
-                    onChange={onPaymentStatusChange}
-                    maxTagCount="responsive"
-                />
-                <Space>
-                    <Search
-                        placeholder="Search by Opp ID, Service ID, Product, or Address"
-                        allowClear
-                        enterButton
-                        onSearch={onSearch}
-                        onChange={e => onSearch(e.target.value)}
-                        style={{ width: 400 }}
+            <Space size="middle" align="start" style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                <Space size="middle">
+                    <DatePicker
+                        value={startDate}
+                        onChange={onStartDateChange}
+                        placeholder="Start Date"
                     />
-                    <Tooltip title={strictMode ? "Show exact matches only" : "Show all related records"}>
-                        <Switch
-                            checkedChildren="Exact"
-                            unCheckedChildren="All"
-                            checked={strictMode}
-                            onChange={onStrictModeChange}
+                    <DatePicker
+                        value={endDate}
+                        onChange={onEndDateChange}
+                        placeholder="End Date"
+                    />
+                    <Select
+                        placeholder="Payment Status"
+                        style={{ width: 300 }}
+                        allowClear
+                        mode="multiple"
+                        options={paymentStatusOptions}
+                        value={paymentStatuses}
+                        onChange={onPaymentStatusChange}
+                        maxTagCount="responsive"
+                    />
+                    <Space>
+                        <Search
+                            placeholder="Search by Opp ID, Service ID, Product, or Address"
+                            allowClear
+                            enterButton
+                            onSearch={onSearch}
+                            onChange={e => onSearch(e.target.value)}
+                            style={{ width: 300 }}
                         />
-                    </Tooltip>
+                        <Tooltip title={strictMode ? "Show exact matches only" : "Show all related records"}>
+                            <Switch
+                                checkedChildren="Exact"
+                                unCheckedChildren="All"
+                                checked={strictMode}
+                                onChange={onStrictModeChange}
+                            />
+                        </Tooltip>
+                    </Space>
+                    <Button
+                        type="primary"
+                        onClick={onToggleExpand}
+                        icon={isExpanded ? <CompressOutlined /> : <ExpandOutlined />}
+                    >
+                        {isExpanded ? 'Collapse All' : 'Expand All'}
+                    </Button>
                 </Space>
-                <Button
-                    type="primary"
-                    onClick={onToggleExpand}
-                    icon={isExpanded ? <CompressOutlined /> : <ExpandOutlined />}
-                >
-                    {isExpanded ? 'Collapse All' : 'Expand All'}
-                </Button>
+                {actionButton}
             </Space>
         </Space>
     );

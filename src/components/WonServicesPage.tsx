@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { Button, message, Dropdown, Modal } from 'antd';
+import { Button, message, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { listWonServices, calculateWonServicesComp, updateWonService } from '../utils/api';
@@ -205,7 +205,7 @@ const WonServicesPage: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ marginBottom: '16px' }}>
                 <WonServicesFilters
                     startDate={startDate}
                     endDate={endDate}
@@ -219,14 +219,14 @@ const WonServicesPage: React.FC = () => {
                     strictMode={strictMode}
                     onStrictModeChange={handleStrictModeChange}
                     data={filteredData}
+                    actionButton={selectedRowKeys.length > 0 ? (
+                        <Dropdown menu={{ items }} trigger={['click']}>
+                            <Button type="primary" loading={calculating}>
+                                Actions ({selectedRowKeys.length} selected) <DownOutlined />
+                            </Button>
+                        </Dropdown>
+                    ) : undefined}
                 />
-                {selectedRowKeys.length > 0 && (
-                    <Dropdown menu={{ items }} trigger={['click']}>
-                        <Button type="primary" loading={calculating}>
-                            Actions ({selectedRowKeys.length} selected) <DownOutlined />
-                        </Button>
-                    </Dropdown>
-                )}
             </div>
             <WonServicesTable
                 data={filteredData}
