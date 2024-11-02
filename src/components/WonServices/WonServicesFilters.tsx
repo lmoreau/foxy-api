@@ -4,6 +4,7 @@ import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { Dayjs } from 'dayjs';
 import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
 import { GroupedData } from '../../types/wonServices';
+import { formatCurrency } from '../../utils/formatters';
 
 const { Search } = Input;
 const { Title, Text } = Typography;
@@ -44,12 +45,15 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
 
     const opportunityCount = data.length;
     const serviceCount = data.reduce((sum, group) => sum + (group.children?.length || 0), 0);
+    const totalExpected = data.reduce((sum, group) => 
+        sum + (group.children?.reduce((groupSum, service) => 
+            groupSum + (service.foxy_expectedcomp || 0), 0) || 0), 0);
 
     return (
         <Space direction="vertical" style={{ width: '100%', marginBottom: '16px' }} size={0}>
             <Title level={4} style={{ marginBottom: '4px' }}>Won Services</Title>
             <Text type="secondary" style={{ marginBottom: '16px' }}>
-                Opportunities: {opportunityCount} · Won Services: {serviceCount}
+                Opportunities: {opportunityCount} · Won Services: {serviceCount} · Total Expected: {formatCurrency(totalExpected)}
             </Text>
             <Space size="middle">
                 <DatePicker
