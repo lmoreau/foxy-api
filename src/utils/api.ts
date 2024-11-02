@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 import { getAccessToken } from '../auth/authService';
 
 const API_BASE_URL = 'http://localhost:7071/api';
+const DATAVERSE_URL = 'https://foxy.crm3.dynamics.com';
 
 const getAuthHeaders = async () => {
   try {
@@ -17,7 +18,11 @@ const getAuthHeaders = async () => {
     return {
       Authorization: bearerToken,
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache, no-store, must-revalidate'
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'OData-MaxVersion': '4.0',
+      'OData-Version': '4.0',
+      'Accept': 'application/json',
+      'Prefer': 'return=representation'
     };
   } catch (error) {
     throw error;
@@ -123,6 +128,28 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
   }
 };
 
+export const updateWonService = async (id: string, expectedComp: number) => {
+  try {
+    const headers = await getAuthHeaders();
+    const formattedId = id.replace(/[{}]/g, '');
+    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_wonservices(${formattedId})`;
+    
+    await axios.patch(
+      url,
+      { 
+        foxy_expectedcomp: expectedComp,
+        crc9f_expectedcompbreakdown: `Manually overridden to ${expectedComp}`
+      },
+      { headers }
+    );
+    return { message: "Successfully updated won service" };
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to update won service:', err.response?.data);
+    throw error;
+  }
+};
+
 export const calculateWonServicesComp = async (ids: string[]) => {
   try {
     const headers = await getAuthHeaders();
@@ -157,7 +184,6 @@ export const createResidualScrubAudit = async (accountId: string, status: string
   }
 };
 
-// New authenticated API functions for location management
 export const listAccountLocationRows = async (accountId: string) => {
   const headers = await getAuthHeaders();
   const url = `${API_BASE_URL}/listAccountLocationRows?accountId=${accountId}`;

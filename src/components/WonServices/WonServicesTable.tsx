@@ -3,6 +3,7 @@ import { Table } from 'antd';
 import type { TableProps } from 'antd';
 import { GroupedData, WonService, isGroupData } from '../../types/wonServices';
 import { getWonServicesColumns } from './tableColumns';
+import type { Key } from 'antd/es/table/interface';
 
 interface WonServicesTableProps {
     data: GroupedData[];
@@ -26,6 +27,11 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
         onChange: onSelectionChange,
     };
 
+    const expandableConfig = {
+        expandedRowKeys: expandedKeys,
+        onExpandedRowsChange: (keys: readonly Key[]) => onExpandedRowsChange(keys as string[]),
+    };
+
     return (
         <Table
             rowSelection={rowSelection}
@@ -44,10 +50,7 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
                 showTotal: (total) => `Total ${total} items`,
                 showQuickJumper: true
             }}
-            expandable={{
-                expandedRowKeys: expandedKeys,
-                onExpandedRowsChange: (keys) => onExpandedRowsChange(keys as string[]),
-            }}
+            expandable={expandableConfig}
         />
     );
 };

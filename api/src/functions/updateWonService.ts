@@ -3,6 +3,12 @@ import axios from "axios";
 import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
+interface UpdateWonServiceRequest {
+    id: string;
+    foxy_expectedcomp: number;
+    crc9f_expectedcompbreakdown?: string;
+}
+
 export async function updateWonService(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
@@ -19,38 +25,29 @@ export async function updateWonService(request: HttpRequest, context: Invocation
         };
     }
 
-    // Get ID from URL path
-    const urlParts = request.url.split('/');
-    const idMatch = urlParts[urlParts.length - 1].match(/\((.*?)\)/);
-    if (!idMatch) {
-        return { 
-            ...corsResponse,
-            status: 400, 
-            body: "Please provide a GUID in the URL path like: foxy_wonservices(guid)"
-        };
-    }
-    const id = idMatch[1];
-
     try {
-        const requestBody = await request.json();
-        if (!requestBody || Object.keys(requestBody).length === 0) {
+        const requestBody = await request.json() as UpdateWonServiceRequest;
+        if (!requestBody.id || requestBody.foxy_expectedcomp === undefined) {
             return { 
                 ...corsResponse,
                 status: 400, 
-                body: "Please provide update fields in the request body"
+                body: "Please provide id and foxy_expectedcomp in the request body"
             };
         }
 
-        // Format the GUID properly for Dataverse
-        const formattedId = id.replace(/[{}]/g, '');
         const headers = getDataverseHeaders(authHeader);
+        const formattedId = requestBody.id.replace(/[{}]/g, '');
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices(${formattedId})`;
 
-        context.log('Using auth header:', authHeader.substring(0, 50) + '...');
-        context.log('Calling URL:', apiUrl);
-        context.log('Request body:', requestBody);
+        const updateData: any = {
+            foxy_expectedcomp: requestBody.foxy_expectedcomp
+        };
 
-        await axios.patch(apiUrl, requestBody, { headers });
+        if (requestBody.crc9f_expectedcompbreakdown) {
+            updateData.crc9f_expectedcompbreakdown = requestBody.crc9f_expectedcompbreakdown;
+        }
+
+        await axios.patch(apiUrl, updateData, { headers });
 
         return { 
             ...corsResponse,
@@ -87,6 +84,5 @@ export async function updateWonService(request: HttpRequest, context: Invocation
 app.http('updateWonService', {
     methods: ['PATCH', 'OPTIONS'],
     authLevel: 'anonymous',
-    route: 'foxy_wonservices({id})',  // This matches the Dataverse URL pattern
     handler: updateWonService
 });

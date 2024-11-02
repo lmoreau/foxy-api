@@ -129,7 +129,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         render: (value: number) => value ? formatCurrency(value) : '-',
     },
     {
-        title: 'Existing MRR',
+        title: 'Existing',
         dataIndex: 'crc9f_existingmrr',
         key: 'crc9f_existingmrr',
         width: 120,
@@ -140,7 +140,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         render: (value: number | null) => value ? formatCurrency(value) : '-',
     },
     {
-        title: 'MRR Uptick',
+        title: 'Delta',
         dataIndex: 'foxy_mrruptick',
         key: 'foxy_mrruptick',
         width: 120,
@@ -172,18 +172,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         render: (value: number) => value ? formatCurrency(value) : '-',
     },
     {
-        title: 'Comp Rate',
-        dataIndex: 'foxy_comprate',
-        key: 'foxy_comprate',
-        width: 100,
-        sorter: (a: any, b: any) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
-    },
-    {
-        title: 'Expected Comp',
+        title: 'Expected',
         dataIndex: 'foxy_expectedcomp',
         key: 'foxy_expectedcomp',
         width: 120,

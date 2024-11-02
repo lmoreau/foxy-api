@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { Button, message } from 'antd';
-import { listWonServices, calculateWonServicesComp } from '../utils/api';
+import { Button, message, Dropdown, Modal } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { listWonServices, calculateWonServicesComp, updateWonService } from '../utils/api';
 import { groupWonServicesByOpportunity } from '../utils/wonServicesUtils';
 import { GroupedData, WonService } from '../types/wonServices';
 import WonServicesFilters from './WonServices/WonServicesFilters';
 import WonServicesTable from './WonServices/WonServicesTable';
+import OverrideCompModal from './WonServices/OverrideCompModal';
 import { AxiosError } from 'axios';
 
 const WonServicesPage: React.FC = () => {
@@ -20,6 +23,7 @@ const WonServicesPage: React.FC = () => {
     const [paymentStatuses, setPaymentStatuses] = useState<number[]>([]);
     const [strictMode, setStrictMode] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [overrideModalVisible, setOverrideModalVisible] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -65,6 +69,39 @@ const WonServicesPage: React.FC = () => {
             setCalculating(false);
         }
     };
+
+    const handleOverrideComp = async (amount: number) => {
+        if (selectedRowKeys.length === 0) return;
+
+        setCalculating(true);
+        try {
+            // Update each selected service
+            for (const id of selectedRowKeys) {
+                await updateWonService(id as string, amount);
+            }
+            message.success('Successfully updated compensation');
+            setOverrideModalVisible(false);
+            await fetchData(); // Refresh the data
+        } catch (error) {
+            console.error('Error updating compensation:', error);
+            message.error('Failed to update compensation');
+        } finally {
+            setCalculating(false);
+        }
+    };
+
+    const items: MenuProps['items'] = [
+        {
+            key: 'calculate',
+            label: 'Calculate Compensation',
+            onClick: handleCalculateComp,
+        },
+        {
+            key: 'override',
+            label: 'Override Expected Comp',
+            onClick: () => setOverrideModalVisible(true),
+        },
+    ];
 
     useEffect(() => {
         fetchData();
@@ -157,13 +194,11 @@ const WonServicesPage: React.FC = () => {
                     data={filteredData}
                 />
                 {selectedRowKeys.length > 0 && (
-                    <Button 
-                        type="primary"
-                        onClick={handleCalculateComp}
-                        loading={calculating}
-                    >
-                        Calculate Compensation ({selectedRowKeys.length} selected)
-                    </Button>
+                    <Dropdown menu={{ items }} trigger={['click']}>
+                        <Button type="primary" loading={calculating}>
+                            Actions ({selectedRowKeys.length} selected) <DownOutlined />
+                        </Button>
+                    </Dropdown>
                 )}
             </div>
             <WonServicesTable
@@ -173,6 +208,12 @@ const WonServicesPage: React.FC = () => {
                 selectedRowKeys={selectedRowKeys}
                 onExpandedRowsChange={setExpandedKeys}
                 onSelectionChange={setSelectedRowKeys}
+            />
+            <OverrideCompModal
+                visible={overrideModalVisible}
+                onCancel={() => setOverrideModalVisible(false)}
+                onConfirm={handleOverrideComp}
+                selectedCount={selectedRowKeys.length}
             />
         </div>
     );
