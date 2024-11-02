@@ -25,6 +25,9 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
     const rowSelection = {
         selectedRowKeys,
         onChange: onSelectionChange,
+        getCheckboxProps: (record: GroupedData | WonService) => ({
+            disabled: isGroupData(record), // Disable checkbox for parent rows
+        }),
     };
 
     const expandableConfig = {
