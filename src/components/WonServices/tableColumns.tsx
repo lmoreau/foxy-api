@@ -72,10 +72,32 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
                     break;
             }
 
+            const paymentStatus = getInPaymentStatus(record.foxy_inpaymentstatus || 0);
+            let paymentStatusColor = 'default';
+            
+            switch (paymentStatus) {
+                case 'Pending':
+                case 'Disputed':
+                case 'Dispute Needed':
+                    paymentStatusColor = 'red';
+                    break;
+                case 'Paid in Full':
+                case 'Non-Commissionable':
+                case 'Overpaid':
+                    paymentStatusColor = 'green';
+                    break;
+            }
+
             return (
                 <Tooltip title={tooltipText}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {text || '-'} <Tag color={tagColor}>{tagText}</Tag>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {text || '-'}
+                        </div>
+                        <div>
+                            <Tag color={tagColor}>{tagText}</Tag>
+                            <Tag color={paymentStatusColor}>{paymentStatus}</Tag>
+                        </div>
                     </div>
                 </Tooltip>
             );
@@ -192,7 +214,7 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
         },
     },
     {
-        title: 'Line Margin',
+        title: 'Margin',
         dataIndex: 'foxy_linemargin',
         key: 'foxy_linemargin',
         width: 100,
@@ -201,20 +223,5 @@ export const getWonServicesColumns = (): TableProps<GroupedData | WonService>['c
             colSpan: isGroupData(record) ? 0 : 1
         }),
         render: (value: number) => value ? (value * 100).toFixed(2) + '%' : '-',
-    },
-    {
-        title: 'In Payment Status',
-        dataIndex: 'foxy_inpaymentstatus',
-        key: 'foxy_inpaymentstatus',
-        width: 150,
-        sorter: (a: any, b: any) => {
-            const aStatus = getInPaymentStatus(a.foxy_inpaymentstatus || 0);
-            const bStatus = getInPaymentStatus(b.foxy_inpaymentstatus || 0);
-            return aStatus.localeCompare(bStatus);
-        },
-        onCell: (record) => ({
-            colSpan: isGroupData(record) ? 0 : 1
-        }),
-        render: (value: number) => getInPaymentStatus(value),
     },
 ];
