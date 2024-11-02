@@ -9,6 +9,7 @@ import { GroupedData, WonService } from '../types/wonServices';
 import WonServicesFilters from './WonServices/WonServicesFilters';
 import WonServicesTable from './WonServices/WonServicesTable';
 import OverrideCompModal from './WonServices/OverrideCompModal';
+import PaymentStatusModal from './WonServices/PaymentStatusModal';
 import { AxiosError } from 'axios';
 
 const WonServicesPage: React.FC = () => {
@@ -24,6 +25,7 @@ const WonServicesPage: React.FC = () => {
     const [strictMode, setStrictMode] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [overrideModalVisible, setOverrideModalVisible] = useState(false);
+    const [paymentStatusModalVisible, setPaymentStatusModalVisible] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -77,7 +79,7 @@ const WonServicesPage: React.FC = () => {
         try {
             // Update each selected service
             for (const id of selectedRowKeys) {
-                await updateWonService(id as string, amount);
+                await updateWonService({ id: id as string, expectedComp: amount });
             }
             message.success('Successfully updated compensation');
             setOverrideModalVisible(false);
@@ -85,6 +87,26 @@ const WonServicesPage: React.FC = () => {
         } catch (error) {
             console.error('Error updating compensation:', error);
             message.error('Failed to update compensation');
+        } finally {
+            setCalculating(false);
+        }
+    };
+
+    const handlePaymentStatusChange = async (status: number) => {
+        if (selectedRowKeys.length === 0) return;
+
+        setCalculating(true);
+        try {
+            // Update each selected service
+            for (const id of selectedRowKeys) {
+                await updateWonService({ id: id as string, paymentStatus: status });
+            }
+            message.success('Successfully updated payment status');
+            setPaymentStatusModalVisible(false);
+            await fetchData(); // Refresh the data
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            message.error('Failed to update payment status');
         } finally {
             setCalculating(false);
         }
@@ -100,6 +122,11 @@ const WonServicesPage: React.FC = () => {
             key: 'override',
             label: 'Override Expected Comp',
             onClick: () => setOverrideModalVisible(true),
+        },
+        {
+            key: 'payment_status',
+            label: 'Change Payment Status',
+            onClick: () => setPaymentStatusModalVisible(true),
         },
     ];
 
@@ -158,7 +185,7 @@ const WonServicesPage: React.FC = () => {
         filterData(data, value, paymentStatuses, strictMode);
     };
 
-    const handlePaymentStatusChange = (values: number[]) => {
+    const handlePaymentStatusFilter = (values: number[]) => {
         setPaymentStatuses(values);
         filterData(data, searchText, values, strictMode);
     };
@@ -188,7 +215,7 @@ const WonServicesPage: React.FC = () => {
                     onToggleExpand={toggleExpandAll}
                     isExpanded={expandedKeys.length > 0}
                     paymentStatuses={paymentStatuses}
-                    onPaymentStatusChange={handlePaymentStatusChange}
+                    onPaymentStatusChange={handlePaymentStatusFilter}
                     strictMode={strictMode}
                     onStrictModeChange={handleStrictModeChange}
                     data={filteredData}
@@ -213,6 +240,12 @@ const WonServicesPage: React.FC = () => {
                 visible={overrideModalVisible}
                 onCancel={() => setOverrideModalVisible(false)}
                 onConfirm={handleOverrideComp}
+                selectedCount={selectedRowKeys.length}
+            />
+            <PaymentStatusModal
+                visible={paymentStatusModalVisible}
+                onCancel={() => setPaymentStatusModalVisible(false)}
+                onConfirm={handlePaymentStatusChange}
                 selectedCount={selectedRowKeys.length}
             />
         </div>

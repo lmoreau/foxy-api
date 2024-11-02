@@ -5,8 +5,9 @@ import { corsHandler } from "../shared/cors";
 
 interface UpdateWonServiceRequest {
     id: string;
-    foxy_expectedcomp: number;
+    foxy_expectedcomp?: number;
     crc9f_expectedcompbreakdown?: string;
+    foxy_inpaymentstatus?: number;
 }
 
 export async function updateWonService(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -27,11 +28,11 @@ export async function updateWonService(request: HttpRequest, context: Invocation
 
     try {
         const requestBody = await request.json() as UpdateWonServiceRequest;
-        if (!requestBody.id || requestBody.foxy_expectedcomp === undefined) {
+        if (!requestBody.id) {
             return { 
                 ...corsResponse,
                 status: 400, 
-                body: "Please provide id and foxy_expectedcomp in the request body"
+                body: "Please provide id in the request body"
             };
         }
 
@@ -39,12 +40,18 @@ export async function updateWonService(request: HttpRequest, context: Invocation
         const formattedId = requestBody.id.replace(/[{}]/g, '');
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices(${formattedId})`;
 
-        const updateData: any = {
-            foxy_expectedcomp: requestBody.foxy_expectedcomp
-        };
+        const updateData: any = {};
 
-        if (requestBody.crc9f_expectedcompbreakdown) {
+        if (requestBody.foxy_expectedcomp !== undefined) {
+            updateData.foxy_expectedcomp = requestBody.foxy_expectedcomp;
+        }
+
+        if (requestBody.crc9f_expectedcompbreakdown !== undefined) {
             updateData.crc9f_expectedcompbreakdown = requestBody.crc9f_expectedcompbreakdown;
+        }
+
+        if (requestBody.foxy_inpaymentstatus !== undefined) {
+            updateData.foxy_inpaymentstatus = requestBody.foxy_inpaymentstatus;
         }
 
         await axios.patch(apiUrl, updateData, { headers });

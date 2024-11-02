@@ -128,20 +128,30 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
   }
 };
 
-export const updateWonService = async (id: string, expectedComp: number) => {
+interface UpdateWonServiceParams {
+  id: string;
+  expectedComp?: number;
+  paymentStatus?: number;
+}
+
+export const updateWonService = async ({ id, expectedComp, paymentStatus }: UpdateWonServiceParams) => {
   try {
     const headers = await getAuthHeaders();
     const formattedId = id.replace(/[{}]/g, '');
     const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_wonservices(${formattedId})`;
     
-    await axios.patch(
-      url,
-      { 
-        foxy_expectedcomp: expectedComp,
-        crc9f_expectedcompbreakdown: `Manually overridden to ${expectedComp}`
-      },
-      { headers }
-    );
+    const updateData: any = {};
+    
+    if (expectedComp !== undefined) {
+      updateData.foxy_expectedcomp = expectedComp;
+      updateData.crc9f_expectedcompbreakdown = `Manually overridden to ${expectedComp}`;
+    }
+    
+    if (paymentStatus !== undefined) {
+      updateData.foxy_inpaymentstatus = paymentStatus;
+    }
+    
+    await axios.patch(url, updateData, { headers });
     return { message: "Successfully updated won service" };
   } catch (error) {
     const err = error as AxiosError;
