@@ -28,7 +28,7 @@ interface Account {
   foxy_wirelinemrr: string;
   foxyflow_wirelineresiduals: string;
   crc9f_residuallastscrub: string;
-  crc9f_totalwonoppstcv: string;
+  crc9f_totalwonoppstcv: number | null;
 }
 
 const serviceColors = {
@@ -67,11 +67,20 @@ const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
   'Legacy Issue': 'red',
 };
 
-const formatCurrency = (value: string | null | undefined) => {
-  if (!value) return '$0.00';
-  const num = parseFloat(value);
+const formatCurrency = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined) return '$0.00';
+  const num = typeof value === 'string' ? parseFloat(value) : value;
   if (isNaN(num)) return '$0.00';
   return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+};
+
+const parseCurrencyValue = (value: string | number | null | undefined): number => {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number') return value;
+  // Remove any currency symbols, commas, and spaces, then parse as float
+  const cleanValue = value.replace(/[$,\s]/g, '');
+  const num = parseFloat(cleanValue);
+  return isNaN(num) ? 0 : num;
 };
 
 const formatDate = (dateString: string) => {
@@ -86,6 +95,13 @@ const formatDate = (dateString: string) => {
 
 const mapWirelineResiduals = (value: string) => {
   return getWirelineResidualsLabel(value);
+};
+
+// Helper function to sort values where null/undefined values go to the end
+const sortWithNulls = (a: any, b: any, asc = true): number => {
+  if (a === null || a === undefined) return asc ? 1 : -1;
+  if (b === null || b === undefined) return asc ? -1 : 1;
+  return asc ? (a < b ? -1 : 1) : (a < b ? 1 : -1);
 };
 
 const ResidualCheck: React.FC = () => {
@@ -238,7 +254,7 @@ const ResidualCheck: React.FC = () => {
       width: '15%',
       ellipsis: true,
       render: (value) => formatCurrency(value),
-      sorter: (a, b) => parseFloat(a.foxyflow_residualstotal || '0') - parseFloat(b.foxyflow_residualstotal || '0'),
+      sorter: (a, b) => parseCurrencyValue(a.foxyflow_residualstotal) - parseCurrencyValue(b.foxyflow_residualstotal),
       sortOrder: sortOrder.columnKey === 'foxyflow_residualstotal' ? sortOrder.order : undefined,
     },
     {
@@ -248,7 +264,7 @@ const ResidualCheck: React.FC = () => {
       width: '15%',
       ellipsis: true,
       render: (value) => formatCurrency(value),
-      sorter: (a, b) => parseFloat(a.foxy_wirelinemrr || '0') - parseFloat(b.foxy_wirelinemrr || '0'),
+      sorter: (a, b) => parseCurrencyValue(a.foxy_wirelinemrr) - parseCurrencyValue(b.foxy_wirelinemrr),
       sortOrder: sortOrder.columnKey === 'foxy_wirelinemrr' ? sortOrder.order : undefined,
     },
     {
@@ -258,7 +274,10 @@ const ResidualCheck: React.FC = () => {
       width: '15%',
       ellipsis: true,
       render: (value) => formatCurrency(value),
-      sorter: (a, b) => parseFloat(a.crc9f_totalwonoppstcv || '0') - parseFloat(b.crc9f_totalwonoppstcv || '0'),
+      sorter: (a, b) => {
+        const asc = sortOrder.order === 'ascend';
+        return sortWithNulls(a.crc9f_totalwonoppstcv, b.crc9f_totalwonoppstcv, asc);
+      },
       sortOrder: sortOrder.columnKey === 'crc9f_totalwonoppstcv' ? sortOrder.order : undefined,
     },
     {
