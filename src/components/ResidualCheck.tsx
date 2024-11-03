@@ -28,6 +28,7 @@ interface Account {
   foxy_wirelinemrr: string;
   foxyflow_wirelineresiduals: string;
   crc9f_residuallastscrub: string;
+  crc9f_totalwonoppstcv: string;
 }
 
 const serviceColors = {
@@ -66,8 +67,10 @@ const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
   'Legacy Issue': 'red',
 };
 
-const formatCurrency = (value: string) => {
+const formatCurrency = (value: string | null | undefined) => {
+  if (!value) return '$0.00';
   const num = parseFloat(value);
+  if (isNaN(num)) return '$0.00';
   return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
@@ -235,7 +238,7 @@ const ResidualCheck: React.FC = () => {
       width: '15%',
       ellipsis: true,
       render: (value) => formatCurrency(value),
-      sorter: (a, b) => parseFloat(a.foxyflow_residualstotal) - parseFloat(b.foxyflow_residualstotal),
+      sorter: (a, b) => parseFloat(a.foxyflow_residualstotal || '0') - parseFloat(b.foxyflow_residualstotal || '0'),
       sortOrder: sortOrder.columnKey === 'foxyflow_residualstotal' ? sortOrder.order : undefined,
     },
     {
@@ -245,8 +248,18 @@ const ResidualCheck: React.FC = () => {
       width: '15%',
       ellipsis: true,
       render: (value) => formatCurrency(value),
-      sorter: (a, b) => parseFloat(a.foxy_wirelinemrr) - parseFloat(b.foxy_wirelinemrr),
+      sorter: (a, b) => parseFloat(a.foxy_wirelinemrr || '0') - parseFloat(b.foxy_wirelinemrr || '0'),
       sortOrder: sortOrder.columnKey === 'foxy_wirelinemrr' ? sortOrder.order : undefined,
+    },
+    {
+      title: 'Won TCV',
+      dataIndex: 'crc9f_totalwonoppstcv',
+      key: 'crc9f_totalwonoppstcv',
+      width: '15%',
+      ellipsis: true,
+      render: (value) => formatCurrency(value),
+      sorter: (a, b) => parseFloat(a.crc9f_totalwonoppstcv || '0') - parseFloat(b.crc9f_totalwonoppstcv || '0'),
+      sortOrder: sortOrder.columnKey === 'crc9f_totalwonoppstcv' ? sortOrder.order : undefined,
     },
     {
       title: 'Residual Status',
