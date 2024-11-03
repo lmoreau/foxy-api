@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Tag, Tooltip, Select, Row, Col, Input } from 'antd';
+import { Table, Tag, Tooltip, Select, Row, Col, Input, Switch } from 'antd';
 import { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { SortOrder } from 'antd/es/table/interface';
 import { SearchOutlined } from '@ant-design/icons';
@@ -99,6 +99,9 @@ const ResidualCheck: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>(() => {
     return localStorage.getItem('searchTerm') || '';
   });
+  const [showNeedsScrubbing, setShowNeedsScrubbing] = useState<boolean>(() => {
+    return JSON.parse(localStorage.getItem('showNeedsScrubbing') || 'false');
+  });
   const [pagination, setPagination] = useState<TablePaginationConfig>(() => {
     return JSON.parse(localStorage.getItem('pagination') || '{"current": 1, "pageSize": 50}');
   });
@@ -146,8 +149,20 @@ const ResidualCheck: React.FC = () => {
       });
     }
 
+    // Filter by last scrubbed date
+    if (showNeedsScrubbing) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - 120);
+
+      filtered = filtered.filter(account => {
+        if (!account.crc9f_residuallastscrub) return true;
+        const scrubDate = new Date(account.crc9f_residuallastscrub);
+        return scrubDate < cutoffDate;
+      });
+    }
+
     return filtered;
-  }, [selectedServices, selectedResiduals, searchTerm, accounts]);
+  }, [selectedServices, selectedResiduals, searchTerm, accounts, showNeedsScrubbing]);
 
   const handleServiceChange = useCallback((value: string[]) => {
     setSelectedServices(value);
@@ -162,6 +177,11 @@ const ResidualCheck: React.FC = () => {
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     localStorage.setItem('searchTerm', e.target.value);
+  }, []);
+
+  const handleScrubToggleChange = useCallback((checked: boolean) => {
+    setShowNeedsScrubbing(checked);
+    localStorage.setItem('showNeedsScrubbing', JSON.stringify(checked));
   }, []);
 
   const handleRowClick = useCallback((record: Account) => {
@@ -266,7 +286,7 @@ const ResidualCheck: React.FC = () => {
         Displaying {filteredAccounts.length} {filteredAccounts.length === 1 ? 'account' : 'accounts'}
       </div>
       <Row gutter={16}>
-        <Col span={8}>
+        <Col span={6}>
           <Input
             placeholder="Search by company name"
             prefix={<SearchOutlined />}
@@ -275,7 +295,7 @@ const ResidualCheck: React.FC = () => {
             style={{ width: '100%', marginBottom: '16px' }}
           />
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Select
             mode="multiple"
             style={{ width: '100%', marginBottom: '16px' }}
@@ -289,7 +309,7 @@ const ResidualCheck: React.FC = () => {
             ))}
           </Select>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Select
             mode="multiple"
             style={{ width: '100%', marginBottom: '16px' }}
@@ -302,6 +322,15 @@ const ResidualCheck: React.FC = () => {
               <Option key={option.value} value={option.value}>{option.label}</Option>
             ))}
           </Select>
+        </Col>
+        <Col span={6}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Switch
+              checked={showNeedsScrubbing}
+              onChange={handleScrubToggleChange}
+            />
+            <span>Show Needs Scrubbing (120+ days)</span>
+          </div>
         </Col>
       </Row>
       <Table 
