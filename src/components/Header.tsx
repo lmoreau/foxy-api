@@ -24,18 +24,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
   };
 
   const getMenuItems = () => {
-    if (location.pathname === '/residual-check' || location.pathname === '/won-services') {
+    // Remove menu items for residual-details and residual-check pages
+    if (location.pathname === '/residual-details' || location.pathname === '/residual-check') {
+      return [];
+    }
+
+    if (location.pathname === '/won-services') {
       return [
         { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> },
         { key: 'won-services', label: <Link to="/won-services"><CheckCircleOutlined /> <span style={{ marginLeft: '8px' }}>Won Services</span></Link> }
-      ];
-    }
-
-    if (location.pathname.includes('/residual-details')) {
-      return [
-        { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> },
-        { key: 'won-services', label: <Link to="/won-services"><CheckCircleOutlined /> <span style={{ marginLeft: '8px' }}>Won Services</span></Link> },
-        { key: 'residual-details', label: <><FileTextOutlined /> <span style={{ marginLeft: '8px' }}>Residual Details</span></> }
       ];
     }
 
@@ -70,7 +67,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
     <Header style={{ display: 'flex', alignItems: 'center', padding: '0 16px', height: '48px', lineHeight: '48px' }}>
       <div className="logo" style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '24px', display: 'flex', alignItems: 'center' }}>
         <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
-        Foxy PL
+        Foxy Ledger
       </div>
       <Menu 
         theme="dark" 

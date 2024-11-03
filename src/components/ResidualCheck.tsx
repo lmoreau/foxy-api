@@ -27,6 +27,7 @@ interface Account {
   foxy_unison: boolean;
   foxy_wirelinemrr: string;
   foxyflow_wirelineresiduals: string;
+  crc9f_residuallastscrub: string;
 }
 
 const serviceColors = {
@@ -68,6 +69,16 @@ const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
 const formatCurrency = (value: string) => {
   const num = parseFloat(value);
   return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+};
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 };
 
 const mapWirelineResiduals = (value: string) => {
@@ -229,6 +240,20 @@ const ResidualCheck: React.FC = () => {
         return <Tag color={color}>{label}</Tag>;
       },
     },
+    {
+      title: 'Last Scrubbed',
+      dataIndex: 'crc9f_residuallastscrub',
+      key: 'crc9f_residuallastscrub',
+      width: '15%',
+      ellipsis: true,
+      render: (value) => formatDate(value),
+      sorter: (a, b) => {
+        const dateA = a.crc9f_residuallastscrub ? new Date(a.crc9f_residuallastscrub).getTime() : 0;
+        const dateB = b.crc9f_residuallastscrub ? new Date(b.crc9f_residuallastscrub).getTime() : 0;
+        return dateA - dateB;
+      },
+      sortOrder: sortOrder.columnKey === 'crc9f_residuallastscrub' ? sortOrder.order : undefined,
+    },
   ];
 
   if (loading) return <div>Loading...</div>;
@@ -237,6 +262,9 @@ const ResidualCheck: React.FC = () => {
   return (
     <div className="residual-check-container">
       <h2>Accounts for Residual Check</h2>
+      <div style={{ color: '#666', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>
+        Displaying {filteredAccounts.length} {filteredAccounts.length === 1 ? 'account' : 'accounts'}
+      </div>
       <Row gutter={16}>
         <Col span={8}>
           <Input
