@@ -1,7 +1,7 @@
 import React from 'react';
-import { Layout } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
-import { useLocation, Link } from 'react-router-dom';
+import { Layout, Dropdown, Menu } from 'antd';
+import { UserOutlined, AppstoreOutlined, UnorderedListOutlined, UploadOutlined, CloudUploadOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
 
 const { Header } = Layout;
@@ -12,7 +12,46 @@ interface AppHeaderProps {
 }
 
 const AppHeader: React.FC<AppHeaderProps> = () => {
-  const location = useLocation();
+  const menu = (
+    <Menu
+      items={[
+        {
+          key: 'residual-check',
+          label: <Link to="/residual-check">Residual Account List</Link>,
+          icon: <UnorderedListOutlined />,
+        },
+        {
+          key: 'master-residual',
+          label: <span>Master Residual List</span>,
+          icon: <UnorderedListOutlined />,
+        },
+        {
+          key: 'divider-1',
+          type: 'divider',
+        },
+        {
+          key: 'won-services',
+          label: <span>Revenue Services</span>,
+          icon: <UnorderedListOutlined />,
+        },
+        {
+          key: 'residual-upload',
+          label: <span>Residual Statement Upload</span>,
+          icon: <UploadOutlined />,
+        },
+        {
+          key: 'wireline-upload',
+          label: <span>Wireline Statement Upload</span>,
+          icon: <CloudUploadOutlined />,
+        },
+        {
+          key: 'callidus-upload',
+          label: <span>Callidus Statement Upload</span>,
+          icon: <CloudUploadOutlined />,
+        },
+      ]}
+    />
+  );
 
   return (
     <Header style={{ 
@@ -23,20 +62,39 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       lineHeight: '48px',
       justifyContent: 'space-between'
     }}>
-      {/* Logo and text section */}
-      <Link to="/residual-check" style={{ textDecoration: 'none' }}>
-        <div className="logo" style={{ 
-          color: 'white', 
-          fontSize: '18px', 
-          fontWeight: 'bold',
-          display: 'flex', 
-          alignItems: 'center',
-          minWidth: '200px'
-        }}>
-          <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
-          Foxy Ledger
-        </div>
-      </Link>
+      {/* Menu and Logo section */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        minWidth: '200px'
+      }}>
+        <Dropdown 
+          overlay={menu} 
+          trigger={['click']}
+          placement="bottomLeft"
+        >
+          <AppstoreOutlined 
+            style={{ 
+              fontSize: '20px', 
+              color: 'white',
+              marginRight: '16px',
+              cursor: 'pointer'
+            }} 
+          />
+        </Dropdown>
+        <Link to="/residual-check" style={{ textDecoration: 'none' }}>
+          <div className="logo" style={{ 
+            color: 'white', 
+            fontSize: '18px', 
+            fontWeight: 'bold',
+            display: 'flex', 
+            alignItems: 'center',
+          }}>
+            <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
+            Foxy Ledger
+          </div>
+        </Link>
+      </div>
 
       {/* Command palette section - centered */}
       <div style={{ 
