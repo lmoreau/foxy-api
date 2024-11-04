@@ -10,6 +10,7 @@ import ResidualUpload from './components/ResidualUpload';
 import WirelineUpload from './components/WirelineUpload';
 import WonServicesPage from './components/WonServicesPage';
 import RawExcelUpload from './components/RawExcelUpload';
+import MasterResidualList from './components/MasterResidualList';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -98,6 +99,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <WonServicesPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/master-residual-list" 
+                element={
+                  <ProtectedRoute>
+                    <MasterResidualList />
                   </ProtectedRoute>
                 } 
               />

@@ -14,6 +14,7 @@ import "./functions/getQuoteLocationById";
 import "./functions/getQuoteRequestById";
 import "./functions/listAccountLocationRows";
 import "./functions/listAccountsForResidualCheck";
+import "./functions/listMasterResidualRows";
 import "./functions/listOpportunityRows";
 import "./functions/listProductByRow";
 import "./functions/listQuoteLineItemByRow";
@@ -25,7 +26,7 @@ import "./functions/listWonServices";
 import "./functions/updateAccountWirelineResiduals";
 import "./functions/updateWonService";
 import "./functions/calculateWonServicesComp";
-import "./functions/helloWorld";  // Add the new hello world function
+import "./functions/helloWorld";
 
 // Export the initialized app
 export default functionApp;

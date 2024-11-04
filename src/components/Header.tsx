@@ -22,7 +22,7 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
         },
         {
           key: 'master-residual',
-          label: <span>Master Residual List</span>,
+          label: <Link to="/master-residual-list">Master Residual List</Link>,
           icon: <UnorderedListOutlined />,
         },
         {
