@@ -19,10 +19,6 @@ interface Location {
   };
 }
 
-interface ApiResponse {
-  value: Location[];
-}
-
 const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, onCancel, quoteRequestId, accountId, onRefresh }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);

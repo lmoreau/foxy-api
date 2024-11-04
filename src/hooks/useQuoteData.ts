@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
-import { QuoteLocation, QuoteLineItem, QuoteRequest } from '../types';
+import { QuoteLocation, QuoteLineItem } from '../types';
 import { getQuoteRequestById, listQuoteLocationRows, listQuoteLineItemByRow } from '../utils/api';
 
 interface OwningUser {

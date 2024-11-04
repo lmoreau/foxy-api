@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Menu } from 'antd';
-import { UserOutlined, UnorderedListOutlined, FileTextOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, UnorderedListOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
 

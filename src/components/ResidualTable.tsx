@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Table, Tag, Tooltip, Switch, Alert } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRecord, WirelineRecord, ResidualRecord, MergedRecord } from '../types/residualTypes';
-import { formatDescription } from '../utils/residualUtils';
 import DescriptionProductColumn from './DescriptionProductColumn';
 
 interface ResidualTableProps {

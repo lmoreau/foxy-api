@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Tag, Tooltip, Select, Row, Col, Input, Switch } from 'antd';
+import { Table, Tag, Select, Row, Col, Input, Switch } from 'antd';
 import { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { SortOrder } from 'antd/es/table/interface';
 import { SearchOutlined } from '@ant-design/icons';

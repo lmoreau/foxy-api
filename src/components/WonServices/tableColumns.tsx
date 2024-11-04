@@ -1,9 +1,7 @@
 import React from 'react';
 import { Space, Tag, Tooltip } from 'antd';
-import { CheckCircleFilled } from '@ant-design/icons';
 import type { TableProps } from 'antd';
 import { formatCurrency } from '../../utils/formatters';
-import { getRenewalDisposition } from '../../utils/constants/renewalDispositionMapper';
 import { getInPaymentStatus } from '../../utils/constants/inPaymentStatusMapper';
 import { getRevenueType } from '../../utils/constants/revenueTypeMapper';
 import { GroupedData, WonService, isGroupData } from '../../types/wonServices';

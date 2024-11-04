@@ -132,7 +132,7 @@ const WonServicesPage: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [startDate, endDate]);
+    }, [startDate, endDate, fetchData]);
 
     const matchesSearch = (item: WonService, searchLower: string) => 
         item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
