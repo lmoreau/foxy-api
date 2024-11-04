@@ -249,7 +249,7 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
         
         if (isMerged) {
           const isAutoMerged = mergedRecord.isAutoMerged;
-          tagColor = isAutoMerged ? 'warning' : 'purple';
+          tagColor = isAutoMerged ? 'blue' : 'purple';
           tagText = isAutoMerged ? 'Auto-Merged' : 'Merged';
         } else if (isWireline) {
           tagColor = 'green';
@@ -327,9 +327,8 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
     <>
       {showMatchAlert && (
         <Alert
-          message={hasAutoMerged ? "Auto-Mapped Records" : "Perfect Match!"}
-          description={hasAutoMerged ? "Some records have been automatically mapped based on matching amounts. Use the De-merge toggle to review individual records." : undefined}
-          type={hasAutoMerged ? "warning" : "success"}
+          message={hasAutoMerged ? "Some records have been automatically mapped based on matching amounts. Use the De-merge toggle to review individual records." : "Perfect Match!"}
+          type={hasAutoMerged ? "info" : "success"}
           showIcon
           style={{ marginBottom: 16 }}
         />

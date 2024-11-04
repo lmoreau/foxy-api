@@ -29,7 +29,7 @@ const DescriptionProductColumn: React.FC<DescriptionProductColumnProps> = ({ rec
         {r.foxy_serviceid && r.foxy_serviceid !== 'N/A' && (
           <>
             {' '}
-            <Tag color="blue">({r.foxy_serviceid})</Tag>
+            <Tag color="blue">{r.foxy_serviceid}</Tag>
           </>
         )}
         {' '}
