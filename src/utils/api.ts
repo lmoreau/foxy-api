@@ -2,7 +2,7 @@ import { Product } from '../types';
 import axios, { AxiosError } from 'axios';
 import { getAccessToken } from '../auth/authService';
 
-const API_BASE_URL = 'http://localhost:7071/api';
+const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:7071/api';
 const DATAVERSE_URL = 'https://foxy.crm3.dynamics.com';
 
 const getAuthHeaders = async () => {
