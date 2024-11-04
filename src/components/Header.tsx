@@ -1,7 +1,7 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
-import { UserOutlined, UnorderedListOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { Link, useLocation } from 'react-router-dom';
+import { Layout } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+import { useLocation, Link } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
 
 const { Header } = Layout;
@@ -11,73 +11,50 @@ interface AppHeaderProps {
   newProp?: string;
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ quoteRequestId }) => {
+const AppHeader: React.FC<AppHeaderProps> = () => {
   const location = useLocation();
 
-  const getHeaderTitle = () => {
-    if (location.pathname === '/products') {
-      return 'Product Management';
-    } else if (quoteRequestId) {
-      return `Quote Request: ${quoteRequestId}`;
-    }
-    return null;
-  };
-
-  const getMenuItems = () => {
-    // Remove menu items for residual-details and residual-check pages
-    if (location.pathname === '/residual-details' || location.pathname === '/residual-check') {
-      return [];
-    }
-
-    if (location.pathname === '/won-services') {
-      return [
-        { key: 'residual-check', label: <Link to="/residual-check"><UnorderedListOutlined /> <span style={{ marginLeft: '8px' }}>Residual Account List</span></Link> },
-        { key: 'won-services', label: <Link to="/won-services"><CheckCircleOutlined /> <span style={{ marginLeft: '8px' }}>Won Services</span></Link> }
-      ];
-    }
-
-    return [
-      { key: 'header', label: getHeaderTitle() },
-      { key: 'quotes', label: <Link to="/quotes">Quotes</Link> },
-      { key: 'products', label: <Link to="/products">Products</Link> },
-      { key: 'customers', label: <Link to="/customers">Customers</Link> },
-    ].filter(item => item.label !== null);
-  };
-
-  const getSelectedKey = () => {
-    if (location.pathname === '/residual-check') {
-      return 'residual-check';
-    }
-    if (location.pathname === '/won-services') {
-      return 'won-services';
-    }
-    if (location.pathname.includes('/residual-details')) {
-      return 'residual-details';
-    }
-    if (location.pathname === '/products') {
-      return 'header';
-    }
-    if (location.pathname.startsWith('/quote/') || quoteRequestId) {
-      return 'header';
-    }
-    return location.pathname.slice(1) || 'header';
-  };
-
   return (
-    <Header style={{ display: 'flex', alignItems: 'center', padding: '0 16px', height: '48px', lineHeight: '48px' }}>
-      <div className="logo" style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '24px', display: 'flex', alignItems: 'center' }}>
-        <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
-        Foxy Ledger
+    <Header style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      padding: '0 16px', 
+      height: '48px', 
+      lineHeight: '48px',
+      justifyContent: 'space-between'
+    }}>
+      {/* Logo and text section */}
+      <Link to="/residual-check" style={{ textDecoration: 'none' }}>
+        <div className="logo" style={{ 
+          color: 'white', 
+          fontSize: '18px', 
+          fontWeight: 'bold',
+          display: 'flex', 
+          alignItems: 'center',
+          minWidth: '200px'
+        }}>
+          <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
+          Foxy Ledger
+        </div>
+      </Link>
+
+      {/* Command palette section - centered */}
+      <div style={{ 
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'center',
+        maxWidth: '600px',
+        margin: '0 auto'
+      }}>
+        <CommandPalette />
       </div>
-      <Menu 
-        theme="dark" 
-        mode="horizontal" 
-        selectedKeys={[getSelectedKey()]}
-        style={{ flex: 1, minWidth: 0, height: '48px', lineHeight: '48px' }} 
-        items={getMenuItems()} 
-      />
-      <CommandPalette />
-      <div style={{ marginLeft: '16px' }}>
+
+      {/* Avatar section */}
+      <div style={{ 
+        minWidth: '200px',
+        display: 'flex',
+        justifyContent: 'flex-end'
+      }}>
         <UserOutlined style={{ color: 'white', fontSize: '18px' }} />
       </div>
     </Header>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Tabs, Card, Space, Typography, Collapse } from 'antd';
+import { useParams, Link } from 'react-router-dom';
+import { Tabs, Card, Space, Typography, Collapse, Breadcrumb } from 'antd';
 import { PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
@@ -163,6 +163,14 @@ export const ResidualDetails: React.FC = () => {
 
   return (
     <div>
+      {/* Breadcrumbs */}
+      <Breadcrumb style={{ marginBottom: '16px' }}>
+        <Breadcrumb.Item>
+          <Link to="/residual-check">Residual Account List</Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>Account Details</Breadcrumb.Item>
+      </Breadcrumb>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ flex: '1' }}>
           <AccountHeader
