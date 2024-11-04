@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import dayjs from 'dayjs';
 import { Button, message, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
@@ -27,7 +27,47 @@ const WonServicesPage: React.FC = () => {
     const [overrideModalVisible, setOverrideModalVisible] = useState(false);
     const [paymentStatusModalVisible, setPaymentStatusModalVisible] = useState(false);
 
-    const fetchData = async () => {
+    const filterData = useCallback((sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
+        let filtered = sourceData;
+
+        // Apply search filter
+        if (search) {
+            const searchLower = search.toLowerCase();
+            filtered = filtered.filter(group => 
+                group.children?.some(item => matchesSearch(item, searchLower))
+            );
+
+            if (strict) {
+                // In strict mode, only show matching records
+                filtered = filtered.map(group => ({
+                    ...group,
+                    children: group.children?.filter(item => matchesSearch(item, searchLower))
+                }));
+            }
+        }
+
+        // Apply payment status filter
+        if (statuses.length > 0) {
+            filtered = filtered.filter(group => 
+                group.children?.some(item => statuses.includes(item.foxy_inpaymentstatus))
+            );
+
+            if (strict) {
+                // In strict mode, only show matching records
+                filtered = filtered.map(group => ({
+                    ...group,
+                    children: group.children?.filter(item => statuses.includes(item.foxy_inpaymentstatus))
+                }));
+            }
+        }
+
+        // Remove any groups that ended up with no children
+        filtered = filtered.filter(group => group.children && group.children.length > 0);
+
+        setFilteredData(filtered);
+    }, []);
+
+    const fetchData = useCallback(async () => {
         try {
             const response = await listWonServices(
                 startDate.format('YYYY-MM-DD'),
@@ -45,7 +85,7 @@ const WonServicesPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [startDate, endDate, searchText, paymentStatuses, strictMode, filterData]);
 
     const handleCalculateComp = async () => {
         if (selectedRowKeys.length === 0) {
@@ -132,53 +172,13 @@ const WonServicesPage: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [startDate, endDate, fetchData]);
+    }, [fetchData]);
 
     const matchesSearch = (item: WonService, searchLower: string) => 
         item.foxy_serviceid?.toLowerCase().includes(searchLower) ||
         item.foxy_Product?.name?.toLowerCase().includes(searchLower) ||
         item.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress?.toLowerCase().includes(searchLower) ||
         item.foxy_Opportunity?.foxy_sfdcoppid?.toLowerCase().includes(searchLower);
-
-    const filterData = (sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
-        let filtered = sourceData;
-
-        // Apply search filter
-        if (search) {
-            const searchLower = search.toLowerCase();
-            filtered = filtered.filter(group => 
-                group.children?.some(item => matchesSearch(item, searchLower))
-            );
-
-            if (strict) {
-                // In strict mode, only show matching records
-                filtered = filtered.map(group => ({
-                    ...group,
-                    children: group.children?.filter(item => matchesSearch(item, searchLower))
-                }));
-            }
-        }
-
-        // Apply payment status filter
-        if (statuses.length > 0) {
-            filtered = filtered.filter(group => 
-                group.children?.some(item => statuses.includes(item.foxy_inpaymentstatus))
-            );
-
-            if (strict) {
-                // In strict mode, only show matching records
-                filtered = filtered.map(group => ({
-                    ...group,
-                    children: group.children?.filter(item => statuses.includes(item.foxy_inpaymentstatus))
-                }));
-            }
-        }
-
-        // Remove any groups that ended up with no children
-        filtered = filtered.filter(group => group.children && group.children.length > 0);
-
-        setFilteredData(filtered);
-    };
 
     const handleSearch = (value: string) => {
         setSearchText(value);
