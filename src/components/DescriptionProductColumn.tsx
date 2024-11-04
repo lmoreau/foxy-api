@@ -16,7 +16,7 @@ const DescriptionProductColumn: React.FC<DescriptionProductColumnProps> = ({ rec
   if (isMerged || isWireline) {
     const r = isMerged ? mergedRecord.wirelineRecord : wirelineRecord!;
     const term = r.foxy_contractterm || 0;
-    const termDisplay = term <= 1 ? 'MTM' : `${term} months`;
+    const termDisplay = term <= 1 ? 'MTM' : `${term}`;
 
     return (
       <>
@@ -33,7 +33,7 @@ const DescriptionProductColumn: React.FC<DescriptionProductColumnProps> = ({ rec
           </>
         )}
         {' '}
-        <Tag color="green">{termDisplay}</Tag>
+        <Tag color="green"><span style={{ fontWeight: 'bold' }}>{termDisplay}</span></Tag>
       </>
     );
   }

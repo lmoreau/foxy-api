@@ -114,9 +114,11 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
                   <span>{record.companyName}</span>
                 </div>
                 {totalsMatch ? (
-                  <Tag color="purple">
-                    Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                  </Tag>
+                  <Tooltip title={`Residuals: ${residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} | Wireline: ${wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}>
+                    <Tag color="purple">
+                      Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                    </Tag>
+                  </Tooltip>
                 ) : (
                   <>
                     <Tag color="blue">
@@ -244,27 +246,21 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
         if (!value) return null;
         const num = parseFloat(value.toString());
         
-        let tagColor = 'blue';
-        let tagText = '';
-        
+        let tagColor = 'blue'; // default for residual
         if (isMerged) {
-          const isAutoMerged = mergedRecord.isAutoMerged;
-          tagColor = isAutoMerged ? 'blue' : 'purple';
-          tagText = isAutoMerged ? 'Auto-Merged' : 'Merged';
+          tagColor = 'purple';
         } else if (isWireline) {
           tagColor = 'green';
-          tagText = 'Wireline';
-        } else {
-          tagColor = 'blue';
-          tagText = 'Residual';
         }
-
+        
+        const isAutoMerged = isMerged && mergedRecord.isAutoMerged;
+        
         return (
           <div>
             <Tag color={tagColor} style={{ fontWeight: 'bold' }}>
               {num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </Tag>
-            <Tag color={tagColor}>{tagText}</Tag>
+            {isAutoMerged && <Tag color="blue">Auto-Merged</Tag>}
           </div>
         );
       },
