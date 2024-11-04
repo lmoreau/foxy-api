@@ -97,13 +97,6 @@ const mapWirelineResiduals = (value: string) => {
   return getWirelineResidualsLabel(value);
 };
 
-// Helper function to sort values where null/undefined values go to the end
-const sortWithNulls = (a: any, b: any, asc = true): number => {
-  if (a === null || a === undefined) return asc ? 1 : -1;
-  if (b === null || b === undefined) return asc ? -1 : 1;
-  return asc ? (a < b ? -1 : 1) : (a < b ? 1 : -1);
-};
-
 const ResidualCheck: React.FC = () => {
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -275,8 +268,9 @@ const ResidualCheck: React.FC = () => {
       ellipsis: true,
       render: (value) => formatCurrency(value),
       sorter: (a, b) => {
-        const asc = sortOrder.order === 'ascend';
-        return sortWithNulls(a.crc9f_totalwonoppstcv, b.crc9f_totalwonoppstcv, asc);
+        const valueA = a.crc9f_totalwonoppstcv ?? 0;
+        const valueB = b.crc9f_totalwonoppstcv ?? 0;
+        return valueA - valueB;
       },
       sortOrder: sortOrder.columnKey === 'crc9f_totalwonoppstcv' ? sortOrder.order : undefined,
     },
