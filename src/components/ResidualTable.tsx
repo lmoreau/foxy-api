@@ -99,50 +99,54 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
       ),
       key: 'description',
       width: '45%',
-      render: (_, record, index) => {
+      render: (_, record) => {
         if ('children' in record) {
           const residualTotal = record.totalResidualAmount;
           const wirelineTotal = record.totalWirelineCharges;
           const totalsMatch = Math.abs(residualTotal - wirelineTotal) < 0.01;
 
-          return {
-            children: (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ fontWeight: 'bold' }}>
-                  <span style={{ color: '#1890ff' }}>{record.accountId}</span>
-                  {' - '}
-                  <span>{record.companyName}</span>
-                </div>
-                {totalsMatch ? (
-                  <Tooltip title={`Residuals: ${residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} | Wireline: ${wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}>
-                    <Tag color="purple">
-                      Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                    </Tag>
-                  </Tooltip>
-                ) : (
-                  <>
-                    <Tag color="blue">
-                      Residual Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                    </Tag>
-                    <Tag color="green">
-                      Wireline Total: <span style={{ fontWeight: 'bold' }}>{wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                    </Tag>
-                    <Tag color="orange">
-                      {getTotalsDifference(residualTotal, wirelineTotal)}
-                    </Tag>
-                  </>
-                )}
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ fontWeight: 'bold' }}>
+                <span style={{ color: '#1890ff' }}>{record.accountId}</span>
+                {' - '}
+                <span>{record.companyName}</span>
               </div>
-            ),
-            props: {
-              colSpan: 5,
-              style: { backgroundColor: '#fafafa' }
-            }
-          };
+              {totalsMatch ? (
+                <Tooltip title={`Residuals: ${residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} | Wireline: ${wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}>
+                  <Tag color="purple">
+                    Matched Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                  </Tag>
+                </Tooltip>
+              ) : (
+                <>
+                  <Tag color="blue">
+                    Residual Total: <span style={{ fontWeight: 'bold' }}>{residualTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                  </Tag>
+                  <Tag color="green">
+                    Wireline Total: <span style={{ fontWeight: 'bold' }}>{wirelineTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                  </Tag>
+                  <Tag color="orange">
+                    {getTotalsDifference(residualTotal, wirelineTotal)}
+                  </Tag>
+                </>
+              )}
+            </div>
+          );
         }
 
-        return <DescriptionProductColumn record={record} />;
+        // For child rows, use DescriptionProductColumn
+        return <DescriptionProductColumn record={record as (ResidualRecord | WirelineRecord | MergedRecord)} />;
       },
+      onCell: (record) => {
+        if ('children' in record) {
+          return {
+            colSpan: 5,
+            style: { backgroundColor: '#fafafa' }
+          };
+        }
+        return {};
+      }
     },
     {
       title: 'Service Details',
@@ -174,6 +178,12 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
           </>
         ) : null;
       },
+      onCell: (record) => {
+        if ('children' in record) {
+          return { colSpan: 0 };
+        }
+        return {};
+      }
     },
     {
       title: 'Contract Start/End',
@@ -199,6 +209,12 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
 
         return null;
       },
+      onCell: (record) => {
+        if ('children' in record) {
+          return { colSpan: 0 };
+        }
+        return {};
+      }
     },
     {
       title: 'Site Name',
@@ -220,6 +236,12 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
 
         return residualRecord ? residualRecord.foxyflow_rogerscompanyname : null;
       },
+      onCell: (record) => {
+        if ('children' in record) {
+          return { colSpan: 0 };
+        }
+        return {};
+      }
     },
     {
       title: 'Amount',
@@ -264,6 +286,12 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
           </div>
         );
       },
+      onCell: (record) => {
+        if ('children' in record) {
+          return { colSpan: 0 };
+        }
+        return {};
+      }
     }
   ];
 
@@ -366,4 +394,4 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
       </style>
     </>
   );
-}
+};

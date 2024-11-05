@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Tabs, Card, Space, Typography, Collapse, Breadcrumb } from 'antd';
+import type { CollapseProps } from 'antd';
 import { PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons';
 import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
 import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
@@ -13,7 +14,6 @@ import { AuditTable } from './AuditTable';
 import { formatCurrency } from '../utils/formatters';
 
 const { Text, Title } = Typography;
-const { Panel } = Collapse;
 
 // Custom panel header component to maintain heading styling
 const PanelHeader: React.FC<{ title: string }> = ({ title }) => (
@@ -158,22 +158,54 @@ export const ResidualDetails: React.FC = () => {
     };
   }, [state.opportunities]);
 
-  if (state.error) return <div>Error: {state.error}</div>;
-  if (state.loading || !state.accountData) return <div>Loading...</div>;
-
-  const breadcrumbItems = [
+  const collapseItems: CollapseProps['items'] = [
     {
-      title: <Link to="/residual-check">Residual Account List</Link>
+      key: '1',
+      label: <PanelHeader title="Billing Services" />,
+      children: (
+        <div style={{ marginBottom: '24px' }}>
+          <ResidualTable 
+            data={combinedData} 
+            showUnmerged={state.showUnmerged}
+            onToggleUnmerged={handleToggleUnmerged}
+          />
+        </div>
+      )
     },
     {
-      title: 'Account Details'
+      key: '2',
+      label: <PanelHeader title="Opportunities" />,
+      children: (
+        <OpportunitiesTable
+          opportunities={state.opportunities}
+          loading={state.opportunitiesLoading}
+          error={state.opportunitiesError}
+        />
+      )
+    },
+    {
+      key: '3',
+      label: <PanelHeader title="Residual Audit History" />,
+      children: (
+        <AuditTable
+          auditData={state.auditData}
+          loading={state.auditLoading}
+          error={state.auditError}
+        />
+      )
     }
   ];
+
+  if (state.error) return <div>Error: {state.error}</div>;
+  if (state.loading || !state.accountData) return <div>Loading...</div>;
 
   return (
     <div>
       {/* Breadcrumbs */}
-      <Breadcrumb style={{ marginBottom: '16px' }} items={breadcrumbItems} />
+      <Breadcrumb style={{ marginBottom: '16px' }} items={[
+        { title: <Link to="/residual-check">Residual Account List</Link> },
+        { title: 'Account Details' }
+      ]} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ flex: '1' }}>
@@ -234,33 +266,8 @@ export const ResidualDetails: React.FC = () => {
                       <MinusSquareOutlined style={{ fontSize: '16px' }} /> : 
                       <PlusSquareOutlined style={{ fontSize: '16px' }} />
                   }
-                >
-                  <Panel header={<PanelHeader title="Billing Services" />} key="1">
-                    <div style={{ marginBottom: '24px' }}>
-                      <ResidualTable 
-                        data={combinedData} 
-                        showUnmerged={state.showUnmerged}
-                        onToggleUnmerged={handleToggleUnmerged}
-                      />
-                    </div>
-                  </Panel>
-
-                  <Panel header={<PanelHeader title="Opportunities" />} key="2">
-                    <OpportunitiesTable
-                      opportunities={state.opportunities}
-                      loading={state.opportunitiesLoading}
-                      error={state.opportunitiesError}
-                    />
-                  </Panel>
-
-                  <Panel header={<PanelHeader title="Residual Audit History" />} key="3">
-                    <AuditTable
-                      auditData={state.auditData}
-                      loading={state.auditLoading}
-                      error={state.auditError}
-                    />
-                  </Panel>
-                </Collapse>
+                  items={collapseItems}
+                />
               </div>
             ),
           },
