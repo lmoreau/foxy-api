@@ -161,15 +161,19 @@ export const ResidualDetails: React.FC = () => {
   if (state.error) return <div>Error: {state.error}</div>;
   if (state.loading || !state.accountData) return <div>Loading...</div>;
 
+  const breadcrumbItems = [
+    {
+      title: <Link to="/residual-check">Residual Account List</Link>
+    },
+    {
+      title: 'Account Details'
+    }
+  ];
+
   return (
     <div>
       {/* Breadcrumbs */}
-      <Breadcrumb style={{ marginBottom: '16px' }}>
-        <Breadcrumb.Item>
-          <Link to="/residual-check">Residual Account List</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Account Details</Breadcrumb.Item>
-      </Breadcrumb>
+      <Breadcrumb style={{ marginBottom: '16px' }} items={breadcrumbItems} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ flex: '1' }}>
