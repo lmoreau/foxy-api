@@ -105,6 +105,9 @@ const ResidualCheck: React.FC = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>(() => {
     return JSON.parse(localStorage.getItem('selectedServices') || '[]');
   });
+  const [matchAllServices, setMatchAllServices] = useState<boolean>(() => {
+    return JSON.parse(localStorage.getItem('matchAllServices') || 'false');
+  });
   const [selectedResiduals, setSelectedResiduals] = useState<string[]>(() => {
     return JSON.parse(localStorage.getItem('selectedResiduals') || '[]');
   });
@@ -148,9 +151,28 @@ const ResidualCheck: React.FC = () => {
 
     // Filter by services
     if (selectedServices.length > 0) {
-      filtered = filtered.filter(account => 
-        selectedServices.some(service => account[`foxy_${service.replace(' ', '').toLowerCase()}` as keyof Account])
-      );
+      filtered = filtered.filter(account => {
+        // Get all active services for this account
+        const accountServices = [
+          account.foxy_cable && 'Cable',
+          account.foxy_datacentre && 'Data Centre',
+          account.foxy_fibreinternet && 'Fibre Internet',
+          account.foxy_gpon && 'GPON',
+          account.foxy_microsoft365 && 'Microsoft 365',
+          account.foxy_res && 'RES',
+          account.foxy_sip && 'SIP',
+          account.foxy_unison && 'Unison'
+        ].filter(Boolean) as string[];
+
+        if (matchAllServices) {
+          // Must have exactly the selected services, no more and no less
+          return selectedServices.length === accountServices.length &&
+                 selectedServices.every(service => accountServices.includes(service));
+        } else {
+          // Must have at least one of the selected services
+          return selectedServices.some(service => accountServices.includes(service));
+        }
+      });
     }
 
     // Filter by residuals
@@ -174,11 +196,17 @@ const ResidualCheck: React.FC = () => {
     }
 
     return filtered;
-  }, [selectedServices, selectedResiduals, searchTerm, accounts, showNeedsScrubbing]);
+  }, [selectedServices, selectedResiduals, searchTerm, accounts, showNeedsScrubbing, matchAllServices]);
 
   const handleServiceChange = useCallback((value: string[]) => {
     setSelectedServices(value);
     localStorage.setItem('selectedServices', JSON.stringify(value));
+  }, []);
+
+  const handleMatchAllServicesChange = useCallback((checked: boolean) => {
+    setMatchAllServices(checked);
+    localStorage.setItem('matchAllServices', JSON.stringify(checked));
+    console.log(`matchAllServices changed to: ${checked}`);
   }, []);
 
   const handleResidualChange = useCallback((value: string[]) => {
@@ -322,18 +350,27 @@ const ResidualCheck: React.FC = () => {
           />
         </Col>
         <Col span={6}>
-          <Select
-            mode="multiple"
-            style={{ width: '100%', marginBottom: '16px' }}
-            placeholder="Filter by Services"
-            onChange={handleServiceChange}
-            allowClear
-            value={selectedServices}
-          >
-            {Object.keys(serviceColors).map(service => (
-              <Option key={service} value={service}>{service}</Option>
-            ))}
-          </Select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Select
+              mode="multiple"
+              style={{ width: '100%' }}
+              placeholder="Filter by Services"
+              onChange={handleServiceChange}
+              allowClear
+              value={selectedServices}
+            >
+              {Object.keys(serviceColors).map(service => (
+                <Option key={service} value={service}>{service}</Option>
+              ))}
+            </Select>
+            <Switch
+              checked={matchAllServices}
+              onChange={handleMatchAllServicesChange}
+              checkedChildren="All"
+              unCheckedChildren="Any"
+              style={{ minWidth: '55px' }}
+            />
+          </div>
         </Col>
         <Col span={6}>
           <Select

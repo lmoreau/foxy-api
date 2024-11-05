@@ -89,6 +89,7 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
             fontWeight: 'bold',
             display: 'flex', 
             alignItems: 'center',
+            fontFamily: '"Source Sans Pro", "Nunito Sans", Helvetica, sans-serif'
           }}>
             <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
             Foxy Ledger
