@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layout, Dropdown, Menu } from 'antd';
+import { Layout, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { UserOutlined, AppstoreOutlined, UnorderedListOutlined, UploadOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
@@ -12,46 +13,41 @@ interface AppHeaderProps {
 }
 
 const AppHeader: React.FC<AppHeaderProps> = () => {
-  const menu = (
-    <Menu
-      items={[
-        {
-          key: 'residual-check',
-          label: <Link to="/residual-check">Residual Account List</Link>,
-          icon: <UnorderedListOutlined />,
-        },
-        {
-          key: 'master-residual',
-          label: <Link to="/master-residual-list">Master Residual List</Link>,
-          icon: <UnorderedListOutlined />,
-        },
-        {
-          key: 'divider-1',
-          type: 'divider',
-        },
-        {
-          key: 'won-services',
-          label: <span>Revenue Services</span>,
-          icon: <UnorderedListOutlined />,
-        },
-        {
-          key: 'residual-upload',
-          label: <span>Residual Statement Upload</span>,
-          icon: <UploadOutlined />,
-        },
-        {
-          key: 'wireline-upload',
-          label: <span>Wireline Statement Upload</span>,
-          icon: <CloudUploadOutlined />,
-        },
-        {
-          key: 'callidus-upload',
-          label: <span>Callidus Statement Upload</span>,
-          icon: <CloudUploadOutlined />,
-        },
-      ]}
-    />
-  );
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'residual-check',
+      label: <Link to="/residual-check">Residual Account List</Link>,
+      icon: <UnorderedListOutlined />,
+    },
+    {
+      key: 'master-residual',
+      label: <Link to="/master-residual-list">Master Residual List</Link>,
+      icon: <UnorderedListOutlined />,
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'won-services',
+      label: <span>Revenue Services</span>,
+      icon: <UnorderedListOutlined />,
+    },
+    {
+      key: 'residual-upload',
+      label: <span>Residual Statement Upload</span>,
+      icon: <UploadOutlined />,
+    },
+    {
+      key: 'wireline-upload',
+      label: <span>Wireline Statement Upload</span>,
+      icon: <CloudUploadOutlined />,
+    },
+    {
+      key: 'callidus-upload',
+      label: <span>Callidus Statement Upload</span>,
+      icon: <CloudUploadOutlined />,
+    },
+  ];
 
   return (
     <Header style={{ 
@@ -69,7 +65,7 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
         minWidth: '200px'
       }}>
         <Dropdown 
-          overlay={menu} 
+          menu={{ items: menuItems }}
           trigger={['click']}
           placement="bottomLeft"
         >
