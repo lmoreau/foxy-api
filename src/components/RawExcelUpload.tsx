@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { message, Select, Input, Button, Alert, Typography } from 'antd';
+import { message, Select, Input, Button, Alert, Typography, Tabs } from 'antd';
 
 const { Option } = Select;
 const { Text } = Typography;
+const { TabPane } = Tabs;
 
 const RawExcelUpload: React.FC = (): JSX.Element => {
   const [file, setFile] = useState<File | null>(null);
@@ -271,22 +272,38 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
       {groupedData && (
         <div>
           <h3>Parsed Data:</h3>
-          <textarea
-            value={JSON.stringify({
-              OPTIC: groupedData.OPTIC,
-              Other: groupedData.Other
-            }, null, 2)}
-            readOnly
-            style={{ 
-              width: '100%',
-              height: '500px',
-              fontFamily: 'monospace',
-              padding: '16px',
-              backgroundColor: '#f5f5f5',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px'
-            }}
-          />
+          <Tabs defaultActiveKey="OPTIC">
+            <TabPane tab={`OPTIC (${groupedData.OPTIC.length})`} key="OPTIC">
+              <textarea
+                value={JSON.stringify(groupedData.OPTIC, null, 2)}
+                readOnly
+                style={{ 
+                  width: '100%',
+                  height: '500px',
+                  fontFamily: 'monospace',
+                  padding: '16px',
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '4px'
+                }}
+              />
+            </TabPane>
+            <TabPane tab={`Other (${groupedData.Other.length})`} key="Other">
+              <textarea
+                value={JSON.stringify(groupedData.Other, null, 2)}
+                readOnly
+                style={{ 
+                  width: '100%',
+                  height: '500px',
+                  fontFamily: 'monospace',
+                  padding: '16px',
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '4px'
+                }}
+              />
+            </TabPane>
+          </Tabs>
         </div>
       )}
     </div>
