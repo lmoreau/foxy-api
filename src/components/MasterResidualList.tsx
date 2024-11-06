@@ -43,6 +43,15 @@ const MasterResidualList: React.FC = () => {
     });
   };
 
+  const groupedData = data.reduce((acc, item) => {
+    const period = formatDate(item.foxy_billedmonthyear);
+    if (!acc[period]) {
+      acc[period] = [];
+    }
+    acc[period].push(item);
+    return acc;
+  }, {} as Record<string, MasterResidualBillingRow[]>);
+
   const columns = [
     {
       title: 'Company Name',
@@ -74,14 +83,6 @@ const MasterResidualList: React.FC = () => {
       sorter: (a: MasterResidualBillingRow, b: MasterResidualBillingRow) => 
         (a.foxy_billedrevenue || 0) - (b.foxy_billedrevenue || 0),
     },
-    {
-      title: 'Period',
-      dataIndex: 'foxy_billedmonthyear',
-      key: 'period',
-      render: (value: string) => formatDate(value),
-      sorter: (a: MasterResidualBillingRow, b: MasterResidualBillingRow) => 
-        new Date(a.foxy_billedmonthyear || '').getTime() - new Date(b.foxy_billedmonthyear || '').getTime(),
-    },
   ];
 
   const handleSearch = (value: string) => {
@@ -101,17 +102,22 @@ const MasterResidualList: React.FC = () => {
         onSearch={handleSearch}
         style={{ marginBottom: 16 }}
       />
-      <Table
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        rowKey="foxy_billingrecordid"
-        scroll={{ x: true }}
-        pagination={{ pageSize: 50 }}
-        locale={{
-          emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
-        }}
-      />
+      {Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).map(period => (
+        <div key={period}>
+          <h2>{period}</h2>
+          <Table
+            columns={columns}
+            dataSource={groupedData[period]}
+            loading={loading}
+            rowKey="foxy_billingrecordid"
+            scroll={{ x: true }}
+            pagination={false}
+            locale={{
+              emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 };
