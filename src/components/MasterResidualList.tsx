@@ -1,37 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Input } from 'antd';
+import React, { useState } from 'react';
+import { Table, Input, Empty } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
-import { listMasterResidualRows } from '../utils/api';
+import { listMasterResidualBillingRows } from '../utils/api';
 
-interface MasterResidualRow {
-  foxyflow_residualserviceid: string;
-  foxyflow_billingnumber: string;
-  foxyflow_rogerscompanyname: string;
-  foxyflow_actuals: number;
-  foxyflow_product: string;
-  foxyflow_Company: {
-    name: string;
-  };
+interface MasterResidualBillingRow {
+  foxy_billingrecordid: string;
+  foxy_companyname: string;
+  foxy_productdescription: string;
+  foxy_ban: string;
+  foxy_billedrevenue: number;
+  foxy_billedmonthyear: string;
 }
 
 const { Search } = Input;
 
 const MasterResidualList: React.FC = () => {
-  const [data, setData] = useState<MasterResidualRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState('');
+  const [data, setData] = useState<MasterResidualBillingRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const isAuthenticated = useIsAuthenticated();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchData();
-    }
-  }, [isAuthenticated]);
-
-  const fetchData = async () => {
+  const fetchData = async (ban: string) => {
+    if (!isAuthenticated) return;
+    
+    setLoading(true);
     try {
-      const response = await listMasterResidualRows();
+      const response = await listMasterResidualBillingRows(ban);
       setData(response);
+      setHasSearched(true);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -39,64 +35,66 @@ const MasterResidualList: React.FC = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   const columns = [
     {
       title: 'Company Name',
-      dataIndex: ['foxyflow_Company', 'name'],
+      dataIndex: 'foxy_companyname',
       key: 'companyName',
-      sorter: (a: MasterResidualRow, b: MasterResidualRow) => 
-        a.foxyflow_Company.name.localeCompare(b.foxyflow_Company.name),
-    },
-    {
-      title: 'Rogers Company Name',
-      dataIndex: 'foxyflow_rogerscompanyname',
-      key: 'rogersCompanyName',
-      sorter: (a: MasterResidualRow, b: MasterResidualRow) => 
-        a.foxyflow_rogerscompanyname.localeCompare(b.foxyflow_rogerscompanyname),
+      sorter: (a: MasterResidualBillingRow, b: MasterResidualBillingRow) => 
+        (a.foxy_companyname || '').localeCompare(b.foxy_companyname || ''),
     },
     {
       title: 'Product',
-      dataIndex: 'foxyflow_product',
+      dataIndex: 'foxy_productdescription',
       key: 'product',
-      sorter: (a: MasterResidualRow, b: MasterResidualRow) => 
-        (a.foxyflow_product || '').localeCompare(b.foxyflow_product || ''),
+      sorter: (a: MasterResidualBillingRow, b: MasterResidualBillingRow) => 
+        (a.foxy_productdescription || '').localeCompare(b.foxy_productdescription || ''),
     },
     {
       title: 'Billing Number',
-      dataIndex: 'foxyflow_billingnumber',
+      dataIndex: 'foxy_ban',
       key: 'billingNumber',
     },
     {
       title: 'Actuals',
-      dataIndex: 'foxyflow_actuals',
+      dataIndex: 'foxy_billedrevenue',
       key: 'actuals',
       render: (value: number) => new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD'
       }).format(value),
-      sorter: (a: MasterResidualRow, b: MasterResidualRow) => 
-        a.foxyflow_actuals - b.foxyflow_actuals,
+      sorter: (a: MasterResidualBillingRow, b: MasterResidualBillingRow) => 
+        (a.foxy_billedrevenue || 0) - (b.foxy_billedrevenue || 0),
+    },
+    {
+      title: 'Period',
+      dataIndex: 'foxy_billedmonthyear',
+      key: 'period',
+      render: (value: string) => formatDate(value),
+      sorter: (a: MasterResidualBillingRow, b: MasterResidualBillingRow) => 
+        new Date(a.foxy_billedmonthyear || '').getTime() - new Date(b.foxy_billedmonthyear || '').getTime(),
     },
   ];
 
   const handleSearch = (value: string) => {
-    setSearchText(value);
+    if (value.trim()) {
+      fetchData(value.trim());
+    }
   };
-
-  const filteredData = data.filter(item => {
-    const searchValue = searchText.toLowerCase();
-    return (
-      item.foxyflow_Company.name.toLowerCase().includes(searchValue) ||
-      item.foxyflow_rogerscompanyname.toLowerCase().includes(searchValue) ||
-      item.foxyflow_billingnumber.toLowerCase().includes(searchValue)
-    );
-  });
 
   return (
     <div style={{ padding: '24px' }}>
       <h1>Master Residual List</h1>
       <Search
-        placeholder="Search by company name, Rogers company name, or billing number"
+        placeholder="Enter billing number to search"
         allowClear
         enterButton="Search"
         size="large"
@@ -105,11 +103,14 @@ const MasterResidualList: React.FC = () => {
       />
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={data}
         loading={loading}
-        rowKey="foxyflow_residualserviceid"
+        rowKey="foxy_billingrecordid"
         scroll={{ x: true }}
         pagination={{ pageSize: 50 }}
+        locale={{
+          emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
+        }}
       />
     </div>
   );

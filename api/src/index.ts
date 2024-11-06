@@ -15,6 +15,7 @@ import "./functions/getQuoteRequestById";
 import "./functions/listAccountLocationRows";
 import "./functions/listAccountsForResidualCheck";
 import "./functions/listMasterResidualRows";
+import "./functions/listMasterResidualBillingRows";
 import "./functions/listOpportunityRows";
 import "./functions/listProductByRow";
 import "./functions/listQuoteLineItemByRow";
