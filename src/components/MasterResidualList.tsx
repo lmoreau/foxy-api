@@ -102,22 +102,32 @@ const MasterResidualList: React.FC = () => {
         onSearch={handleSearch}
         style={{ marginBottom: 16 }}
       />
-      {Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).map(period => (
-        <div key={period}>
-          <h2>{period}</h2>
-          <Table
-            columns={columns}
-            dataSource={groupedData[period]}
-            loading={loading}
-            rowKey="foxy_billingrecordid"
-            scroll={{ x: true }}
-            pagination={false}
-            locale={{
-              emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
-            }}
-          />
-        </div>
-      ))}
+      {Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).map(period => {
+        const subtotal = groupedData[period].reduce((sum, item) => sum + item.foxy_billedrevenue, 0);
+        return (
+          <div key={period}>
+            <h2>{period}</h2>
+            <Table
+              columns={columns}
+              dataSource={groupedData[period]}
+              loading={loading}
+              rowKey="foxy_billingrecordid"
+              scroll={{ x: true }}
+              pagination={false}
+              locale={{
+                emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
+              }}
+            />
+            <div style={{ textAlign: 'right', marginTop: 8 }}>
+              <strong>Subtotal: </strong>
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+              }).format(subtotal)}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
