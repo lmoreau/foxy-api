@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Input, Empty, Collapse, Button } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listMasterResidualBillingRows } from '../utils/api';
@@ -25,16 +25,7 @@ const MasterResidualList: React.FC = () => {
   const isAuthenticated = useIsAuthenticated();
   const location = useLocation();
 
-  useEffect(() => {
-    // Check for search parameter in URL
-    const params = new URLSearchParams(location.search);
-    const searchBan = params.get('search');
-    if (searchBan) {
-      fetchData(searchBan);
-    }
-  }, [location.search]);
-
-  const fetchData = async (ban: string) => {
+  const fetchData = useCallback(async (ban: string) => {
     if (!isAuthenticated) return;
     
     setLoading(true);
@@ -47,7 +38,15 @@ const MasterResidualList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchBan = params.get('search');
+    if (searchBan) {
+      fetchData(searchBan);
+    }
+  }, [location.search, fetchData]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
