@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Table, Tag, Tooltip, Switch, Alert } from 'antd';
+import { LinkOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { TableRecord, WirelineRecord, ResidualRecord, MergedRecord } from '../types/residualTypes';
 import DescriptionProductColumn from './DescriptionProductColumn';
@@ -68,6 +69,10 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
     }
   };
 
+  const handleMasterListClick = (accountId: string) => {
+    window.open(`/master-residual-list?search=${accountId}`, '_blank');
+  };
+
   const columns: ColumnsType<TableRecord> = [
     {
       title: () => (
@@ -109,6 +114,18 @@ export const ResidualTable: React.FC<ResidualTableProps> = ({ data, showUnmerged
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ fontWeight: 'bold' }}>
                 <span style={{ color: '#1890ff' }}>{record.accountId}</span>
+                <LinkOutlined 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMasterListClick(record.accountId);
+                  }}
+                  style={{ 
+                    marginLeft: '4px',
+                    cursor: 'pointer',
+                    color: '#1890ff',
+                    fontSize: '14px'
+                  }}
+                />
                 {' - '}
                 <span>{record.companyName}</span>
               </div>

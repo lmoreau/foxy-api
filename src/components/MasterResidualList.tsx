@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Input, Empty, Collapse, Button } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listMasterResidualBillingRows } from '../utils/api';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
+import { useLocation } from 'react-router-dom';
 
 interface MasterResidualBillingRow {
   foxy_billingrecordid: string;
@@ -22,6 +23,16 @@ const MasterResidualList: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [expandedPanels, setExpandedPanels] = useState<string[]>([]);
   const isAuthenticated = useIsAuthenticated();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for search parameter in URL
+    const params = new URLSearchParams(location.search);
+    const searchBan = params.get('search');
+    if (searchBan) {
+      fetchData(searchBan);
+    }
+  }, [location.search]);
 
   const fetchData = async (ban: string) => {
     if (!isAuthenticated) return;
@@ -117,6 +128,7 @@ const MasterResidualList: React.FC = () => {
         size="large"
         onSearch={handleSearch}
         style={{ marginBottom: 16 }}
+        defaultValue={new URLSearchParams(location.search).get('search') || ''}
       />
       {periods.length > 0 && (
         <div style={{ marginBottom: '16px' }}>
