@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Table, Input, Empty } from 'antd';
+import { Table, Input, Empty, Collapse, Button } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listMasterResidualBillingRows } from '../utils/api';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 
 interface MasterResidualBillingRow {
   foxy_billingrecordid: string;
@@ -13,11 +14,13 @@ interface MasterResidualBillingRow {
 }
 
 const { Search } = Input;
+const { Panel } = Collapse;
 
 const MasterResidualList: React.FC = () => {
   const [data, setData] = useState<MasterResidualBillingRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [expandedPanels, setExpandedPanels] = useState<string[]>([]);
   const isAuthenticated = useIsAuthenticated();
 
   const fetchData = async (ban: string) => {
@@ -88,8 +91,21 @@ const MasterResidualList: React.FC = () => {
   const handleSearch = (value: string) => {
     if (value.trim()) {
       fetchData(value.trim());
+      setExpandedPanels([]); // Reset expanded panels on new search
     }
   };
+
+  const periods = Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  const handleExpandAll = () => {
+    if (expandedPanels.length === periods.length) {
+      setExpandedPanels([]);
+    } else {
+      setExpandedPanels(periods);
+    }
+  };
+
+  const isAllExpanded = expandedPanels.length === periods.length && periods.length > 0;
 
   return (
     <div style={{ padding: '24px' }}>
@@ -102,32 +118,45 @@ const MasterResidualList: React.FC = () => {
         onSearch={handleSearch}
         style={{ marginBottom: 16 }}
       />
-      {Object.keys(groupedData).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()).map(period => {
-        const subtotal = groupedData[period].reduce((sum, item) => sum + item.foxy_billedrevenue, 0);
-        return (
-          <div key={period}>
-            <h2>{period}</h2>
-            <Table
-              columns={columns}
-              dataSource={groupedData[period]}
-              loading={loading}
-              rowKey="foxy_billingrecordid"
-              scroll={{ x: true }}
-              pagination={false}
-              locale={{
-                emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
-              }}
-            />
-            <div style={{ textAlign: 'right', marginTop: 8 }}>
-              <strong>Subtotal: </strong>
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD'
-              }).format(subtotal)}
-            </div>
-          </div>
-        );
-      })}
+      {periods.length > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <Button 
+            onClick={handleExpandAll}
+            icon={isAllExpanded ? <UpOutlined /> : <DownOutlined />}
+          >
+            {isAllExpanded ? 'Collapse All' : 'Expand All'}
+          </Button>
+        </div>
+      )}
+      <Collapse 
+        activeKey={expandedPanels}
+        onChange={(keys) => setExpandedPanels(typeof keys === 'string' ? [keys] : keys)}
+      >
+        {periods.map(period => {
+          const subtotal = groupedData[period].reduce((sum, item) => sum + item.foxy_billedrevenue, 0);
+          return (
+            <Panel header={`${period} - ${new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD'
+            }).format(subtotal)}`} key={period}>
+              <Table
+                columns={columns}
+                dataSource={groupedData[period]}
+                loading={loading}
+                rowKey="foxy_billingrecordid"
+                scroll={{ x: true }}
+                pagination={false}
+                locale={{
+                  emptyText: hasSearched ? <Empty description="No records found" /> : <Empty description="Enter a billing number to search" />
+                }}
+              />
+            </Panel>
+          );
+        })}
+      </Collapse>
+      {periods.length === 0 && (
+        <Empty description={hasSearched ? "No records found" : "Enter a billing number to search"} />
+      )}
     </div>
   );
 };
