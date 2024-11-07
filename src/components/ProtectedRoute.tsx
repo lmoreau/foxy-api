@@ -9,6 +9,49 @@ interface ProtectedRouteProps {
   children: JSX.Element;
 }
 
+const AccessDeniedPage = () => (
+  <div style={{ 
+    height: '100vh',
+    width: '100vw',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f2f5'
+  }}>
+    <img 
+      src="/foxylogo.png" 
+      alt="Foxy Logo" 
+      style={{ 
+        height: '60px', 
+        marginBottom: '24px' 
+      }} 
+    />
+    <div style={{
+      padding: '24px',
+      background: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      textAlign: 'center',
+      maxWidth: '400px'
+    }}>
+      <h2 style={{ 
+        margin: '0 0 16px 0',
+        color: '#434343'
+      }}>Access Denied</h2>
+      <p style={{ 
+        margin: '0 0 8px 0',
+        color: '#595959'
+      }}>You do not have permission to access this application.</p>
+      <p style={{ 
+        margin: '0',
+        color: '#8c8c8c',
+        fontSize: '14px'
+      }}>Please contact your administrator if you believe this is an error.</p>
+    </div>
+  </div>
+);
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { instance, inProgress } = useMsal();
   const location = useLocation();
@@ -58,22 +101,34 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }, [instance, inProgress, location, navigate]);
 
   if (isChecking) {
-    return <div>Checking authentication...</div>;
-  }
-
-  if (accessDenied) {
     return (
       <div style={{ 
-        padding: '20px', 
-        textAlign: 'center', 
-        marginTop: '50px' 
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f0f2f5'
       }}>
-        <h2>Access Denied</h2>
-        <p>You do not have permission to access this application.</p>
-        <p>Please contact your administrator if you believe this is an error.</p>
+        Checking authentication...
       </div>
     );
   }
 
-  return isAuthorized ? children : <div>Redirecting to login...</div>;
+  if (accessDenied) {
+    return <AccessDeniedPage />;
+  }
+
+  return isAuthorized ? children : (
+    <div style={{ 
+      height: '100vh',
+      width: '100vw',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#f0f2f5'
+    }}>
+      Redirecting to login...
+    </div>
+  );
 };

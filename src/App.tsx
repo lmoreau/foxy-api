@@ -35,102 +35,60 @@ function App() {
   return (
     <MsalProvider instance={msalInstance}>
       <Router>
-        <Layout>
-          <AppHeader quoteRequestId={quoteRequestId} />
-          <Content style={{ padding: '0 50px', marginTop: '20px' }}>
-            <Routes>
-              <Route 
-                path="/quote/:id" 
-                element={
-                  <ProtectedRoute>
-                    <QuotePage setQuoteRequestId={setQuoteRequestId} />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/products" 
-                element={
-                  <ProtectedRoute>
-                    <ProductsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/residual-check" 
-                element={
-                  <ProtectedRoute>
-                    <ResidualCheck />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/residual-details/:id" 
-                element={
-                  <ProtectedRoute>
-                    <ResidualDetails />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/residual-upload" 
-                element={
-                  <ProtectedRoute>
-                    <ResidualUpload />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/wireline-upload" 
-                element={
-                  <ProtectedRoute>
-                    <WirelineUpload />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/raw-excel-upload" 
-                element={
-                  <ProtectedRoute>
-                    <RawExcelUpload />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/won-services" 
-                element={
-                  <ProtectedRoute>
-                    <WonServicesPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/master-residual-list" 
-                element={
-                  <ProtectedRoute>
-                    <MasterResidualList />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/incoming-wireline-payments" 
-                element={
-                  <ProtectedRoute>
-                    <IncomingWirelinePayments />
-                  </ProtectedRoute>
-                } 
-              />
-              {/* Redirect root to residual-check */}
-              <Route 
-                path="/" 
-                element={
-                  <ProtectedRoute>
-                    <ResidualCheck />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </Content>
-        </Layout>
+        <ProtectedRoute>
+          <Layout>
+            <AppHeader quoteRequestId={quoteRequestId} />
+            <Content style={{ padding: '0 50px', marginTop: '20px' }}>
+              <Routes>
+                <Route 
+                  path="/quote/:id" 
+                  element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} 
+                />
+                <Route 
+                  path="/products" 
+                  element={<ProductsPage />} 
+                />
+                <Route 
+                  path="/residual-check" 
+                  element={<ResidualCheck />} 
+                />
+                <Route 
+                  path="/residual-details/:id" 
+                  element={<ResidualDetails />} 
+                />
+                <Route 
+                  path="/residual-upload" 
+                  element={<ResidualUpload />} 
+                />
+                <Route 
+                  path="/wireline-upload" 
+                  element={<WirelineUpload />} 
+                />
+                <Route 
+                  path="/raw-excel-upload" 
+                  element={<RawExcelUpload />} 
+                />
+                <Route 
+                  path="/won-services" 
+                  element={<WonServicesPage />} 
+                />
+                <Route 
+                  path="/master-residual-list" 
+                  element={<MasterResidualList />} 
+                />
+                <Route 
+                  path="/incoming-wireline-payments" 
+                  element={<IncomingWirelinePayments />} 
+                />
+                {/* Redirect root to residual-check */}
+                <Route 
+                  path="/" 
+                  element={<ResidualCheck />} 
+                />
+              </Routes>
+            </Content>
+          </Layout>
+        </ProtectedRoute>
       </Router>
     </MsalProvider>
   );
