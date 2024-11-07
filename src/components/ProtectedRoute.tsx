@@ -3,7 +3,7 @@ import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ensureAuth } from '../auth/authService';
-import { loginRequest } from '../auth/authConfig';
+import { loginRequestDynamics } from '../auth/authConfig';
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -33,7 +33,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           // If we don't have an auth result and we're not in the middle of acquiring one,
           // redirect to login
           instance.loginRedirect({
-            ...loginRequest,
+            ...loginRequestDynamics,
             redirectStartPage: location.pathname + location.search
           });
         }

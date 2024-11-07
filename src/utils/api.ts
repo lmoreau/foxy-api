@@ -1,14 +1,14 @@
 import { Product } from '../types';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
 import axios, { AxiosError } from 'axios';
-import { getAccessToken } from '../auth/authService';
+import { getDynamicsAccessToken } from '../auth/authService';
 
 const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:7071/api';
 const DATAVERSE_URL = 'https://foxy.crm3.dynamics.com';
 
 const getAuthHeaders = async () => {
   try {
-    const token = await getAccessToken();
+    const token = await getDynamicsAccessToken();
     
     if (!token) {
       throw new Error('No authentication token available');

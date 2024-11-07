@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { UserOutlined, AppstoreOutlined, UnorderedListOutlined, UploadOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
+import { checkUserAccess, UserAccessLevel } from '../auth/authService';
 
 const { Header } = Layout;
 
@@ -13,46 +14,66 @@ interface AppHeaderProps {
 }
 
 const AppHeader: React.FC<AppHeaderProps> = () => {
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'residual-check',
-      label: <Link to="/residual-check">Residual Account List</Link>,
-      icon: <UnorderedListOutlined />,
-    },
-    {
-      key: 'master-residual',
-      label: <Link to="/master-residual-list">Master Residual List</Link>,
-      icon: <UnorderedListOutlined />,
-    },
-    {
-      key: 'incoming-wireline-payments',
-      label: <Link to="/incoming-wireline-payments">Incoming Wireline Payments</Link>,
-      icon: <UnorderedListOutlined />,
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'won-services',
-      label: <span>Revenue Services</span>,
-      icon: <UnorderedListOutlined />,
-    },
-    {
-      key: 'residual-upload',
-      label: <span>Residual Statement Upload</span>,
-      icon: <UploadOutlined />,
-    },
-    {
-      key: 'wireline-upload',
-      label: <span>Wireline Statement Upload</span>,
-      icon: <CloudUploadOutlined />,
-    },
-    {
-      key: 'callidus-upload',
-      label: <span>Callidus Statement Upload</span>,
-      icon: <CloudUploadOutlined />,
-    },
-  ];
+  const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
+
+  useEffect(() => {
+    const fetchUserAccess = async () => {
+      const access = await checkUserAccess();
+      setUserAccess(access);
+    };
+    fetchUserAccess();
+  }, []);
+
+  const getMenuItems = (): MenuProps['items'] => {
+    const baseItems = [
+      {
+        key: 'residual-check',
+        label: <Link to="/residual-check">Residual Account List</Link>,
+        icon: <UnorderedListOutlined />,
+      },
+      {
+        key: 'master-residual',
+        label: <Link to="/master-residual-list">Master Residual List</Link>,
+        icon: <UnorderedListOutlined />,
+      }
+    ];
+
+    // Only show Incoming Wireline Payments for Full Access users
+    if (userAccess === 'full') {
+      baseItems.push({
+        key: 'incoming-wireline-payments',
+        label: <Link to="/incoming-wireline-payments">Incoming Wireline Payments</Link>,
+        icon: <UnorderedListOutlined />,
+      });
+    }
+
+    return [
+      ...baseItems,
+      {
+        type: 'divider',
+      },
+      {
+        key: 'won-services',
+        label: <span>Revenue Services</span>,
+        icon: <UnorderedListOutlined />,
+      },
+      {
+        key: 'residual-upload',
+        label: <span>Residual Statement Upload</span>,
+        icon: <UploadOutlined />,
+      },
+      {
+        key: 'wireline-upload',
+        label: <span>Wireline Statement Upload</span>,
+        icon: <CloudUploadOutlined />,
+      },
+      {
+        key: 'callidus-upload',
+        label: <span>Callidus Statement Upload</span>,
+        icon: <CloudUploadOutlined />,
+      },
+    ];
+  };
 
   return (
     <Header style={{ 
@@ -70,7 +91,7 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
         minWidth: '200px'
       }}>
         <Dropdown 
-          menu={{ items: menuItems }}
+          menu={{ items: getMenuItems() }}
           trigger={['click']}
           placement="bottomLeft"
         >

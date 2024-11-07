@@ -14,8 +14,13 @@ export const msalConfig: Configuration = {
   },
 };
 
-export const loginRequest = {
+// Separate scopes for Dynamics and Microsoft Graph
+export const loginRequestDynamics = {
   scopes: [`${process.env.REACT_APP_DYNAMICS_URI}/.default`]
+};
+
+export const loginRequestGraph = {
+  scopes: ['GroupMember.Read.All', 'openid', 'profile', 'offline_access']
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);

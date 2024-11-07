@@ -3,9 +3,10 @@ import { Table, Empty } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
+import GroupProtectedRoute from './GroupProtectedRoute';
 import './table.css';
 
-const IncomingWirelinePayments: React.FC = () => {
+const IncomingWirelinePaymentsContent: React.FC = () => {
   const [data, setData] = useState<IncomingWirelinePayment[]>([]);
   const [loading, setLoading] = useState(false);
   const isAuthenticated = useIsAuthenticated();
@@ -201,5 +202,12 @@ const IncomingWirelinePayments: React.FC = () => {
     </div>
   );
 };
+
+// Wrap the component with GroupProtectedRoute
+const IncomingWirelinePayments: React.FC = () => (
+  <GroupProtectedRoute requiredAccess="full">
+    <IncomingWirelinePaymentsContent />
+  </GroupProtectedRoute>
+);
 
 export default IncomingWirelinePayments;
