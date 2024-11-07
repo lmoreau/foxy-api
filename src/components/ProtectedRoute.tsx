@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { InteractionStatus } from '@azure/msal-browser';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ensureAuth } from '../auth/authService';
+import { ensureAuth, hasAppAccess } from '../auth/authService';
 import { loginRequestDynamics } from '../auth/authConfig';
 
 interface ProtectedRouteProps {
@@ -15,6 +15,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -23,15 +24,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           return;
         }
 
-        // Store the current path for after login
-        sessionStorage.setItem('loginRedirect', location.pathname + location.search);
+        const account = instance.getAllAccounts()[0];
+        
+        if (account) {
+          // Check group membership first
+          const hasAccess = await hasAppAccess();
+          if (!hasAccess) {
+            setAccessDenied(true);
+            setIsChecking(false);
+            return;
+          }
 
-        const authResult = await ensureAuth();
-        if (authResult) {
-          setIsAuthorized(true);
+          const authResult = await ensureAuth();
+          if (authResult) {
+            setIsAuthorized(true);
+          }
         } else {
-          // If we don't have an auth result and we're not in the middle of acquiring one,
-          // redirect to login
+          // No account, trigger initial login
           instance.loginRedirect({
             ...loginRequestDynamics,
             redirectStartPage: location.pathname + location.search
@@ -39,7 +48,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        navigate('/');
+        setAccessDenied(true);
       } finally {
         setIsChecking(false);
       }
@@ -48,11 +57,23 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     checkAuth();
   }, [instance, inProgress, location, navigate]);
 
-  // Handle the loading state
-  if (isChecking || inProgress !== InteractionStatus.None) {
+  if (isChecking) {
     return <div>Checking authentication...</div>;
   }
 
-  // If authorized, render the protected content
+  if (accessDenied) {
+    return (
+      <div style={{ 
+        padding: '20px', 
+        textAlign: 'center', 
+        marginTop: '50px' 
+      }}>
+        <h2>Access Denied</h2>
+        <p>You do not have permission to access this application.</p>
+        <p>Please contact your administrator if you believe this is an error.</p>
+      </div>
+    );
+  }
+
   return isAuthorized ? children : <div>Redirecting to login...</div>;
 };

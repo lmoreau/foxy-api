@@ -102,10 +102,10 @@ export const ensureAuth = async (): Promise<AuthenticationResult | null> => {
     // First try to handle any redirects
     const redirectResult = await msalInstance.handleRedirectPromise();
     if (redirectResult) {
-      // Check group membership immediately after redirect
+      // Check group membership after redirect
       const hasAccess = await hasAppAccess();
       if (!hasAccess) {
-        throw new Error('Access Denied: You do not have permission to access this application.');
+        return null; // Return null instead of throwing error
       }
       return redirectResult;
     }
@@ -116,7 +116,7 @@ export const ensureAuth = async (): Promise<AuthenticationResult | null> => {
       // Check group membership before proceeding
       const hasAccess = await hasAppAccess();
       if (!hasAccess) {
-        throw new Error('Access Denied: You do not have permission to access this application.');
+        return null; // Return null instead of throwing error
       }
       
       // Try to get a token silently
