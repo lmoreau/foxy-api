@@ -81,16 +81,18 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
                         onChange={onEndDateChange}
                         placeholder="End Date"
                     />
-                    <Select
-                        placeholder="Payment Status"
-                        style={{ width: 300 }}
-                        allowClear
-                        mode="multiple"
-                        options={paymentStatusOptions}
-                        value={paymentStatuses}
-                        onChange={onPaymentStatusChange}
-                        maxTagCount="responsive"
-                    />
+                    {userAccess === 'admin' && (
+                        <Select
+                            placeholder="Payment Status"
+                            style={{ width: 300 }}
+                            allowClear
+                            mode="multiple"
+                            options={paymentStatusOptions}
+                            value={paymentStatuses}
+                            onChange={onPaymentStatusChange}
+                            maxTagCount="responsive"
+                        />
+                    )}
                     <Space>
                         <Search
                             placeholder="Search by Opp ID, Service ID, Product, or Address"
