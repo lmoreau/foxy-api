@@ -119,7 +119,7 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
                         {isExpanded ? 'Collapse All' : 'Expand All'}
                     </Button>
                 </Space>
-                {actionButton}
+                {userAccess === 'admin' && actionButton}
             </Space>
         </Space>
     );
