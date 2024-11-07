@@ -28,6 +28,7 @@ import "./functions/updateAccountWirelineResiduals";
 import "./functions/updateWonService";
 import "./functions/calculateWonServicesComp";
 import "./functions/helloWorld";
+import "./functions/listIncomingWirelinePayments";
 
 // Export the initialized app
 export default functionApp;
