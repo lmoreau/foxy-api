@@ -1,4 +1,5 @@
 import { Product } from '../types';
+import { IncomingWirelinePayment } from '../types/wirelinePayments';
 import axios, { AxiosError } from 'axios';
 import { getAccessToken } from '../auth/authService';
 
@@ -27,6 +28,13 @@ const getAuthHeaders = async () => {
   } catch (error) {
     throw error;
   }
+};
+
+export const listIncomingWirelinePayments = async (): Promise<IncomingWirelinePayment[]> => {
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listIncomingWirelinePayments`;
+  const response = await axios.get(url, { headers });
+  return response.data.value;
 };
 
 export const fetchProducts = async (search: string): Promise<Product[]> => {

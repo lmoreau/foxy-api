@@ -11,6 +11,7 @@ import WirelineUpload from './components/WirelineUpload';
 import WonServicesPage from './components/WonServicesPage';
 import RawExcelUpload from './components/RawExcelUpload';
 import MasterResidualList from './components/MasterResidualList';
+import IncomingWirelinePayments from './components/IncomingWirelinePayments';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -107,6 +108,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MasterResidualList />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/incoming-wireline-payments" 
+                element={
+                  <ProtectedRoute>
+                    <IncomingWirelinePayments />
                   </ProtectedRoute>
                 } 
               />
