@@ -35,6 +35,11 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
         key: 'master-residual',
         label: <Link to="/master-residual-list">Master Residual List</Link>,
         icon: <UnorderedListOutlined />,
+      },
+      {
+        key: 'won-services',
+        label: <Link to="/won-services">Won Services</Link>,
+        icon: <UnorderedListOutlined />,
       }
     ];
 
@@ -51,11 +56,6 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       ...baseItems,
       {
         type: 'divider',
-      },
-      {
-        key: 'won-services',
-        label: <span>Revenue Services</span>,
-        icon: <UnorderedListOutlined />,
       },
       {
         key: 'residual-upload',

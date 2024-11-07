@@ -1,10 +1,11 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Space, Input, DatePicker, Button, Select, Switch, Tooltip, Typography } from 'antd';
 import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 import { Dayjs } from 'dayjs';
 import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
 import { GroupedData } from '../../types/wonServices';
 import { formatCurrency } from '../../utils/formatters';
+import { checkUserAccess, UserAccessLevel } from '../../auth/authService';
 
 const { Search } = Input;
 const { Title, Text } = Typography;
@@ -40,6 +41,16 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
     data,
     actionButton
 }) => {
+    const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
+
+    useEffect(() => {
+        const fetchUserAccess = async () => {
+            const access = await checkUserAccess();
+            setUserAccess(access);
+        };
+        fetchUserAccess();
+    }, []);
+
     const paymentStatusOptions = Object.entries(inPaymentStatusMapper).map(([value, label]) => ({
         value: parseInt(value),
         label
@@ -55,7 +66,8 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
         <Space direction="vertical" style={{ width: '100%' }} size={0}>
             <Title level={4} style={{ marginBottom: '4px' }}>Won Services</Title>
             <Text type="secondary" style={{ marginBottom: '16px' }}>
-                Opportunities: {opportunityCount} · Won Services: {serviceCount} · Total Expected: {formatCurrency(totalExpected)}
+                Opportunities: {opportunityCount} · Won Services: {serviceCount}
+                {userAccess === 'admin' && ` · Total Expected: ${formatCurrency(totalExpected)}`}
             </Text>
             <Space size="middle" align="start" style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                 <Space size="middle">

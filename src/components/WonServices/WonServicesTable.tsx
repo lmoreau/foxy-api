@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table } from 'antd';
 import { GroupedData, WonService, isGroupData } from '../../types/wonServices';
 import { getWonServicesColumns } from './tableColumns';
 import type { Key } from 'antd/es/table/interface';
+import { checkUserAccess, UserAccessLevel } from '../../auth/authService';
 
 interface WonServicesTableProps {
     data: GroupedData[];
@@ -21,6 +22,16 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
     onExpandedRowsChange,
     onSelectionChange,
 }) => {
+    const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
+
+    useEffect(() => {
+        const fetchUserAccess = async () => {
+            const access = await checkUserAccess();
+            setUserAccess(access);
+        };
+        fetchUserAccess();
+    }, []);
+
     const rowSelection = {
         selectedRowKeys,
         onChange: onSelectionChange,
@@ -37,7 +48,7 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
     return (
         <Table
             rowSelection={rowSelection}
-            columns={getWonServicesColumns()}
+            columns={getWonServicesColumns(userAccess)}
             dataSource={data}
             loading={loading}
             rowKey={(record: GroupedData | WonService) => 
