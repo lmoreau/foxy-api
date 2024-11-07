@@ -34,13 +34,13 @@ const GroupProtectedRoute: React.FC<GroupProtectedRouteProps> = ({
     return <div>Checking access...</div>;
   }
 
-  // Allow full access users to access everything
-  if (userAccess === 'full') {
+  // Allow admin users to access everything
+  if (userAccess === 'admin') {
     return children;
   }
 
-  // For employee access, only allow if the required access is 'employee'
-  if (userAccess === 'employee' && requiredAccess === 'employee') {
+  // For regular users, only allow if the required access is 'user'
+  if (userAccess === 'user' && requiredAccess === 'user') {
     return children;
   }
 

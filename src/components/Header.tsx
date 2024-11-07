@@ -38,8 +38,8 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       }
     ];
 
-    // Only show Incoming Wireline Payments for Full Access users
-    if (userAccess === 'full') {
+    // Only show Incoming Wireline Payments for admin users
+    if (userAccess === 'admin') {
       baseItems.push({
         key: 'incoming-wireline-payments',
         label: <Link to="/incoming-wireline-payments">Incoming Wireline Payments</Link>,

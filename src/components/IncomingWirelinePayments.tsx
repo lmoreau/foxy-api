@@ -205,7 +205,7 @@ const IncomingWirelinePaymentsContent: React.FC = () => {
 
 // Wrap the component with GroupProtectedRoute
 const IncomingWirelinePayments: React.FC = () => (
-  <GroupProtectedRoute requiredAccess="full">
+  <GroupProtectedRoute requiredAccess="admin">
     <IncomingWirelinePaymentsContent />
   </GroupProtectedRoute>
 );

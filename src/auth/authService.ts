@@ -4,8 +4,8 @@ import { Client } from "@microsoft/microsoft-graph-client";
 import { Group } from "@microsoft/microsoft-graph-types";
 
 // Define group IDs - these should match your Azure AD group IDs
-const FULL_ACCESS_GROUP = 'Full Access';
-const EMPLOYEE_GROUP = 'Employee';
+const ADMIN_GROUP = 'FOXY_LEDGER_ADMIN';
+const USER_GROUP = 'FOXY_LEDGER_USER';
 
 export const getDynamicsAccessToken = async (): Promise<string> => {
   const account = msalInstance.getAllAccounts()[0];
@@ -67,16 +67,23 @@ export const getUserGroups = async (): Promise<string[]> => {
   }
 };
 
-export type UserAccessLevel = 'full' | 'employee' | 'none';
+export type UserAccessLevel = 'admin' | 'user' | 'none';
 
 export const checkUserAccess = async (): Promise<UserAccessLevel> => {
   try {
     const groups = await getUserGroups();
-    if (groups.includes(FULL_ACCESS_GROUP)) {
-      return 'full';
-    } else if (groups.includes(EMPLOYEE_GROUP)) {
-      return 'employee';
+    
+    // Check for admin access first
+    if (groups.includes(ADMIN_GROUP)) {
+      return 'admin';
     }
+    
+    // Then check for user access
+    if (groups.includes(USER_GROUP)) {
+      return 'user';
+    }
+    
+    // If not in either group, no access
     return 'none';
   } catch (error) {
     console.error('Error checking user access:', error);
@@ -84,25 +91,42 @@ export const checkUserAccess = async (): Promise<UserAccessLevel> => {
   }
 };
 
+export const hasAppAccess = async (): Promise<boolean> => {
+  const accessLevel = await checkUserAccess();
+  // Only allow access if user is either an admin or basic user
+  return accessLevel !== 'none';
+};
+
 export const ensureAuth = async (): Promise<AuthenticationResult | null> => {
   try {
     // First try to handle any redirects
     const redirectResult = await msalInstance.handleRedirectPromise();
     if (redirectResult) {
+      // Check group membership immediately after redirect
+      const hasAccess = await hasAppAccess();
+      if (!hasAccess) {
+        throw new Error('Access Denied: You do not have permission to access this application.');
+      }
       return redirectResult;
     }
 
     // Check if we have an active account
     const account = msalInstance.getAllAccounts()[0];
     if (account) {
-      // Try to get a token silently for Dynamics (primary auth)
+      // Check group membership before proceeding
+      const hasAccess = await hasAppAccess();
+      if (!hasAccess) {
+        throw new Error('Access Denied: You do not have permission to access this application.');
+      }
+      
+      // Try to get a token silently
       return await msalInstance.acquireTokenSilent({
         ...loginRequestDynamics,
         account
       });
     }
 
-    // No account found, trigger login with Dynamics scopes
+    // No account found, trigger login
     await msalInstance.loginRedirect(loginRequestDynamics);
     return null;
   } catch (error) {
