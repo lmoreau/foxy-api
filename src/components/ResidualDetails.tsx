@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Tabs, Card, Space, Typography, Collapse, Breadcrumb } from 'antd';
+import { Tabs, Card, Space, Typography, Collapse, Breadcrumb, Spin, Alert } from 'antd';
 import type { CollapseProps } from 'antd';
 import { PlusSquareOutlined, MinusSquareOutlined } from '@ant-design/icons';
-import { getAccountById, listWirelineResidualRows, listRogersWirelineRecords, listOpportunityRows as fetchOpportunities, listResidualAuditByRows, updateAccountWirelineResiduals, createResidualScrubAudit } from '../utils/api';
-import { AccountData, ResidualRecord, WirelineRecord, OpportunityRecord } from '../types/residualTypes';
+import { 
+  getAccountById, 
+  listWirelineResidualRows, 
+  listRogersWirelineRecords, 
+  listOpportunityRows as fetchOpportunities, 
+  listResidualAuditByRows, 
+  updateAccountWirelineResiduals, 
+  createResidualScrubAudit 
+} from '../utils/api';
+import { 
+  AccountData, 
+  ResidualRecord, 
+  WirelineRecord, 
+  OpportunityRecord,
+  AuditRecord,
+  TableRecord
+} from '../types/residualTypes';
 import { combineResidualData } from '../utils/residualUtils';
 import { ResidualTable } from './ResidualTable';
 import { ResidualStatusModal } from './ResidualStatusModal';
@@ -25,7 +40,7 @@ interface State {
   residualData: ResidualRecord[];
   wirelineData: WirelineRecord[];
   opportunities: OpportunityRecord[];
-  auditData: any[];
+  auditData: AuditRecord[]; // Updated to use proper type
   loading: boolean;
   opportunitiesLoading: boolean;
   auditLoading: boolean;
@@ -64,7 +79,11 @@ export const ResidualDetails: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) return;
+      if (!id) {
+        setState(prev => ({ ...prev, error: 'No ID provided', loading: false }));
+        return;
+      }
+
       try {
         const [account, residuals, wireline, oppsResponse, auditResponse] = await Promise.all([
           getAccountById(id),
@@ -79,8 +98,8 @@ export const ResidualDetails: React.FC = () => {
           accountData: account,
           residualData: residuals,
           wirelineData: wireline,
-          opportunities: oppsResponse.value,
-          auditData: auditResponse.value,
+          opportunities: oppsResponse.value || [],
+          auditData: auditResponse.value || [],
           loading: false,
           opportunitiesLoading: false,
           auditLoading: false
@@ -114,7 +133,7 @@ export const ResidualDetails: React.FC = () => {
         updating: false,
         selectedValue: '',
         notes: '',
-        auditData: auditResponse.value,
+        auditData: auditResponse.value || [],
         accountData: prev.accountData ? {
           ...prev.accountData,
           foxyflow_wirelineresiduals: parseInt(state.selectedValue)
@@ -138,7 +157,7 @@ export const ResidualDetails: React.FC = () => {
     setState(prev => ({ ...prev, showUnmerged: checked }));
   };
 
-  const combinedData = React.useMemo(() => 
+  const combinedData = React.useMemo<TableRecord[]>(() => 
     combineResidualData(state.residualData, state.wirelineData, state.showUnmerged),
     [state.residualData, state.wirelineData, state.showUnmerged]
   );
@@ -147,8 +166,9 @@ export const ResidualDetails: React.FC = () => {
     const wonOpps = state.opportunities.filter(opp => opp.statecode === 1);
     const lostOpps = state.opportunities.filter(opp => opp.statecode === 2);
 
-    const wonTotal = wonOpps.reduce((sum, opp) => sum + (opp.actualvalue || 0), 0);
-    const lostTotal = lostOpps.reduce((sum, opp) => sum + (opp.estimatedvalue || 0), 0);
+    // Safely handle optional number fields
+    const wonTotal = wonOpps.reduce((sum, opp) => sum + (opp.actualvalue ?? 0), 0);
+    const lostTotal = lostOpps.reduce((sum, opp) => sum + (opp.estimatedvalue ?? 0), 0);
 
     return {
       wonCount: wonOpps.length,
@@ -196,12 +216,24 @@ export const ResidualDetails: React.FC = () => {
     }
   ];
 
-  if (state.error) return <div>Error: {state.error}</div>;
-  if (state.loading || !state.accountData) return <div>Loading...</div>;
+  if (state.error) {
+    return (
+      <div style={{ padding: '24px' }}>
+        <Alert type="error" message={state.error} />
+      </div>
+    );
+  }
+
+  if (state.loading || !state.accountData) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div>
-      {/* Breadcrumbs */}
       <Breadcrumb style={{ marginBottom: '16px' }} items={[
         { title: <Link to="/residual-check">Residual Account List</Link> },
         { title: 'Account Details' }
@@ -297,3 +329,5 @@ export const ResidualDetails: React.FC = () => {
     </div>
   );
 };
+
+export default ResidualDetails;
