@@ -25,6 +25,11 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       icon: <UnorderedListOutlined />,
     },
     {
+      key: 'incoming-wireline-payments',
+      label: <Link to="/incoming-wireline-payments">Incoming Wireline Payments</Link>,
+      icon: <UnorderedListOutlined />,
+    },
+    {
       type: 'divider',
     },
     {
