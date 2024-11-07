@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
-import { UserOutlined, AppstoreOutlined, UnorderedListOutlined, UploadOutlined, CloudUploadOutlined } from '@ant-design/icons';
+import { 
+  UserOutlined, 
+  AppstoreOutlined, 
+  UnorderedListOutlined, 
+  UploadOutlined, 
+  CloudUploadOutlined,
+  SearchOutlined 
+} from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
 import { checkUserAccess, UserAccessLevel } from '../auth/authService';
@@ -24,8 +31,8 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
     fetchUserAccess();
   }, []);
 
-  const getMenuItems = (): MenuProps['items'] => {
-    const baseItems = [
+  const getMenuItems = (): Required<MenuProps>['items'] => {
+    const baseItems: Required<MenuProps>['items'] = [
       {
         key: 'residual-check',
         label: <Link to="/residual-check">Residual Account List</Link>,
@@ -33,8 +40,8 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       },
       {
         key: 'master-residual',
-        label: <Link to="/master-residual-list">Master Residual List</Link>,
-        icon: <UnorderedListOutlined />,
+        label: <Link to="/master-residual-list">Search by Rogers Account</Link>,
+        icon: <SearchOutlined />,
       },
       {
         key: 'won-services',
@@ -52,27 +59,33 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       });
     }
 
-    return [
-      ...baseItems,
-      {
-        type: 'divider',
-      },
-      {
-        key: 'residual-upload',
-        label: <span>Residual Statement Upload</span>,
-        icon: <UploadOutlined />,
-      },
-      {
-        key: 'wireline-upload',
-        label: <span>Wireline Statement Upload</span>,
-        icon: <CloudUploadOutlined />,
-      },
-      {
-        key: 'callidus-upload',
-        label: <span>Callidus Statement Upload</span>,
-        icon: <CloudUploadOutlined />,
-      },
-    ];
+    const menuItems = [...baseItems];
+
+    // Only show upload options for admin users
+    if (userAccess === 'admin') {
+      menuItems.push(
+        {
+          type: 'divider',
+        },
+        {
+          key: 'residual-upload',
+          label: <span>Residual Statement Upload</span>,
+          icon: <UploadOutlined />,
+        },
+        {
+          key: 'wireline-upload',
+          label: <span>Wireline Statement Upload</span>,
+          icon: <CloudUploadOutlined />,
+        },
+        {
+          key: 'callidus-upload',
+          label: <span>Callidus Statement Upload</span>,
+          icon: <CloudUploadOutlined />,
+        }
+      );
+    }
+
+    return menuItems;
   };
 
   return (
