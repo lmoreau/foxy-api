@@ -3,6 +3,7 @@ import { Table, Empty } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
+import './table.css';
 
 const IncomingWirelinePayments: React.FC = () => {
   const [data, setData] = useState<IncomingWirelinePayment[]>([]);
@@ -53,6 +54,7 @@ const IncomingWirelinePayments: React.FC = () => {
       key: 'paymentId',
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_name || '').localeCompare(b.foxy_name || ''),
+      ellipsis: true,
     },
     {
       title: 'Company',
@@ -60,6 +62,7 @@ const IncomingWirelinePayments: React.FC = () => {
       key: 'company',
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_companyname || '').localeCompare(b.foxy_companyname || ''),
+      ellipsis: true,
     },
     {
       title: 'Product',
@@ -67,16 +70,19 @@ const IncomingWirelinePayments: React.FC = () => {
       key: 'product',
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_productname || '').localeCompare(b.foxy_productname || ''),
+      ellipsis: true,
     },
     {
       title: 'Description',
       dataIndex: 'foxy_productdescription',
       key: 'description',
+      ellipsis: true,
     },
     {
       title: 'Site',
       dataIndex: 'foxy_opticsite',
       key: 'site',
+      ellipsis: true,
     },
     {
       title: 'Payment Date',
@@ -85,6 +91,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (date: string) => formatDate(date),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         new Date(a.foxy_paymentdate).getTime() - new Date(b.foxy_paymentdate).getTime(),
+      ellipsis: true,
     },
     {
       title: 'Payment Amount',
@@ -93,6 +100,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (amount: number) => formatCurrency(amount),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_paymentamount || 0) - (b.foxy_paymentamount || 0),
+      ellipsis: true,
     },
     {
       title: 'Existing MRR',
@@ -101,6 +109,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (amount: number) => formatCurrency(amount),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_existingmrr || 0) - (b.foxy_existingmrr || 0),
+      ellipsis: true,
     },
     {
       title: 'New MRR',
@@ -109,6 +118,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (amount: number) => formatCurrency(amount),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_newmrr || 0) - (b.foxy_newmrr || 0),
+      ellipsis: true,
     },
     {
       title: 'Net New TCV',
@@ -117,6 +127,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (amount: number) => formatCurrency(amount),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_netnewtcv || 0) - (b.foxy_netnewtcv || 0),
+      ellipsis: true,
     },
     {
       title: 'Revenue Type',
@@ -124,11 +135,13 @@ const IncomingWirelinePayments: React.FC = () => {
       key: 'revenueType',
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_revenuetype || '').localeCompare(b.foxy_revenuetype || ''),
+      ellipsis: true,
     },
     {
       title: 'Term',
       dataIndex: 'foxy_term',
       key: 'term',
+      ellipsis: true,
     },
     {
       title: 'Margin',
@@ -137,6 +150,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (value: number) => formatPercentage(value),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_margin || 0) - (b.foxy_margin || 0),
+      ellipsis: true,
     },
     {
       title: 'Renewal Rate',
@@ -145,6 +159,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (value: number) => formatPercentage(value),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_renewalrate || 0) - (b.foxy_renewalrate || 0),
+      ellipsis: true,
     },
     {
       title: 'Net New Rate',
@@ -153,27 +168,36 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (value: number) => formatPercentage(value),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_netnewrate || 0) - (b.foxy_netnewrate || 0),
+      ellipsis: true,
     },
   ];
 
+  if (loading) return <div>Loading...</div>;
+
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>Incoming Wireline Payments</h1>
-      <Table
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        rowKey="foxy_incomingpaymentid"
-        scroll={{ x: true }}
-        pagination={{
-          pageSize: 50,
-          showSizeChanger: true,
-          showTotal: (total) => `Total ${total} items`,
-        }}
-        locale={{
-          emptyText: <Empty description="No records found" />
-        }}
-      />
+    <div style={{ padding: '20px' }}>
+      <h2>Incoming Wireline Payments</h2>
+      <div style={{ color: '#666', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>
+        Displaying {data.length} {data.length === 1 ? 'payment' : 'payments'}
+      </div>
+      <div className="rounded-table">
+        <Table
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          rowKey="foxy_incomingpaymentid"
+          scroll={{ x: true }}
+          size="small"
+          pagination={{
+            pageSize: 50,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} items`,
+          }}
+          locale={{
+            emptyText: <Empty description="No records found" />
+          }}
+        />
+      </div>
     </div>
   );
 };
