@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Empty, Divider } from 'antd';
+import { Table, Empty, Divider, Input } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments, listWonServices } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
@@ -7,12 +7,16 @@ import { WonService } from '../types/wonServices';
 import GroupProtectedRoute from './GroupProtectedRoute';
 import './table.css';
 import { formatCurrency, formatDate, formatPercentage } from '../utils/formatters';
+import { SearchOutlined } from '@ant-design/icons';
+
+const CURRENCY_COLUMN_STYLE = { width: 200, minWidth: 200 }; // Fixed width and minimum width for currency columns
 
 const IncomingWirelinePayments: React.FC = () => {
   const [paymentsData, setPaymentsData] = useState<IncomingWirelinePayment[]>([]);
   const [servicesData, setServicesData] = useState<WonService[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [servicesLoading, setServicesLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
@@ -47,6 +51,18 @@ const IncomingWirelinePayments: React.FC = () => {
     fetchPaymentsData();
     fetchServicesData();
   }, [isAuthenticated]);
+
+  const filteredPaymentsData = searchText
+    ? paymentsData.filter(payment => 
+        payment.foxy_opportunitynumber?.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : paymentsData;
+
+  const filteredServicesData = searchText
+    ? servicesData.filter(service => 
+        service.foxy_Opportunity?.foxy_sfdcoppid?.toLowerCase().includes(searchText.toLowerCase())
+      )
+    : servicesData;
 
   const paymentsColumns = [
     {
@@ -116,6 +132,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_paymentamount || 0) - (b.foxy_paymentamount || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Existing MRR',
@@ -125,6 +142,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_existingmrr || 0) - (b.foxy_existingmrr || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'New MRR',
@@ -134,6 +152,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_newmrr || 0) - (b.foxy_newmrr || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Net New TCV',
@@ -143,6 +162,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_netnewtcv || 0) - (b.foxy_netnewtcv || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Revenue Type',
@@ -204,6 +224,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: WonService, b: WonService) => 
         (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Renewal Disposition',
@@ -249,6 +270,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: WonService, b: WonService) => 
         (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'TCV',
@@ -258,6 +280,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: WonService, b: WonService) => 
         (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Comp Rate',
@@ -327,6 +350,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: WonService, b: WonService) => 
         (a.foxy_mrruptick || 0) - (b.foxy_mrruptick || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Expected Comp',
@@ -336,6 +360,7 @@ const IncomingWirelinePayments: React.FC = () => {
       sorter: (a: WonService, b: WonService) => 
         (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
       ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
     },
     {
       title: 'Product',
@@ -366,21 +391,32 @@ const IncomingWirelinePayments: React.FC = () => {
   return (
     <GroupProtectedRoute requiredAccess="admin">
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px', height: 'calc(100vh - 40px)' }}>
+        {/* Search Input */}
+        <div style={{ width: '300px' }}>
+          <Input
+            placeholder="Search by SFDC Opp ID"
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            allowClear
+          />
+        </div>
+
         {/* Incoming Wireline Payments Section */}
         <div style={{ height: '400px' }}>
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Incoming Wireline Payments</h2>
             <div style={{ color: '#666', fontSize: '14px' }}>
-              Displaying {paymentsData.length} {paymentsData.length === 1 ? 'payment' : 'payments'}
+              Displaying {filteredPaymentsData.length} {filteredPaymentsData.length === 1 ? 'payment' : 'payments'}
             </div>
           </div>
           <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
             <Table
               columns={paymentsColumns}
-              dataSource={paymentsData}
+              dataSource={filteredPaymentsData}
               loading={paymentsLoading}
               rowKey="foxy_incomingpaymentid"
-              scroll={{ x: true, y: 300 }}
+              scroll={{ x: 'max-content', y: 300 }}
               size="small"
               pagination={{
                 pageSize: 20,
@@ -402,16 +438,16 @@ const IncomingWirelinePayments: React.FC = () => {
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Won Services</h2>
             <div style={{ color: '#666', fontSize: '14px' }}>
-              Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
+              Displaying {filteredServicesData.length} {filteredServicesData.length === 1 ? 'service' : 'services'}
             </div>
           </div>
           <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
             <Table
               columns={servicesColumns}
-              dataSource={servicesData}
+              dataSource={filteredServicesData}
               loading={servicesLoading}
               rowKey="foxy_wonserviceid"
-              scroll={{ x: true, y: 300 }}
+              scroll={{ x: 'max-content', y: 300 }}
               size="small"
               pagination={{
                 pageSize: 20,
