@@ -189,6 +189,14 @@ const IncomingWirelinePayments: React.FC = () => {
 
   const servicesColumns = [
     {
+      title: 'SFDC Opp ID',
+      dataIndex: ['foxy_Opportunity', 'foxy_sfdcoppid'],
+      key: 'sfdcOppId',
+      sorter: (a: WonService, b: WonService) => 
+        ((a.foxy_Opportunity?.foxy_sfdcoppid || '') as string).localeCompare((b.foxy_Opportunity?.foxy_sfdcoppid || '') as string),
+      ellipsis: true,
+    },
+    {
       title: 'Existing MRR',
       dataIndex: 'crc9f_existingmrr',
       key: 'existingMrr',
