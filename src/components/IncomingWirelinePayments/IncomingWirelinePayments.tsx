@@ -25,7 +25,10 @@ const IncomingWirelinePayments: React.FC = () => {
 
   return (
     <GroupProtectedRoute requiredAccess="admin">
-      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px', height: 'calc(100vh - 40px)' }}>
+      <div style={{ 
+        padding: '20px', 
+        height: 'calc(100vh - 40px)',
+      }}>
         <PaymentsTable
           displayedPaymentsData={displayedPaymentsData}
           paymentsLoading={paymentsLoading}
@@ -34,7 +37,7 @@ const IncomingWirelinePayments: React.FC = () => {
           allPaymentsData={allPaymentsData}
         />
 
-        <Divider style={{ margin: 0 }} />
+        <Divider style={{ margin: '12px 0' }} />
 
         <ServicesTable
           servicesData={servicesData}
@@ -54,9 +57,9 @@ const PaymentsTable: React.FC<{
   handleRowSelection: (selectedRowKeys: React.Key[]) => void;
   allPaymentsData: any[];
 }> = ({ displayedPaymentsData, paymentsLoading, selectedPaymentId, handleRowSelection, allPaymentsData }) => (
-  <div style={{ height: '400px' }}>
-    <div style={{ marginBottom: '20px' }}>
-      <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Incoming Wireline Payments</h2>
+  <div>
+    <div style={{ marginBottom: '4px' }}>
+      <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>
       <div style={{ color: '#666', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <span>
           Displaying {displayedPaymentsData.length} {displayedPaymentsData.length === 1 ? 'payment' : 'payments'}
@@ -73,25 +76,20 @@ const PaymentsTable: React.FC<{
         )}
       </div>
     </div>
-    <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
+    <div className="rounded-table">
       <Table
         columns={paymentsColumns}
         dataSource={displayedPaymentsData}
         loading={paymentsLoading}
         rowKey="foxy_incomingpaymentid"
-        scroll={{ x: 'max-content', y: 300 }}
+        scroll={{ x: 'max-content', y: '35vh' }}
         size="small"
         rowSelection={{
           type: 'radio',
           selectedRowKeys: selectedPaymentId ? [selectedPaymentId] : [],
           onChange: handleRowSelection
         }}
-        pagination={{
-          pageSize: 20,
-          showSizeChanger: true,
-          showTotal: (total) => `Total ${total} items`,
-          pageSizeOptions: ['10', '20', '50', '100']
-        }}
+        pagination={false}
         locale={{
           emptyText: <Empty description="No records found" />
         }}
@@ -106,32 +104,27 @@ const ServicesTable: React.FC<{
   selectedServiceId: string | null;
   handleServiceSelection: (selectedRowKeys: React.Key[]) => void;
 }> = ({ servicesData, servicesLoading, selectedServiceId, handleServiceSelection }) => (
-  <div style={{ height: '400px' }}>
-    <div style={{ marginBottom: '20px' }}>
-      <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Won Services</h2>
+  <div>
+    <div style={{ marginBottom: '4px' }}>
+      <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Won Services</h2>
       <div style={{ color: '#666', fontSize: '14px' }}>
         Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
       </div>
     </div>
-    <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
+    <div className="rounded-table">
       <Table
         columns={servicesColumns}
         dataSource={servicesData}
         loading={servicesLoading}
         rowKey="foxy_wonserviceid"
-        scroll={{ x: 'max-content', y: 300 }}
+        scroll={{ x: 'max-content', y: '35vh' }}
         size="small"
         rowSelection={{
           type: 'radio',
           selectedRowKeys: selectedServiceId ? [selectedServiceId] : [],
           onChange: handleServiceSelection
         }}
-        pagination={{
-          pageSize: 20,
-          showSizeChanger: true,
-          showTotal: (total) => `Total ${total} items`,
-          pageSizeOptions: ['10', '20', '50', '100']
-        }}
+        pagination={false}
         locale={{
           emptyText: <Empty description="No records found" />
         }}
