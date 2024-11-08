@@ -69,17 +69,17 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
         },
         {
           key: 'residual-upload',
-          label: <span>Residual Statement Upload</span>,
+          label: <Link to="/residual-upload">Residual Statement Upload</Link>,
           icon: <UploadOutlined />,
         },
         {
           key: 'wireline-upload',
-          label: <span>Wireline Statement Upload</span>,
+          label: <Link to="/wireline-upload">Wireline Statement Upload</Link>,
           icon: <CloudUploadOutlined />,
         },
         {
           key: 'callidus-upload',
-          label: <span>Callidus Statement Upload</span>,
+          label: <Link to="/raw-excel-upload">Callidus Statement Upload</Link>,
           icon: <CloudUploadOutlined />,
         }
       );
