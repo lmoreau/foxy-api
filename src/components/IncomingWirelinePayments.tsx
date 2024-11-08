@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Empty, Tabs } from 'antd';
+import { Table, Empty, Divider } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments, listWonServices } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
@@ -8,30 +8,47 @@ import GroupProtectedRoute from './GroupProtectedRoute';
 import './table.css';
 import { formatCurrency, formatDate, formatPercentage } from '../utils/formatters';
 
-const IncomingWirelinePaymentsContent: React.FC = () => {
-  const [data, setData] = useState<IncomingWirelinePayment[]>([]);
-  const [loading, setLoading] = useState(false);
+const IncomingWirelinePayments: React.FC = () => {
+  const [paymentsData, setPaymentsData] = useState<IncomingWirelinePayment[]>([]);
+  const [servicesData, setServicesData] = useState<WonService[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [servicesLoading, setServicesLoading] = useState(false);
   const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPaymentsData = async () => {
       if (!isAuthenticated) return;
       
-      setLoading(true);
+      setPaymentsLoading(true);
       try {
         const response = await listIncomingWirelinePayments();
-        setData(response);
+        setPaymentsData(response);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching payments data:', error);
       } finally {
-        setLoading(false);
+        setPaymentsLoading(false);
       }
     };
 
-    fetchData();
+    const fetchServicesData = async () => {
+      if (!isAuthenticated) return;
+      
+      setServicesLoading(true);
+      try {
+        const response = await listWonServices('2023-01-01', '2025-01-01');
+        setServicesData(response.value || []);
+      } catch (error) {
+        console.error('Error fetching services data:', error);
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+
+    fetchPaymentsData();
+    fetchServicesData();
   }, [isAuthenticated]);
 
-  const columns = [
+  const paymentsColumns = [
     {
       title: 'SFDC Opp ID',
       dataIndex: 'foxy_opportunitynumber',
@@ -170,60 +187,7 @@ const IncomingWirelinePaymentsContent: React.FC = () => {
     },
   ];
 
-  if (loading) return <div>Loading...</div>;
-
-  return (
-    <div style={{ padding: '20px' }}>
-      <h2>Incoming Wireline Payments</h2>
-      <div style={{ color: '#666', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>
-        Displaying {data.length} {data.length === 1 ? 'payment' : 'payments'}
-      </div>
-      <div className="rounded-table">
-        <Table
-          columns={columns}
-          dataSource={data}
-          loading={loading}
-          rowKey="foxy_incomingpaymentid"
-          scroll={{ x: true }}
-          size="small"
-          pagination={{
-            pageSize: 50,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} items`,
-          }}
-          locale={{
-            emptyText: <Empty description="No records found" />
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-const WonServicesContent: React.FC = () => {
-  const [data, setData] = useState<WonService[]>([]);
-  const [loading, setLoading] = useState(false);
-  const isAuthenticated = useIsAuthenticated();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!isAuthenticated) return;
-      
-      setLoading(true);
-      try {
-        const response = await listWonServices('2023-01-01', '2025-01-01');
-        setData(response.value || []); // Access the value property and provide a default empty array
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [isAuthenticated]);
-
-  const columns = [
+  const servicesColumns = [
     {
       title: 'Existing MRR',
       dataIndex: 'crc9f_existingmrr',
@@ -391,54 +355,71 @@ const WonServicesContent: React.FC = () => {
     },
   ];
 
-  if (loading) return <div>Loading...</div>;
-
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Won Services</h2>
-      <div style={{ color: '#666', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>
-        Displaying {data.length} {data.length === 1 ? 'service' : 'services'}
+    <GroupProtectedRoute requiredAccess="admin">
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px', height: 'calc(100vh - 40px)' }}>
+        {/* Incoming Wireline Payments Section */}
+        <div style={{ height: '400px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Incoming Wireline Payments</h2>
+            <div style={{ color: '#666', fontSize: '14px' }}>
+              Displaying {paymentsData.length} {paymentsData.length === 1 ? 'payment' : 'payments'}
+            </div>
+          </div>
+          <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
+            <Table
+              columns={paymentsColumns}
+              dataSource={paymentsData}
+              loading={paymentsLoading}
+              rowKey="foxy_incomingpaymentid"
+              scroll={{ x: true, y: 300 }}
+              size="small"
+              pagination={{
+                pageSize: 20,
+                showSizeChanger: true,
+                showTotal: (total) => `Total ${total} items`,
+                pageSizeOptions: ['10', '20', '50', '100']
+              }}
+              locale={{
+                emptyText: <Empty description="No records found" />
+              }}
+            />
+          </div>
+        </div>
+
+        <Divider style={{ margin: 0 }} />
+
+        {/* Won Services Section */}
+        <div style={{ height: '400px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Won Services</h2>
+            <div style={{ color: '#666', fontSize: '14px' }}>
+              Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
+            </div>
+          </div>
+          <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
+            <Table
+              columns={servicesColumns}
+              dataSource={servicesData}
+              loading={servicesLoading}
+              rowKey="foxy_wonserviceid"
+              scroll={{ x: true, y: 300 }}
+              size="small"
+              pagination={{
+                pageSize: 20,
+                showSizeChanger: true,
+                showTotal: (total) => `Total ${total} items`,
+                pageSizeOptions: ['10', '20', '50', '100']
+              }}
+              locale={{
+                emptyText: <Empty description="No records found" />
+              }}
+            />
+          </div>
+        </div>
       </div>
-      <div className="rounded-table">
-        <Table
-          columns={columns}
-          dataSource={data}
-          loading={loading}
-          rowKey="foxy_wonserviceid"
-          scroll={{ x: true }}
-          size="small"
-          pagination={{
-            pageSize: 50,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} items`,
-          }}
-          locale={{
-            emptyText: <Empty description="No records found" />
-          }}
-        />
-      </div>
-    </div>
+    </GroupProtectedRoute>
   );
 };
-
-// Wrap the component with GroupProtectedRoute
-const IncomingWirelinePayments: React.FC = () => (
-  <GroupProtectedRoute requiredAccess="admin">
-    <Tabs
-      items={[
-        {
-          key: '1',
-          label: 'Callidus Payments',
-          children: <IncomingWirelinePaymentsContent />,
-        },
-        {
-          key: '2',
-          label: 'Won Services',
-          children: <WonServicesContent />,
-        },
-      ]}
-    />
-  </GroupProtectedRoute>
-);
 
 export default IncomingWirelinePayments;
