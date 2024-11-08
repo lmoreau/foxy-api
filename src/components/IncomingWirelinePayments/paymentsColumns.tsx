@@ -2,6 +2,7 @@ import { ColumnsType } from 'antd/es/table';
 import { IncomingWirelinePayment } from '../../types/wirelinePayments';
 import { formatCurrency, formatDate, formatPercentage } from '../../utils/formatters';
 import { SortOrder } from 'antd/lib/table/interface';
+import { Tooltip } from 'antd';
 
 const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
 const WIDER_CURRENCY_COLUMN_STYLE = { width: 150, minWidth: 150 };
@@ -59,8 +60,15 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     title: 'Description',
     dataIndex: 'foxy_productdescription',
     key: 'description',
-    ellipsis: true,
+    ellipsis: {
+      showTitle: false
+    },
     width: 300,
+    render: (description: string) => (
+      <Tooltip title={description}>
+        <span>{description}</span>
+      </Tooltip>
+    ),
     onCell: () => ({
       style: { maxWidth: '300px' }
     })
