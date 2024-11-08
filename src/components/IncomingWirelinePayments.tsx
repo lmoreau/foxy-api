@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Empty } from 'antd';
+import { Table, Empty, Tabs } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
@@ -206,7 +206,20 @@ const IncomingWirelinePaymentsContent: React.FC = () => {
 // Wrap the component with GroupProtectedRoute
 const IncomingWirelinePayments: React.FC = () => (
   <GroupProtectedRoute requiredAccess="admin">
-    <IncomingWirelinePaymentsContent />
+    <Tabs
+      items={[
+        {
+          key: '1',
+          label: 'Callidus Payments',
+          children: <IncomingWirelinePaymentsContent />,
+        },
+        {
+          key: '2',
+          label: 'Won Services',
+          children: <div></div>,
+        },
+      ]}
+    />
   </GroupProtectedRoute>
 );
 
