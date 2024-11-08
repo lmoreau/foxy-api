@@ -3,7 +3,8 @@ import { IncomingWirelinePayment } from '../../types/wirelinePayments';
 import { formatCurrency, formatDate, formatPercentage } from '../../utils/formatters';
 import { SortOrder } from 'antd/lib/table/interface';
 
-const CURRENCY_COLUMN_STYLE = { width: 200, minWidth: 200 };
+const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
+const SITE_COLUMN_STYLE = { width: 100, minWidth: 100 };
 
 export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
   {
@@ -25,10 +26,13 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     ...CURRENCY_COLUMN_STYLE,
   },
   {
-    title: 'Order Number',
-    dataIndex: 'crc9f_ordernumber',
-    key: 'orderNumber',
+    title: 'Payment Amount',
+    dataIndex: 'foxy_paymentamount',
+    key: 'paymentAmount',
+    render: (amount: number) => formatCurrency(amount),
+    sorter: (a, b) => (a.foxy_paymentamount || 0) - (b.foxy_paymentamount || 0),
     ellipsis: true,
+    ...CURRENCY_COLUMN_STYLE,
   },
   {
     title: 'Company',
@@ -55,6 +59,7 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     dataIndex: 'foxy_opticsite',
     key: 'site',
     ellipsis: true,
+    ...SITE_COLUMN_STYLE,
   },
   {
     title: 'Payment Date',
@@ -63,15 +68,6 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     render: (date: string) => formatDate(date),
     sorter: (a, b) => new Date(a.foxy_paymentdate).getTime() - new Date(b.foxy_paymentdate).getTime(),
     ellipsis: true,
-  },
-  {
-    title: 'Payment Amount',
-    dataIndex: 'foxy_paymentamount',
-    key: 'paymentAmount',
-    render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.foxy_paymentamount || 0) - (b.foxy_paymentamount || 0),
-    ellipsis: true,
-    ...CURRENCY_COLUMN_STYLE,
   },
   {
     title: 'Existing MRR',
@@ -126,6 +122,12 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'netNewRate',
     render: (value: number) => formatPercentage(value),
     sorter: (a, b) => (a.foxy_netnewrate || 0) - (b.foxy_netnewrate || 0),
+    ellipsis: true,
+  },
+  {
+    title: 'Order Number',
+    dataIndex: 'crc9f_ordernumber',
+    key: 'orderNumber',
     ellipsis: true,
   },
 ];

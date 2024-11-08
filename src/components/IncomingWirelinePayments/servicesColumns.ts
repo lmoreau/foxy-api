@@ -1,8 +1,10 @@
 import { ColumnsType } from 'antd/es/table';
 import { WonService } from '../../types/wonServices';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
+import { revenueTypeMapper } from '../../utils/constants/revenueTypeMapper';
+import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
 
-const CURRENCY_COLUMN_STYLE = { width: 200, minWidth: 200 };
+const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
 
 export const servicesColumns: ColumnsType<WonService> = [
   {
@@ -93,6 +95,7 @@ export const servicesColumns: ColumnsType<WonService> = [
     title: 'Revenue Type',
     dataIndex: 'foxy_revenuetype',
     key: 'revenueType',
+    render: (value: number) => revenueTypeMapper[value] || value,
     ellipsis: true,
   },
   {
@@ -110,9 +113,10 @@ export const servicesColumns: ColumnsType<WonService> = [
     ellipsis: true,
   },
   {
-    title: 'In Payment Status',
+    title: 'Payment Status',
     dataIndex: 'foxy_inpaymentstatus',
     key: 'inPaymentStatus',
+    render: (value: number) => inPaymentStatusMapper[value] || value,
     ellipsis: true,
   },
   {
