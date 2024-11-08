@@ -74,17 +74,19 @@ const IncomingWirelinePayments: React.FC = () => {
       ellipsis: true,
     },
     {
+      title: 'Net New TCV',
+      dataIndex: 'foxy_netnewtcv',
+      key: 'netNewTcv',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
+        (a.foxy_netnewtcv || 0) - (b.foxy_netnewtcv || 0),
+      ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
+    },
+    {
       title: 'Order Number',
       dataIndex: 'crc9f_ordernumber',
       key: 'orderNumber',
-      ellipsis: true,
-    },
-    {
-      title: 'Payment ID',
-      dataIndex: 'foxy_name',
-      key: 'paymentId',
-      sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
-        (a.foxy_name || '').localeCompare(b.foxy_name || ''),
       ellipsis: true,
     },
     {
@@ -155,16 +157,6 @@ const IncomingWirelinePayments: React.FC = () => {
       ...CURRENCY_COLUMN_STYLE,
     },
     {
-      title: 'Net New TCV',
-      dataIndex: 'foxy_netnewtcv',
-      key: 'netNewTcv',
-      render: (amount: number) => formatCurrency(amount),
-      sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
-        (a.foxy_netnewtcv || 0) - (b.foxy_netnewtcv || 0),
-      ellipsis: true,
-      ...CURRENCY_COLUMN_STYLE,
-    },
-    {
       title: 'Revenue Type',
       dataIndex: 'foxy_revenuetype',
       key: 'revenueType',
@@ -217,6 +209,16 @@ const IncomingWirelinePayments: React.FC = () => {
       ellipsis: true,
     },
     {
+      title: 'TCV',
+      dataIndex: 'foxy_tcv',
+      key: 'tcv',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
+      ellipsis: true,
+      ...CURRENCY_COLUMN_STYLE,
+    },
+    {
       title: 'Existing MRR',
       dataIndex: 'crc9f_existingmrr',
       key: 'existingMrr',
@@ -251,12 +253,6 @@ const IncomingWirelinePayments: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: 'Access',
-      dataIndex: 'foxy_access',
-      key: 'access',
-      ellipsis: true,
-    },
-    {
       title: 'Quantity',
       dataIndex: 'foxy_quantity',
       key: 'quantity',
@@ -273,34 +269,12 @@ const IncomingWirelinePayments: React.FC = () => {
       ...CURRENCY_COLUMN_STYLE,
     },
     {
-      title: 'TCV',
-      dataIndex: 'foxy_tcv',
-      key: 'tcv',
-      render: (amount: number) => formatCurrency(amount),
-      sorter: (a: WonService, b: WonService) => 
-        (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
-      ellipsis: true,
-      ...CURRENCY_COLUMN_STYLE,
-    },
-    {
       title: 'Comp Rate',
       dataIndex: 'foxy_comprate',
       key: 'compRate',
       render: (value: number) => formatPercentage(value),
       sorter: (a: WonService, b: WonService) => 
         (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
-      ellipsis: true,
-    },
-    {
-      title: 'Won Service ID',
-      dataIndex: 'foxy_wonserviceid',
-      key: 'wonServiceId',
-      ellipsis: true,
-    },
-    {
-      title: 'Service ID',
-      dataIndex: 'foxy_serviceid',
-      key: 'serviceId',
       ellipsis: true,
     },
     {
