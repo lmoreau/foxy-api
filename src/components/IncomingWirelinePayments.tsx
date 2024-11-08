@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Empty, Divider } from 'antd';
+import { Table, Empty, Divider, Button } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments, listWonServicesForComp } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
@@ -7,15 +7,18 @@ import { WonService } from '../types/wonServices';
 import GroupProtectedRoute from './GroupProtectedRoute';
 import './table.css';
 import { formatCurrency, formatDate, formatPercentage } from '../utils/formatters';
+import { SortOrder } from 'antd/lib/table/interface';
 
 const CURRENCY_COLUMN_STYLE = { width: 200, minWidth: 200 }; // Fixed width and minimum width for currency columns
 
 const IncomingWirelinePayments: React.FC = () => {
-  const [paymentsData, setPaymentsData] = useState<IncomingWirelinePayment[]>([]);
+  const [allPaymentsData, setAllPaymentsData] = useState<IncomingWirelinePayment[]>([]);
+  const [displayedPaymentsData, setDisplayedPaymentsData] = useState<IncomingWirelinePayment[]>([]);
   const [servicesData, setServicesData] = useState<WonService[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const isAuthenticated = useIsAuthenticated();
 
   // Fetch payments data once on mount
@@ -26,7 +29,8 @@ const IncomingWirelinePayments: React.FC = () => {
       setPaymentsLoading(true);
       try {
         const response = await listIncomingWirelinePayments();
-        setPaymentsData(response);
+        setAllPaymentsData(response);
+        setDisplayedPaymentsData(response);
       } catch (error) {
         console.error('Error fetching payments data:', error);
       } finally {
@@ -37,6 +41,26 @@ const IncomingWirelinePayments: React.FC = () => {
     fetchPaymentsData();
   }, [isAuthenticated]);
 
+  // Handle row selection and data filtering
+  const handleRowSelection = (selectedRowKeys: React.Key[]) => {
+    const selectedId = selectedRowKeys[0] as string;
+    setSelectedPaymentId(selectedId);
+
+    if (selectedId) {
+      const selectedPayment = allPaymentsData.find(p => p.foxy_incomingpaymentid === selectedId);
+      if (selectedPayment?.foxy_opportunitynumber) {
+        // Filter payments to show only those with the same SFDC Opp ID
+        const filteredPayments = allPaymentsData.filter(
+          p => p.foxy_opportunitynumber === selectedPayment.foxy_opportunitynumber
+        );
+        setDisplayedPaymentsData(filteredPayments);
+      }
+    } else {
+      // If no row is selected, show all payments
+      setDisplayedPaymentsData(allPaymentsData);
+    }
+  };
+
   // Fetch services data when a payment row is selected
   useEffect(() => {
     const fetchServicesData = async () => {
@@ -45,7 +69,7 @@ const IncomingWirelinePayments: React.FC = () => {
         return;
       }
 
-      const selectedPayment = paymentsData.find(p => p.foxy_incomingpaymentid === selectedPaymentId);
+      const selectedPayment = allPaymentsData.find(p => p.foxy_incomingpaymentid === selectedPaymentId);
       if (!selectedPayment?.foxy_opportunitynumber) {
         setServicesData([]);
         return;
@@ -64,7 +88,7 @@ const IncomingWirelinePayments: React.FC = () => {
     };
 
     fetchServicesData();
-  }, [isAuthenticated, selectedPaymentId, paymentsData]);
+  }, [isAuthenticated, selectedPaymentId, allPaymentsData]);
 
   const paymentsColumns = [
     {
@@ -73,6 +97,7 @@ const IncomingWirelinePayments: React.FC = () => {
       key: 'sfdcOppId',
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_opportunitynumber || '').localeCompare(b.foxy_opportunitynumber || ''),
+      defaultSortOrder: 'ascend' as SortOrder,
       ellipsis: true,
     },
     {
@@ -82,6 +107,7 @@ const IncomingWirelinePayments: React.FC = () => {
       render: (amount: number) => formatCurrency(amount),
       sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
         (a.foxy_netnewtcv || 0) - (b.foxy_netnewtcv || 0),
+      defaultSortOrder: 'ascend' as SortOrder,
       ellipsis: true,
       ...CURRENCY_COLUMN_STYLE,
     },
@@ -371,14 +397,26 @@ const IncomingWirelinePayments: React.FC = () => {
         <div style={{ height: '400px' }}>
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Incoming Wireline Payments</h2>
-            <div style={{ color: '#666', fontSize: '14px' }}>
-              Displaying {paymentsData.length} {paymentsData.length === 1 ? 'payment' : 'payments'}
+            <div style={{ color: '#666', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span>
+                Displaying {displayedPaymentsData.length} {displayedPaymentsData.length === 1 ? 'payment' : 'payments'}
+                {selectedPaymentId && displayedPaymentsData.length < allPaymentsData.length && 
+                  ` (filtered by SFDC Opp ID)`}
+              </span>
+              {selectedPaymentId && (
+                <Button 
+                  size="small"
+                  onClick={() => handleRowSelection([])}
+                >
+                  Clear Selection
+                </Button>
+              )}
             </div>
           </div>
           <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
             <Table
               columns={paymentsColumns}
-              dataSource={paymentsData}
+              dataSource={displayedPaymentsData}
               loading={paymentsLoading}
               rowKey="foxy_incomingpaymentid"
               scroll={{ x: 'max-content', y: 300 }}
@@ -386,9 +424,7 @@ const IncomingWirelinePayments: React.FC = () => {
               rowSelection={{
                 type: 'radio',
                 selectedRowKeys: selectedPaymentId ? [selectedPaymentId] : [],
-                onChange: (selectedRowKeys) => {
-                  setSelectedPaymentId(selectedRowKeys[0] as string);
-                }
+                onChange: handleRowSelection
               }}
               pagination={{
                 pageSize: 20,
@@ -421,6 +457,11 @@ const IncomingWirelinePayments: React.FC = () => {
               rowKey="foxy_wonserviceid"
               scroll={{ x: 'max-content', y: 300 }}
               size="small"
+              rowSelection={{
+                type: 'radio',
+                selectedRowKeys: selectedServiceId ? [selectedServiceId] : [],
+                onChange: (selectedRowKeys) => setSelectedServiceId(selectedRowKeys[0] as string)
+              }}
               pagination={{
                 pageSize: 20,
                 showSizeChanger: true,
