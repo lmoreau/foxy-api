@@ -1,0 +1,19 @@
+{
+    "navigationFallback": {
+      "rewrite": "/index.html",
+      "exclude": ["/static/*", "/images/*", "/*.{png,jpg,gif,svg,js,css}"]
+    },
+    "mimeTypes": {
+      ".json": "text/json",
+      ".js": "text/javascript",
+      ".css": "text/css",
+      ".html": "text/html",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".svg": "image/svg+xml"
+    },
+    "globalHeaders": {
+      "content-type": "text/html"
+    }
+  }
+  
