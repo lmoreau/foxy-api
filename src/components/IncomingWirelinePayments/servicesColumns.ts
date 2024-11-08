@@ -37,6 +37,32 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
+    title: 'Company',
+    dataIndex: ['foxy_Account', 'name'],
+    key: 'account',
+    ellipsis: true,
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
+  },
+  {
+    title: 'Product',
+    dataIndex: ['foxy_Product', 'name'],
+    key: 'product',
+    ellipsis: true,
+  },
+  {
+    title: 'Site',
+    dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
+    key: 'accountLocation',
+    ellipsis: true,
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
+  },
+  {
     title: 'Renewal Type',
     dataIndex: 'foxy_renewaltype',
     key: 'renewalType',
@@ -146,27 +172,9 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
-    title: 'Product',
-    dataIndex: ['foxy_Product', 'name'],
-    key: 'product',
-    ellipsis: true,
-  },
-  {
-    title: 'Account',
-    dataIndex: ['foxy_Account', 'name'],
-    key: 'account',
-    ellipsis: true,
-  },
-  {
     title: 'Opportunity',
     dataIndex: ['foxy_Opportunity', 'name'],
     key: 'opportunity',
-    ellipsis: true,
-  },
-  {
-    title: 'Account Location',
-    dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
-    key: 'accountLocation',
     ellipsis: true,
   },
 ];

@@ -56,17 +56,6 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
-    title: 'Product',
-    dataIndex: 'foxy_productname',
-    key: 'product',
-    sorter: (a, b) => (a.foxy_productname || '').localeCompare(b.foxy_productname || ''),
-    ellipsis: true,
-    width: 250,
-    onCell: () => ({
-      style: { maxWidth: '250px' }
-    })
-  },
-  {
     title: 'Description',
     dataIndex: 'foxy_productdescription',
     key: 'description',
@@ -185,5 +174,16 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'orderNumber',
     ellipsis: true,
     width: 120,
+  },
+  {
+    title: 'Product',
+    dataIndex: 'foxy_productname',
+    key: 'product',
+    sorter: (a, b) => (a.foxy_productname || '').localeCompare(b.foxy_productname || ''),
+    ellipsis: true,
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
   },
 ];
