@@ -4,35 +4,45 @@ import { formatCurrency, formatDate, formatPercentage } from '../../utils/format
 import { SortOrder } from 'antd/lib/table/interface';
 
 const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
-const SITE_COLUMN_STYLE = { width: 100, minWidth: 100 };
+const WIDER_CURRENCY_COLUMN_STYLE = { width: 150, minWidth: 150 };
+const SITE_COLUMN_STYLE = { width: 80, minWidth: 80 };
 
 export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
   {
-    title: 'SFDC Opp ID',
+    title: 'SFDC Opp',
     dataIndex: 'foxy_opportunitynumber',
     key: 'sfdcOppId',
     sorter: (a, b) => (a.foxy_opportunitynumber || '').localeCompare(b.foxy_opportunitynumber || ''),
     defaultSortOrder: 'ascend' as SortOrder,
     ellipsis: true,
+    width: 120,
   },
   {
-    title: 'Net New TCV',
+    title: 'TCV',
     dataIndex: 'foxy_netnewtcv',
     key: 'netNewTcv',
     render: (amount: number) => formatCurrency(amount),
     sorter: (a, b) => (a.foxy_netnewtcv || 0) - (b.foxy_netnewtcv || 0),
     defaultSortOrder: 'ascend' as SortOrder,
     ellipsis: true,
-    ...CURRENCY_COLUMN_STYLE,
+    ...WIDER_CURRENCY_COLUMN_STYLE,
+    width: 120,
+    onCell: () => ({
+      style: { maxWidth: '120px' }
+    })
   },
   {
-    title: 'Payment Amount',
+    title: 'Payment ',
     dataIndex: 'foxy_paymentamount',
     key: 'paymentAmount',
     render: (amount: number) => formatCurrency(amount),
     sorter: (a, b) => (a.foxy_paymentamount || 0) - (b.foxy_paymentamount || 0),
     ellipsis: true,
-    ...CURRENCY_COLUMN_STYLE,
+    ...WIDER_CURRENCY_COLUMN_STYLE,
+    width: 120,
+    onCell: () => ({
+      style: { maxWidth: '120px' }
+    })
   },
   {
     title: 'Company',
@@ -40,6 +50,10 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'company',
     sorter: (a, b) => (a.foxy_companyname || '').localeCompare(b.foxy_companyname || ''),
     ellipsis: true,
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
   },
   {
     title: 'Product',
@@ -47,12 +61,20 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'product',
     sorter: (a, b) => (a.foxy_productname || '').localeCompare(b.foxy_productname || ''),
     ellipsis: true,
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
   },
   {
     title: 'Description',
     dataIndex: 'foxy_productdescription',
     key: 'description',
     ellipsis: true,
+    width: 300,
+    onCell: () => ({
+      style: { maxWidth: '300px' }
+    })
   },
   {
     title: 'Site',
@@ -60,6 +82,10 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'site',
     ellipsis: true,
     ...SITE_COLUMN_STYLE,
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
   },
   {
     title: 'Payment Date',
@@ -68,6 +94,7 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     render: (date: string) => formatDate(date),
     sorter: (a, b) => new Date(a.foxy_paymentdate).getTime() - new Date(b.foxy_paymentdate).getTime(),
     ellipsis: true,
+    width: 120,
   },
   {
     title: 'Existing MRR',
@@ -99,6 +126,7 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     dataIndex: 'foxy_term',
     key: 'term',
     ellipsis: true,
+    width: 80,
   },
   {
     title: 'Margin',
@@ -107,6 +135,7 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     render: (value: number) => formatPercentage(value),
     sorter: (a, b) => (a.foxy_margin || 0) - (b.foxy_margin || 0),
     ellipsis: true,
+    width: 80,
   },
   {
     title: 'Renewal Rate',
@@ -115,6 +144,7 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     render: (value: number) => formatPercentage(value),
     sorter: (a, b) => (a.foxy_renewalrate || 0) - (b.foxy_renewalrate || 0),
     ellipsis: true,
+    width: 120,
   },
   {
     title: 'Net New Rate',
@@ -123,11 +153,13 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     render: (value: number) => formatPercentage(value),
     sorter: (a, b) => (a.foxy_netnewrate || 0) - (b.foxy_netnewrate || 0),
     ellipsis: true,
+    width: 120,
   },
   {
     title: 'Order Number',
     dataIndex: 'crc9f_ordernumber',
     key: 'orderNumber',
     ellipsis: true,
+    width: 120,
   },
 ];
