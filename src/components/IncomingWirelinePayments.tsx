@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Empty, Tabs } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
-import { listIncomingWirelinePayments } from '../utils/api';
+import { listIncomingWirelinePayments, listWonServices } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
+import { WonService } from '../types/wonServices';
 import GroupProtectedRoute from './GroupProtectedRoute';
 import './table.css';
+import { formatCurrency, formatDate, formatPercentage } from '../utils/formatters';
 
 const IncomingWirelinePaymentsContent: React.FC = () => {
   const [data, setData] = useState<IncomingWirelinePayment[]>([]);
@@ -28,25 +30,6 @@ const IncomingWirelinePaymentsContent: React.FC = () => {
 
     fetchData();
   }, [isAuthenticated]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(1)}%`;
-  };
 
   const columns = [
     {
@@ -217,6 +200,227 @@ const IncomingWirelinePaymentsContent: React.FC = () => {
   );
 };
 
+const WonServicesContent: React.FC = () => {
+  const [data, setData] = useState<WonService[]>([]);
+  const [loading, setLoading] = useState(false);
+  const isAuthenticated = useIsAuthenticated();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isAuthenticated) return;
+      
+      setLoading(true);
+      try {
+        const response = await listWonServices('2023-01-01', '2025-01-01');
+        setData(response.value || []); // Access the value property and provide a default empty array
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated]);
+
+  const columns = [
+    {
+      title: 'Existing MRR',
+      dataIndex: 'crc9f_existingmrr',
+      key: 'existingMrr',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: WonService, b: WonService) => 
+        (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'Renewal Disposition',
+      dataIndex: 'foxy_renewaldisposition',
+      key: 'renewalDisposition',
+      ellipsis: true,
+    },
+    {
+      title: 'Status Code',
+      dataIndex: 'statuscode',
+      key: 'statusCode',
+      ellipsis: true,
+    },
+    {
+      title: 'Infusion Payment Status',
+      dataIndex: 'foxy_infusionpaymentstatus',
+      key: 'infusionPaymentStatus',
+      ellipsis: true,
+    },
+    {
+      title: 'Renewal Type',
+      dataIndex: 'foxy_renewaltype',
+      key: 'renewalType',
+      ellipsis: true,
+    },
+    {
+      title: 'Access',
+      dataIndex: 'foxy_access',
+      key: 'access',
+      ellipsis: true,
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'foxy_quantity',
+      key: 'quantity',
+      ellipsis: true,
+    },
+    {
+      title: 'MRR',
+      dataIndex: 'foxy_mrr',
+      key: 'mrr',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'TCV',
+      dataIndex: 'foxy_tcv',
+      key: 'tcv',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'Comp Rate',
+      dataIndex: 'foxy_comprate',
+      key: 'compRate',
+      render: (value: number) => formatPercentage(value),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'Won Service ID',
+      dataIndex: 'foxy_wonserviceid',
+      key: 'wonServiceId',
+      ellipsis: true,
+    },
+    {
+      title: 'Service ID',
+      dataIndex: 'foxy_serviceid',
+      key: 'serviceId',
+      ellipsis: true,
+    },
+    {
+      title: 'SO Line',
+      dataIndex: 'foxy_sololine',
+      key: 'soLine',
+      ellipsis: true,
+    },
+    {
+      title: 'State Code',
+      dataIndex: 'statecode',
+      key: 'stateCode',
+      ellipsis: true,
+    },
+    {
+      title: 'Revenue Type',
+      dataIndex: 'foxy_revenuetype',
+      key: 'revenueType',
+      ellipsis: true,
+    },
+    {
+      title: 'Line Margin',
+      dataIndex: 'foxy_linemargin',
+      key: 'lineMargin',
+      render: (value: number) => formatPercentage(value),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_linemargin || 0) - (b.foxy_linemargin || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'Term',
+      dataIndex: 'foxy_term',
+      key: 'term',
+      ellipsis: true,
+    },
+    {
+      title: 'In Payment Status',
+      dataIndex: 'foxy_inpaymentstatus',
+      key: 'inPaymentStatus',
+      ellipsis: true,
+    },
+    {
+      title: 'MRR Uptick',
+      dataIndex: 'foxy_mrruptick',
+      key: 'mrrUptick',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_mrruptick || 0) - (b.foxy_mrruptick || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'Expected Comp',
+      dataIndex: 'foxy_expectedcomp',
+      key: 'expectedComp',
+      render: (amount: number) => formatCurrency(amount),
+      sorter: (a: WonService, b: WonService) => 
+        (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
+      ellipsis: true,
+    },
+    {
+      title: 'Product',
+      dataIndex: ['foxy_Product', 'name'],
+      key: 'product',
+      ellipsis: true,
+    },
+    {
+      title: 'Account',
+      dataIndex: ['foxy_Account', 'name'],
+      key: 'account',
+      ellipsis: true,
+    },
+    {
+      title: 'Opportunity',
+      dataIndex: ['foxy_Opportunity', 'name'],
+      key: 'opportunity',
+      ellipsis: true,
+    },
+    {
+      title: 'Account Location',
+      dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
+      key: 'accountLocation',
+      ellipsis: true,
+    },
+  ];
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>Won Services</h2>
+      <div style={{ color: '#666', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>
+        Displaying {data.length} {data.length === 1 ? 'service' : 'services'}
+      </div>
+      <div className="rounded-table">
+        <Table
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          rowKey="foxy_wonserviceid"
+          scroll={{ x: true }}
+          size="small"
+          pagination={{
+            pageSize: 50,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} items`,
+          }}
+          locale={{
+            emptyText: <Empty description="No records found" />
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 // Wrap the component with GroupProtectedRoute
 const IncomingWirelinePayments: React.FC = () => (
   <GroupProtectedRoute requiredAccess="admin">
@@ -230,7 +434,7 @@ const IncomingWirelinePayments: React.FC = () => (
         {
           key: '2',
           label: 'Won Services',
-          children: <div></div>,
+          children: <WonServicesContent />,
         },
       ]}
     />
