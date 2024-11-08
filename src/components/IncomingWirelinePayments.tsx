@@ -50,6 +50,20 @@ const IncomingWirelinePaymentsContent: React.FC = () => {
 
   const columns = [
     {
+      title: 'SFDC Opp ID',
+      dataIndex: 'foxy_opportunitynumber',
+      key: 'sfdcOppId',
+      sorter: (a: IncomingWirelinePayment, b: IncomingWirelinePayment) => 
+        (a.foxy_opportunitynumber || '').localeCompare(b.foxy_opportunitynumber || ''),
+      ellipsis: true,
+    },
+    {
+      title: 'Order Number',
+      dataIndex: 'crc9f_ordernumber',
+      key: 'orderNumber',
+      ellipsis: true,
+    },
+    {
       title: 'Payment ID',
       dataIndex: 'foxy_name',
       key: 'paymentId',
