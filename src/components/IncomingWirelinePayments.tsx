@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Empty, Divider, Input } from 'antd';
+import { Table, Empty, Divider } from 'antd';
 import { useIsAuthenticated } from "@azure/msal-react";
-import { listIncomingWirelinePayments, listWonServices } from '../utils/api';
+import { listIncomingWirelinePayments, listWonServicesForComp } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
 import { WonService } from '../types/wonServices';
 import GroupProtectedRoute from './GroupProtectedRoute';
 import './table.css';
 import { formatCurrency, formatDate, formatPercentage } from '../utils/formatters';
-import { SearchOutlined } from '@ant-design/icons';
 
 const CURRENCY_COLUMN_STYLE = { width: 200, minWidth: 200 }; // Fixed width and minimum width for currency columns
 
@@ -16,9 +15,10 @@ const IncomingWirelinePayments: React.FC = () => {
   const [servicesData, setServicesData] = useState<WonService[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [servicesLoading, setServicesLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const isAuthenticated = useIsAuthenticated();
 
+  // Fetch payments data once on mount
   useEffect(() => {
     const fetchPaymentsData = async () => {
       if (!isAuthenticated) return;
@@ -34,35 +34,37 @@ const IncomingWirelinePayments: React.FC = () => {
       }
     };
 
+    fetchPaymentsData();
+  }, [isAuthenticated]);
+
+  // Fetch services data when a payment row is selected
+  useEffect(() => {
     const fetchServicesData = async () => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated || !selectedPaymentId) {
+        setServicesData([]);
+        return;
+      }
+
+      const selectedPayment = paymentsData.find(p => p.foxy_incomingpaymentid === selectedPaymentId);
+      if (!selectedPayment?.foxy_opportunitynumber) {
+        setServicesData([]);
+        return;
+      }
       
       setServicesLoading(true);
       try {
-        const response = await listWonServices('2023-01-01', '2025-01-01');
+        const response = await listWonServicesForComp(selectedPayment.foxy_opportunitynumber);
         setServicesData(response.value || []);
       } catch (error) {
         console.error('Error fetching services data:', error);
+        setServicesData([]);
       } finally {
         setServicesLoading(false);
       }
     };
 
-    fetchPaymentsData();
     fetchServicesData();
-  }, [isAuthenticated]);
-
-  const filteredPaymentsData = searchText
-    ? paymentsData.filter(payment => 
-        payment.foxy_opportunitynumber?.toLowerCase().includes(searchText.toLowerCase())
-      )
-    : paymentsData;
-
-  const filteredServicesData = searchText
-    ? servicesData.filter(service => 
-        service.foxy_Opportunity?.foxy_sfdcoppid?.toLowerCase().includes(searchText.toLowerCase())
-      )
-    : servicesData;
+  }, [isAuthenticated, selectedPaymentId, paymentsData]);
 
   const paymentsColumns = [
     {
@@ -365,33 +367,29 @@ const IncomingWirelinePayments: React.FC = () => {
   return (
     <GroupProtectedRoute requiredAccess="admin">
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '40px', height: 'calc(100vh - 40px)' }}>
-        {/* Search Input */}
-        <div style={{ width: '300px' }}>
-          <Input
-            placeholder="Search by SFDC Opp ID"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-            allowClear
-          />
-        </div>
-
         {/* Incoming Wireline Payments Section */}
         <div style={{ height: '400px' }}>
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Incoming Wireline Payments</h2>
             <div style={{ color: '#666', fontSize: '14px' }}>
-              Displaying {filteredPaymentsData.length} {filteredPaymentsData.length === 1 ? 'payment' : 'payments'}
+              Displaying {paymentsData.length} {paymentsData.length === 1 ? 'payment' : 'payments'}
             </div>
           </div>
           <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
             <Table
               columns={paymentsColumns}
-              dataSource={filteredPaymentsData}
+              dataSource={paymentsData}
               loading={paymentsLoading}
               rowKey="foxy_incomingpaymentid"
               scroll={{ x: 'max-content', y: 300 }}
               size="small"
+              rowSelection={{
+                type: 'radio',
+                selectedRowKeys: selectedPaymentId ? [selectedPaymentId] : [],
+                onChange: (selectedRowKeys) => {
+                  setSelectedPaymentId(selectedRowKeys[0] as string);
+                }
+              }}
               pagination={{
                 pageSize: 20,
                 showSizeChanger: true,
@@ -412,13 +410,13 @@ const IncomingWirelinePayments: React.FC = () => {
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Won Services</h2>
             <div style={{ color: '#666', fontSize: '14px' }}>
-              Displaying {filteredServicesData.length} {filteredServicesData.length === 1 ? 'service' : 'services'}
+              Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
             </div>
           </div>
           <div className="rounded-table" style={{ height: 'calc(100% - 60px)' }}>
             <Table
               columns={servicesColumns}
-              dataSource={filteredServicesData}
+              dataSource={servicesData}
               loading={servicesLoading}
               rowKey="foxy_wonserviceid"
               scroll={{ x: 'max-content', y: 300 }}

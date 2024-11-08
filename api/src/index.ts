@@ -29,6 +29,7 @@ import "./functions/updateWonService";
 import "./functions/calculateWonServicesComp";
 import "./functions/helloWorld";
 import "./functions/listIncomingWirelinePayments";
+import "./functions/listWonServicesForComp";
 
 // Export the initialized app
 export default functionApp;

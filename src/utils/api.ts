@@ -133,6 +133,13 @@ export const listWonServices = async (startDate: string, endDate: string) => {
   return response.data;
 };
 
+export const listWonServicesForComp = async (sfdcOppID: string) => {
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listWonServicesForComp?sfdcOppID=${encodeURIComponent(sfdcOppID)}`;
+  const response = await axios.get(url, { headers });
+  return response.data;
+};
+
 export const updateAccountWirelineResiduals = async (accountId: string, value: string) => {
   try {
     const headers = await getAuthHeaders();
