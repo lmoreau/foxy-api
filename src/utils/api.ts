@@ -30,9 +30,9 @@ const getAuthHeaders = async () => {
   }
 };
 
-export const listIncomingWirelinePayments = async (): Promise<IncomingWirelinePayment[]> => {
+export const listIncomingWirelinePayments = async (showAll: boolean = false): Promise<IncomingWirelinePayment[]> => {
   const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listIncomingWirelinePayments`;
+  const url = `${API_BASE_URL}/listIncomingWirelinePayments${showAll ? '?showAll=true' : ''}`;
   const response = await axios.get(url, { headers });
   return response.data.value;
 };

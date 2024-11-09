@@ -8,26 +8,27 @@ export const useIncomingWirelinePayments = () => {
   const [displayedPaymentsData, setDisplayedPaymentsData] = useState<IncomingWirelinePayment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [showAllRecords, setShowAllRecords] = useState(false);
   const isAuthenticated = useIsAuthenticated();
 
-  useEffect(() => {
-    const fetchPaymentsData = async () => {
-      if (!isAuthenticated) return;
-      
-      setPaymentsLoading(true);
-      try {
-        const response = await listIncomingWirelinePayments();
-        setAllPaymentsData(response);
-        setDisplayedPaymentsData(response);
-      } catch (error) {
-        console.error('Error fetching payments data:', error);
-      } finally {
-        setPaymentsLoading(false);
-      }
-    };
+  const fetchPaymentsData = async (showAll: boolean) => {
+    if (!isAuthenticated) return;
+    
+    setPaymentsLoading(true);
+    try {
+      const response = await listIncomingWirelinePayments(showAll);
+      setAllPaymentsData(response);
+      setDisplayedPaymentsData(response);
+    } catch (error) {
+      console.error('Error fetching payments data:', error);
+    } finally {
+      setPaymentsLoading(false);
+    }
+  };
 
-    fetchPaymentsData();
-  }, [isAuthenticated]);
+  useEffect(() => {
+    fetchPaymentsData(showAllRecords);
+  }, [isAuthenticated, showAllRecords]);
 
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
     const selectedId = selectedRowKeys[0] as string;
@@ -46,11 +47,18 @@ export const useIncomingWirelinePayments = () => {
     }
   };
 
+  const toggleShowAll = () => {
+    setShowAllRecords(!showAllRecords);
+    setSelectedPaymentId(null); // Reset selection when toggling
+  };
+
   return {
     allPaymentsData,
     displayedPaymentsData,
     paymentsLoading,
     selectedPaymentId,
+    showAllRecords,
     handleRowSelection,
+    toggleShowAll,
   };
 };

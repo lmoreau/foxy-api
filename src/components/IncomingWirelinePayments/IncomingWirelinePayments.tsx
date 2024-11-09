@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Empty, Divider, Button, Tabs } from 'antd';
+import { Table, Empty, Divider, Button, Tabs, Switch } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
@@ -13,7 +13,9 @@ const IncomingWirelinePayments: React.FC = () => {
     displayedPaymentsData,
     paymentsLoading,
     selectedPaymentId,
+    showAllRecords,
     handleRowSelection,
+    toggleShowAll,
   } = useIncomingWirelinePayments();
 
   const {
@@ -35,6 +37,8 @@ const IncomingWirelinePayments: React.FC = () => {
           selectedPaymentId={selectedPaymentId}
           handleRowSelection={handleRowSelection}
           allPaymentsData={allPaymentsData}
+          showAllRecords={showAllRecords}
+          toggleShowAll={toggleShowAll}
         />
 
         <Divider style={{ margin: '12px 0' }} />
@@ -56,10 +60,30 @@ const PaymentsTable: React.FC<{
   selectedPaymentId: string | null;
   handleRowSelection: (selectedRowKeys: React.Key[]) => void;
   allPaymentsData: any[];
-}> = ({ displayedPaymentsData, paymentsLoading, selectedPaymentId, handleRowSelection, allPaymentsData }) => (
+  showAllRecords: boolean;
+  toggleShowAll: () => void;
+}> = ({ 
+  displayedPaymentsData, 
+  paymentsLoading, 
+  selectedPaymentId, 
+  handleRowSelection, 
+  allPaymentsData,
+  showAllRecords,
+  toggleShowAll,
+}) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
-      <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ color: '#666', fontSize: '14px' }}>Show All Records</span>
+          <Switch
+            checked={showAllRecords}
+            onChange={toggleShowAll}
+            size="small"
+          />
+        </div>
+      </div>
       <div style={{ color: '#666', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <span>
           Displaying {displayedPaymentsData.length} {displayedPaymentsData.length === 1 ? 'payment' : 'payments'}
