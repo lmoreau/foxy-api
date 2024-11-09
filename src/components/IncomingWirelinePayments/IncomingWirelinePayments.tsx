@@ -21,8 +21,10 @@ const IncomingWirelinePayments: React.FC = () => {
     paymentsLoading,
     selectedPaymentId,
     showAllRecords,
+    dateRange,
     handleRowSelection,
     toggleShowAll,
+    handleDateRangeChange,
   } = useIncomingWirelinePayments();
 
   const {
@@ -34,25 +36,15 @@ const IncomingWirelinePayments: React.FC = () => {
 
   const [sfdcFilter, setSfdcFilter] = React.useState('');
   const [mapping, setMapping] = React.useState(false);
-  const [dateRange, setDateRange] = React.useState<[Dayjs | null, Dayjs | null] | null>(null);
 
   // Reset color mappings when data changes
   React.useEffect(() => {
     resetColorMap();
   }, [allPaymentsData, servicesData]);
 
-  const filteredPaymentsData = displayedPaymentsData.filter(payment => {
-    const matchesSfdc = payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase());
-    
-    if (dateRange && dateRange[0] && dateRange[1]) {
-      const payDate = new Date(payment.crc9f_paydate);
-      return matchesSfdc && 
-        payDate >= dateRange[0].toDate() && 
-        payDate <= dateRange[1].toDate();
-    }
-    
-    return matchesSfdc;
-  });
+  const filteredPaymentsData = displayedPaymentsData.filter(payment => 
+    payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase())
+  );
 
   const handleMapClick = async () => {
     if (!selectedPaymentId || !selectedServiceId) return;
@@ -94,7 +86,7 @@ const IncomingWirelinePayments: React.FC = () => {
                   setSfdcFilter={setSfdcFilter}
                   showTable={true}
                   dateRange={dateRange}
-                  setDateRange={setDateRange}
+                  handleDateRangeChange={handleDateRangeChange}
                 />
               ),
             },
@@ -175,8 +167,8 @@ const PaymentsTable: React.FC<{
   sfdcFilter: string;
   setSfdcFilter: (value: string) => void;
   showTable?: boolean;
-  dateRange: [Dayjs | null, Dayjs | null] | null;
-  setDateRange: (dates: [Dayjs | null, Dayjs | null] | null) => void;
+  dateRange: [Dayjs, Dayjs];
+  handleDateRangeChange: (dates: [Dayjs, Dayjs] | null) => void;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -189,7 +181,7 @@ const PaymentsTable: React.FC<{
   setSfdcFilter,
   showTable = false,
   dateRange,
-  setDateRange,
+  handleDateRangeChange,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
@@ -197,11 +189,10 @@ const PaymentsTable: React.FC<{
         {!showTable && <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <RangePicker
-            onChange={(dates) => setDateRange(dates)}
+            onChange={(dates) => handleDateRangeChange(dates as [Dayjs, Dayjs] | null)}
             value={dateRange}
             style={{ width: 300 }}
-            placeholder={['Start Date', 'End Date']}
-            allowClear
+            allowClear={false}
           />
           <Input
             placeholder="Filter by SFDC Opp"

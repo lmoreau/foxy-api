@@ -30,9 +30,30 @@ const getAuthHeaders = async () => {
   }
 };
 
-export const listIncomingWirelinePayments = async (showAll: boolean = false): Promise<IncomingWirelinePayment[]> => {
+export const listIncomingWirelinePayments = async (
+  showAll: boolean = false,
+  startDate?: string,
+  endDate?: string
+): Promise<IncomingWirelinePayment[]> => {
   const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listIncomingWirelinePayments${showAll ? '?showAll=true' : ''}`;
+  let url = `${API_BASE_URL}/listIncomingWirelinePayments`;
+  
+  const params = new URLSearchParams();
+  if (showAll) {
+    params.append('showAll', 'true');
+  }
+  if (startDate) {
+    params.append('startDate', startDate);
+  }
+  if (endDate) {
+    params.append('endDate', endDate);
+  }
+  
+  const queryString = params.toString();
+  if (queryString) {
+    url += `?${queryString}`;
+  }
+  
   const response = await axios.get(url, { headers });
   return response.data.value;
 };

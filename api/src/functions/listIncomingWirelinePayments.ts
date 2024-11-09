@@ -28,14 +28,20 @@ export async function listIncomingWirelinePayments(request: HttpRequest, context
         
         // Add filter if not showing all
         if (!showAll) {
-            // Calculate date 6 months ago
-            const sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            let startDate = request.query.get('startDate');
+            let endDate = request.query.get('endDate');
+
+            // If no dates provided, default to 60 days ago to today
+            if (!startDate || !endDate) {
+                const today = new Date();
+                const sixtyDaysAgo = new Date();
+                sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+                
+                startDate = sixtyDaysAgo.toISOString().split('.')[0] + 'Z';
+                endDate = today.toISOString().split('.')[0] + 'Z';
+            }
             
-            // Format date for Dataverse API (ISO string without milliseconds)
-            const formattedDate = sixMonthsAgo.toISOString().split('.')[0] + 'Z';
-            
-            params.append('$filter', `crc9f_paydate ge ${formattedDate}`);
+            params.append('$filter', `crc9f_paydate ge ${startDate} and crc9f_paydate le ${endDate}`);
         }
         
         // Add expand parameter

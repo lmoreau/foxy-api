@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
+import dayjs, { Dayjs } from 'dayjs';
 
 export const useIncomingWirelinePayments = () => {
   const [allPaymentsData, setAllPaymentsData] = useState<IncomingWirelinePayment[]>([]);
@@ -9,6 +10,12 @@ export const useIncomingWirelinePayments = () => {
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const [showAllRecords, setShowAllRecords] = useState(false);
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(() => {
+    const today = dayjs();
+    const sixtyDaysAgo = today.subtract(60, 'day');
+    return [sixtyDaysAgo, today];
+  });
+  
   const isAuthenticated = useIsAuthenticated();
 
   const fetchPaymentsData = useCallback(async (showAll: boolean) => {
@@ -16,7 +23,10 @@ export const useIncomingWirelinePayments = () => {
     
     setPaymentsLoading(true);
     try {
-      const response = await listIncomingWirelinePayments(showAll);
+      const startDate = dateRange[0].toISOString();
+      const endDate = dateRange[1].toISOString();
+      
+      const response = await listIncomingWirelinePayments(showAll, startDate, endDate);
       setAllPaymentsData(response);
       setDisplayedPaymentsData(response);
     } catch (error) {
@@ -24,7 +34,7 @@ export const useIncomingWirelinePayments = () => {
     } finally {
       setPaymentsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, dateRange]);
 
   useEffect(() => {
     fetchPaymentsData(showAllRecords);
@@ -52,13 +62,21 @@ export const useIncomingWirelinePayments = () => {
     setSelectedPaymentId(null); // Reset selection when toggling
   };
 
+  const handleDateRangeChange = (dates: [Dayjs, Dayjs] | null) => {
+    if (dates) {
+      setDateRange(dates);
+    }
+  };
+
   return {
     allPaymentsData,
     displayedPaymentsData,
     paymentsLoading,
     selectedPaymentId,
     showAllRecords,
+    dateRange,
     handleRowSelection,
     toggleShowAll,
+    handleDateRangeChange,
   };
 };
