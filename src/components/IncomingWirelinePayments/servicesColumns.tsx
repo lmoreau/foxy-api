@@ -10,6 +10,16 @@ const CRM_BASE_URL = 'https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dd
 
 export const servicesColumns: ColumnsType<WonService> = [
   {
+    title: 'Service ID',
+    dataIndex: 'foxy_serviceid',
+    key: 'serviceId',
+    ellipsis: true,
+    width: 120,
+    onCell: () => ({
+      style: { maxWidth: '120px' }
+    })
+  },
+  {
     title: 'SFDC Opp',
     dataIndex: ['foxy_Opportunity', 'foxy_sfdcoppid'],
     key: 'sfdcOppId',
