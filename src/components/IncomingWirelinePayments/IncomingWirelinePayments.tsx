@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Empty, Divider, Button, Tabs, Switch } from 'antd';
+import { Table, Empty, Divider, Button, Tabs, Switch, Input } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
@@ -25,6 +25,12 @@ const IncomingWirelinePayments: React.FC = () => {
     handleServiceSelection,
   } = useWonServices(selectedPaymentId, allPaymentsData);
 
+  const [sfdcFilter, setSfdcFilter] = React.useState('');
+
+  const filteredPaymentsData = displayedPaymentsData.filter(payment => 
+    payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase())
+  );
+
   return (
     <GroupProtectedRoute requiredAccess="admin">
       <div style={{ 
@@ -32,13 +38,15 @@ const IncomingWirelinePayments: React.FC = () => {
         height: 'calc(100vh - 40px)',
       }}>
         <PaymentsTable
-          displayedPaymentsData={displayedPaymentsData}
+          displayedPaymentsData={filteredPaymentsData}
           paymentsLoading={paymentsLoading}
           selectedPaymentId={selectedPaymentId}
           handleRowSelection={handleRowSelection}
           allPaymentsData={allPaymentsData}
           showAllRecords={showAllRecords}
           toggleShowAll={toggleShowAll}
+          sfdcFilter={sfdcFilter}
+          setSfdcFilter={setSfdcFilter}
         />
 
         <Divider style={{ margin: '12px 0' }} />
@@ -62,6 +70,8 @@ const PaymentsTable: React.FC<{
   allPaymentsData: any[];
   showAllRecords: boolean;
   toggleShowAll: () => void;
+  sfdcFilter: string;
+  setSfdcFilter: (value: string) => void;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -70,12 +80,21 @@ const PaymentsTable: React.FC<{
   allPaymentsData,
   showAllRecords,
   toggleShowAll,
+  sfdcFilter,
+  setSfdcFilter,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Input
+            placeholder="Filter by SFDC Opp"
+            value={sfdcFilter}
+            onChange={(e) => setSfdcFilter(e.target.value)}
+            style={{ width: 200 }}
+            allowClear
+          />
           <span style={{ color: '#666', fontSize: '14px' }}>Show All Records</span>
           <Switch
             checked={showAllRecords}
