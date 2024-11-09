@@ -1,11 +1,14 @@
 import React from 'react';
-import { Table, Empty, Divider, Button, Tabs, Switch, Input } from 'antd';
+import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
 import { paymentsColumns } from './paymentsColumns';
 import { servicesColumns } from './servicesColumns';
+import { resetColorMap } from '../../utils/constants/relationshipColors';
 import '../table.css';
+
+const CRM_BASE_URL = 'https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=';
 
 const IncomingWirelinePayments: React.FC = () => {
   const {
@@ -26,6 +29,11 @@ const IncomingWirelinePayments: React.FC = () => {
   } = useWonServices(selectedPaymentId, allPaymentsData);
 
   const [sfdcFilter, setSfdcFilter] = React.useState('');
+
+  // Reset color mappings when data changes
+  React.useEffect(() => {
+    resetColorMap();
+  }, [allPaymentsData, servicesData]);
 
   const filteredPaymentsData = displayedPaymentsData.filter(payment => 
     payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase())
@@ -168,47 +176,92 @@ const ServicesTable: React.FC<{
   servicesLoading: boolean;
   selectedServiceId: string | null;
   handleServiceSelection: (selectedRowKeys: React.Key[]) => void;
-}> = ({ servicesData, servicesLoading, selectedServiceId, handleServiceSelection }) => (
-  <div>
-    <div style={{ marginBottom: '4px' }}>
-      <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Won Services</h2>
-      <div style={{ color: '#666', fontSize: '14px' }}>
-        Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
+}> = ({ servicesData, servicesLoading, selectedServiceId, handleServiceSelection }) => {
+  const firstService = servicesData[0];
+  
+  const headerDetails = firstService && (
+    <div style={{ 
+      marginTop: '8px',
+      display: 'flex',
+      gap: '24px',
+      fontSize: '14px',
+      color: '#666',
+      alignItems: 'center'
+    }}>
+      {firstService.foxy_Opportunity?.foxy_sfdcoppid && (
+        <div>
+          <strong>SFDC Opp:</strong> {firstService.foxy_Opportunity.foxy_sfdcoppid}
+        </div>
+      )}
+      {firstService.foxy_Account?.name && (
+        <div style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Tooltip title={firstService.foxy_Account.name}>
+            <span>
+              <strong>Company:</strong> {firstService.foxy_Account.name}
+            </span>
+          </Tooltip>
+        </div>
+      )}
+      {firstService.foxy_Opportunity?.name && (
+        <div style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Tooltip title={firstService.foxy_Opportunity.name}>
+            <a
+              href={`${CRM_BASE_URL}${firstService.foxy_Opportunity.opportunityid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1890ff' }}
+            >
+              <strong>Opportunity:</strong> {firstService.foxy_Opportunity.name}
+            </a>
+          </Tooltip>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ marginBottom: '12px' }}>
+        <h2 style={{ fontSize: '24px', margin: '0' }}>Won Services</h2>
+        {headerDetails}
+        <div style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>
+          Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
+        </div>
+      </div>
+      <div className="rounded-table">
+        <Table
+          columns={servicesColumns}
+          dataSource={servicesData}
+          loading={servicesLoading}
+          rowKey="foxy_wonserviceid"
+          scroll={{ x: 'max-content', y: '35vh' }}
+          size="small"
+          rowSelection={{
+            type: 'radio',
+            selectedRowKeys: selectedServiceId ? [selectedServiceId] : [],
+            onChange: handleServiceSelection
+          }}
+          pagination={false}
+          locale={{
+            emptyText: <Empty description="No records found" />
+          }}
+        />
+        <Tabs
+          items={[
+            {
+              key: '1',
+              label: 'Services Data',
+              children: (
+                <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  {JSON.stringify(servicesData, null, 2)}
+                </pre>
+              ),
+            },
+          ]}
+        />
       </div>
     </div>
-    <div className="rounded-table">
-      <Table
-        columns={servicesColumns}
-        dataSource={servicesData}
-        loading={servicesLoading}
-        rowKey="foxy_wonserviceid"
-        scroll={{ x: 'max-content', y: '35vh' }}
-        size="small"
-        rowSelection={{
-          type: 'radio',
-          selectedRowKeys: selectedServiceId ? [selectedServiceId] : [],
-          onChange: handleServiceSelection
-        }}
-        pagination={false}
-        locale={{
-          emptyText: <Empty description="No records found" />
-        }}
-      />
-      <Tabs
-        items={[
-          {
-            key: '1',
-            label: 'Services Data',
-            children: (
-              <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
-                {JSON.stringify(servicesData, null, 2)}
-              </pre>
-            ),
-          },
-        ]}
-      />
-    </div>
-  </div>
-);
+  );
+}
 
 export default IncomingWirelinePayments;

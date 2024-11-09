@@ -2,7 +2,8 @@ import { ColumnsType } from 'antd/es/table';
 import { IncomingWirelinePayment } from '../../types/wirelinePayments';
 import { formatCurrency, formatDate, formatPercentage } from '../../utils/formatters';
 import { SortOrder } from 'antd/lib/table/interface';
-import { Tooltip } from 'antd';
+import { Tag, Tooltip } from 'antd';
+import { getColorForService } from '../../utils/constants/relationshipColors';
 
 const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
 const WIDER_CURRENCY_COLUMN_STYLE = { width: 150, minWidth: 150 };
@@ -21,7 +22,16 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
   {
     title: 'Won Service',
     key: 'serviceId',
-    render: (_, record) => record.foxy_WonService?.foxy_serviceid || '',
+    render: (_, record) => {
+      const serviceId = record.foxy_WonService?.foxy_serviceid;
+      if (!serviceId) return '';
+      
+      return (
+        <Tag color={getColorForService(serviceId)} style={{ margin: 0 }}>
+          {serviceId}
+        </Tag>
+      );
+    },
     sorter: (a, b) => (a.foxy_WonService?.foxy_serviceid || '').localeCompare(b.foxy_WonService?.foxy_serviceid || ''),
     ellipsis: true,
     width: 120,

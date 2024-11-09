@@ -1,12 +1,12 @@
 import { ColumnsType } from 'antd/es/table';
-import { Tooltip } from 'antd';
+import { Tag, Tooltip } from 'antd';
 import { WonService } from '../../types/wonServices';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
 import { revenueTypeMapper } from '../../utils/constants/revenueTypeMapper';
 import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
+import { getColorForService } from '../../utils/constants/relationshipColors';
 
 const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
-const CRM_BASE_URL = 'https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=';
 
 export const servicesColumns: ColumnsType<WonService> = [
   {
@@ -15,16 +15,14 @@ export const servicesColumns: ColumnsType<WonService> = [
     key: 'serviceId',
     ellipsis: true,
     width: 120,
+    render: (serviceId: string) => (
+      <Tag color={getColorForService(serviceId)} style={{ margin: 0 }}>
+        {serviceId}
+      </Tag>
+    ),
     onCell: () => ({
       style: { maxWidth: '120px' }
     })
-  },
-  {
-    title: 'SFDC Opp',
-    dataIndex: ['foxy_Opportunity', 'foxy_sfdcoppid'],
-    key: 'sfdcOppId',
-    sorter: (a, b) => ((a.foxy_Opportunity?.foxy_sfdcoppid || '') as string).localeCompare((b.foxy_Opportunity?.foxy_sfdcoppid || '') as string),
-    ellipsis: true,
   },
   {
     title: 'TCV',
@@ -46,16 +44,6 @@ export const servicesColumns: ColumnsType<WonService> = [
     width: 130,
     onCell: () => ({
       style: { maxWidth: '130px' }
-    })
-  },
-  {
-    title: 'Company',
-    dataIndex: ['foxy_Account', 'name'],
-    key: 'account',
-    ellipsis: true,
-    width: 250,
-    onCell: () => ({
-      style: { maxWidth: '250px' }
     })
   },
   {
@@ -183,28 +171,6 @@ export const servicesColumns: ColumnsType<WonService> = [
     width: 150,
     onCell: () => ({
       style: { maxWidth: '150px' }
-    })
-  },
-  {
-    title: 'Opportunity',
-    dataIndex: ['foxy_Opportunity', 'name'],
-    key: 'opportunity',
-    ellipsis: true,
-    render: (text: string, record: WonService) => {
-      const opportunityId = record.foxy_Opportunity?.opportunityid;
-      return opportunityId ? (
-        <a 
-          href={`${CRM_BASE_URL}${opportunityId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {text}
-        </a>
-      ) : text;
-    },
-    width: 250,
-    onCell: () => ({
-      style: { maxWidth: '250px' }
     })
   },
 ];
