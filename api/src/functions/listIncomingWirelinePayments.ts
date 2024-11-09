@@ -22,8 +22,19 @@ export async function listIncomingWirelinePayments(request: HttpRequest, context
     try {
         const headers = getDataverseHeaders(authHeader);
         const showAll = request.query.get('showAll') === 'true';
-        const filter = showAll ? '' : '?$filter=foxy_WonService eq null';
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_incomingpayments${filter}`;
+        
+        // Build the query parameters
+        const params = new URLSearchParams();
+        
+        // Add filter if not showing all
+        if (!showAll) {
+            params.append('$filter', 'foxy_WonService eq null');
+        }
+        
+        // Add expand parameter
+        params.append('$expand', 'foxy_WonService($select=foxy_serviceid)');
+        
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_incomingpayments?${params.toString()}`;
 
         context.log('Using auth header:', authHeader.substring(0, 50) + '...');
         context.log('Calling URL:', apiUrl);
