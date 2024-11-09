@@ -27,4 +27,7 @@ export interface IncomingWirelinePayment {
   statecode: number;
   createdon: string;
   modifiedon: string;
+  foxy_WonService?: {
+    foxy_serviceid: string;
+  } | null;
 }

@@ -19,6 +19,14 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     width: 120,
   },
   {
+    title: 'Won Service',
+    key: 'serviceId',
+    render: (_, record) => record.foxy_WonService?.foxy_serviceid || '',
+    sorter: (a, b) => (a.foxy_WonService?.foxy_serviceid || '').localeCompare(b.foxy_WonService?.foxy_serviceid || ''),
+    ellipsis: true,
+    width: 120,
+  },
+  {
     title: 'TCV',
     dataIndex: 'foxy_netnewtcv',
     key: 'netNewTcv',
