@@ -8,7 +8,7 @@ import { formatCurrency } from '../../utils/formatters';
 import { checkUserAccess, UserAccessLevel } from '../../auth/authService';
 
 const { Search } = Input;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export interface WonServicesFiltersProps {
     startDate: Dayjs;
@@ -64,7 +64,6 @@ const WonServicesFilters: React.FC<WonServicesFiltersProps> = ({
 
     return (
         <Space direction="vertical" style={{ width: '100%' }} size={0}>
-            <Title level={4} style={{ marginBottom: '4px' }}>Won Services</Title>
             <Text type="secondary" style={{ marginBottom: '16px' }}>
                 Opportunities: {opportunityCount} · Won Services: {serviceCount}
                 {userAccess === 'admin' && ` · Total Expected: ${formatCurrency(totalExpected)}`}

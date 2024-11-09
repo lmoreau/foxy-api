@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import dayjs from 'dayjs';
-import { Button, message, Dropdown } from 'antd';
+import { Button, message, Dropdown, Tabs } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { listWonServices, calculateWonServicesComp, updateWonService } from '../utils/api';
@@ -16,6 +16,7 @@ const WonServicesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [calculating, setCalculating] = useState(false);
     const [data, setData] = useState<GroupedData[]>([]);
+    const [rawData, setRawData] = useState<WonService[]>([]);
     const [filteredData, setFilteredData] = useState<GroupedData[]>([]);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -74,7 +75,9 @@ const WonServicesPage: React.FC = () => {
                 endDate.format('YYYY-MM-DD')
             );
             if (response.value) {
-                const grouped = groupWonServicesByOpportunity(response.value as WonService[]);
+                const rawServices = response.value as WonService[];
+                setRawData(rawServices);
+                const grouped = groupWonServicesByOpportunity(rawServices);
                 setData(grouped);
                 filterData(grouped, searchText, paymentStatuses, strictMode);
                 setExpandedKeys(grouped.map(g => g.key));
@@ -203,8 +206,8 @@ const WonServicesPage: React.FC = () => {
         }
     };
 
-    return (
-        <div style={{ padding: '24px' }}>
+    const mainContent = (
+        <>
             <div style={{ marginBottom: '16px' }}>
                 <WonServicesFilters
                     startDate={startDate}
@@ -247,6 +250,29 @@ const WonServicesPage: React.FC = () => {
                 onCancel={() => setPaymentStatusModalVisible(false)}
                 onConfirm={handlePaymentStatusChange}
                 selectedCount={selectedRowKeys.length}
+            />
+        </>
+    );
+
+    return (
+        <div style={{ padding: '24px' }}>
+            <Tabs
+                items={[
+                    {
+                        key: '1',
+                        label: 'Won Services',
+                        children: mainContent,
+                    },
+                    {
+                        key: '2',
+                        label: 'Raw Data',
+                        children: (
+                            <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                                {JSON.stringify(rawData, null, 2)}
+                            </pre>
+                        ),
+                    },
+                ]}
             />
         </div>
     );
