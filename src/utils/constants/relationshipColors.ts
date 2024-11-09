@@ -17,15 +17,18 @@ const colorMap = new Map<string, string>();
 let colorIndex = 0;
 
 export const getColorForService = (serviceId: string): string => {
-  if (!colorMap.has(serviceId)) {
+  // Remove any curly braces from the serviceId for consistent mapping
+  const cleanServiceId = serviceId.replace(/[{}]/g, '');
+  
+  if (!colorMap.has(cleanServiceId)) {
     // Assign next color and cycle through colors if we run out
-    colorMap.set(serviceId, RELATIONSHIP_COLORS[colorIndex % RELATIONSHIP_COLORS.length]);
+    colorMap.set(cleanServiceId, RELATIONSHIP_COLORS[colorIndex % RELATIONSHIP_COLORS.length]);
     colorIndex++;
   }
-  return colorMap.get(serviceId) || RELATIONSHIP_COLORS[0];
+  return colorMap.get(cleanServiceId) || RELATIONSHIP_COLORS[0];
 };
 
-// Clear the color mappings (useful when data is refreshed)
+// Only reset when explicitly needed (e.g., new data load)
 export const resetColorMap = () => {
   colorMap.clear();
   colorIndex = 0;

@@ -41,6 +41,7 @@ export const servicesColumns: ColumnsType<WonService> = [
     key: 'tcv',
     render: (amount: number) => formatCurrency(amount),
     sorter: (a, b) => (a.foxy_tcv || 0) - (b.foxy_tcv || 0),
+    defaultSortOrder: 'ascend',
     ellipsis: true,
     ...CURRENCY_COLUMN_STYLE,
   },
