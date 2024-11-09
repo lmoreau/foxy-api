@@ -45,25 +45,74 @@ const IncomingWirelinePayments: React.FC = () => {
         padding: '20px', 
         height: 'calc(100vh - 40px)',
       }}>
-        <PaymentsTable
-          displayedPaymentsData={filteredPaymentsData}
-          paymentsLoading={paymentsLoading}
-          selectedPaymentId={selectedPaymentId}
-          handleRowSelection={handleRowSelection}
-          allPaymentsData={allPaymentsData}
-          showAllRecords={showAllRecords}
-          toggleShowAll={toggleShowAll}
-          sfdcFilter={sfdcFilter}
-          setSfdcFilter={setSfdcFilter}
+        <Tabs
+          items={[
+            {
+              key: '1',
+              label: 'Callidus Wireline Payments',
+              children: (
+                <PaymentsTable
+                  displayedPaymentsData={filteredPaymentsData}
+                  paymentsLoading={paymentsLoading}
+                  selectedPaymentId={selectedPaymentId}
+                  handleRowSelection={handleRowSelection}
+                  allPaymentsData={allPaymentsData}
+                  showAllRecords={showAllRecords}
+                  toggleShowAll={toggleShowAll}
+                  sfdcFilter={sfdcFilter}
+                  setSfdcFilter={setSfdcFilter}
+                  showTable={true}
+                />
+              ),
+            },
+            {
+              key: '2',
+              label: 'Displayed Data',
+              children: (
+                <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  {JSON.stringify(displayedPaymentsData, null, 2)}
+                </pre>
+              ),
+            },
+            {
+              key: '3',
+              label: 'All Data',
+              children: (
+                <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  {JSON.stringify(allPaymentsData, null, 2)}
+                </pre>
+              ),
+            },
+          ]}
         />
 
         <Divider style={{ margin: '12px 0' }} />
 
-        <ServicesTable
-          servicesData={servicesData}
-          servicesLoading={servicesLoading}
-          selectedServiceId={selectedServiceId}
-          handleServiceSelection={handleServiceSelection}
+        <Tabs
+          items={[
+            {
+              key: '1',
+              label: 'Won Services',
+              children: (
+                <ServicesTable
+                  servicesData={servicesData}
+                  servicesLoading={servicesLoading}
+                  selectedServiceId={selectedServiceId}
+                  handleServiceSelection={handleServiceSelection}
+                  showTable={true}
+                />
+              ),
+            },
+            {
+              key: '2',
+              label: 'Services Data',
+              children: (
+                <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  {JSON.stringify(servicesData, null, 2)}
+                </pre>
+              ),
+            },
+          ]}
         />
       </div>
     </GroupProtectedRoute>
@@ -80,6 +129,7 @@ const PaymentsTable: React.FC<{
   toggleShowAll: () => void;
   sfdcFilter: string;
   setSfdcFilter: (value: string) => void;
+  showTable?: boolean;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -90,11 +140,12 @@ const PaymentsTable: React.FC<{
   toggleShowAll,
   sfdcFilter,
   setSfdcFilter,
+  showTable = false,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>
+        {!showTable && <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Input
             placeholder="Filter by SFDC Opp"
@@ -145,28 +196,6 @@ const PaymentsTable: React.FC<{
           emptyText: <Empty description="No records found" />
         }}
       />
-      <Tabs
-        items={[
-          {
-            key: '1',
-            label: 'Displayed Data',
-            children: (
-              <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
-                {JSON.stringify(displayedPaymentsData, null, 2)}
-              </pre>
-            ),
-          },
-          {
-            key: '2',
-            label: 'All Data',
-            children: (
-              <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
-                {JSON.stringify(allPaymentsData, null, 2)}
-              </pre>
-            ),
-          },
-        ]}
-      />
     </div>
   </div>
 );
@@ -176,7 +205,8 @@ const ServicesTable: React.FC<{
   servicesLoading: boolean;
   selectedServiceId: string | null;
   handleServiceSelection: (selectedRowKeys: React.Key[]) => void;
-}> = ({ servicesData, servicesLoading, selectedServiceId, handleServiceSelection }) => {
+  showTable?: boolean;
+}> = ({ servicesData, servicesLoading, selectedServiceId, handleServiceSelection, showTable = false }) => {
   const firstService = servicesData[0];
   
   const headerDetails = firstService && (
@@ -222,7 +252,7 @@ const ServicesTable: React.FC<{
   return (
     <div>
       <div style={{ marginBottom: '12px' }}>
-        <h2 style={{ fontSize: '24px', margin: '0' }}>Won Services</h2>
+        {!showTable && <h2 style={{ fontSize: '24px', margin: '0' }}>Won Services</h2>}
         {headerDetails}
         <div style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>
           Displaying {servicesData.length} {servicesData.length === 1 ? 'service' : 'services'}
@@ -245,19 +275,6 @@ const ServicesTable: React.FC<{
           locale={{
             emptyText: <Empty description="No records found" />
           }}
-        />
-        <Tabs
-          items={[
-            {
-              key: '1',
-              label: 'Services Data',
-              children: (
-                <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
-                  {JSON.stringify(servicesData, null, 2)}
-                </pre>
-              ),
-            },
-          ]}
         />
       </div>
     </div>

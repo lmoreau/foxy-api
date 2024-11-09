@@ -64,6 +64,32 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
+    title: 'New MRR',
+    dataIndex: 'foxy_newmrr',
+    key: 'newMrr',
+    render: (amount: number) => formatCurrency(amount),
+    sorter: (a, b) => (a.foxy_newmrr || 0) - (b.foxy_newmrr || 0),
+    ellipsis: true,
+    ...CURRENCY_COLUMN_STYLE,
+    width: 150,
+    onCell: () => ({
+      style: { maxWidth: '150px' }
+    })
+  },
+  {
+    title: 'Existing MRR',
+    dataIndex: 'foxy_existingmrr',
+    key: 'existingMrr',
+    render: (amount: number) => formatCurrency(amount),
+    sorter: (a, b) => (a.foxy_existingmrr || 0) - (b.foxy_existingmrr || 0),
+    ellipsis: true,
+    ...CURRENCY_COLUMN_STYLE,
+    width: 150,
+    onCell: () => ({
+      style: { maxWidth: '150px' }
+    })
+  },
+  {
     title: 'Company',
     dataIndex: 'foxy_companyname',
     key: 'company',
@@ -72,6 +98,17 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     width: 250,
     onCell: () => ({
       style: { maxWidth: '250px' }
+    })
+  },
+  {
+    title: 'Revenue Type',
+    dataIndex: 'foxy_revenuetype',
+    key: 'revenueType',
+    sorter: (a, b) => (a.foxy_revenuetype || '').localeCompare(b.foxy_revenuetype || ''),
+    ellipsis: true,
+    width: 130,
+    onCell: () => ({
+      style: { maxWidth: '130px' }
     })
   },
   {
@@ -110,43 +147,6 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     sorter: (a, b) => new Date(a.foxy_paymentdate).getTime() - new Date(b.foxy_paymentdate).getTime(),
     ellipsis: true,
     width: 120,
-  },
-  {
-    title: 'New MRR',
-    dataIndex: 'foxy_newmrr',
-    key: 'newMrr',
-    render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.foxy_newmrr || 0) - (b.foxy_newmrr || 0),
-    ellipsis: true,
-    ...CURRENCY_COLUMN_STYLE,
-    width: 150,
-    onCell: () => ({
-      style: { maxWidth: '150px' }
-    })
-  },
-  {
-    title: 'Existing MRR',
-    dataIndex: 'foxy_existingmrr',
-    key: 'existingMrr',
-    render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.foxy_existingmrr || 0) - (b.foxy_existingmrr || 0),
-    ellipsis: true,
-    ...CURRENCY_COLUMN_STYLE,
-    width: 150,
-    onCell: () => ({
-      style: { maxWidth: '150px' }
-    })
-  },
-  {
-    title: 'Revenue Type',
-    dataIndex: 'foxy_revenuetype',
-    key: 'revenueType',
-    sorter: (a, b) => (a.foxy_revenuetype || '').localeCompare(b.foxy_revenuetype || ''),
-    ellipsis: true,
-    width: 130,
-    onCell: () => ({
-      style: { maxWidth: '130px' }
-    })
   },
   {
     title: 'Term',

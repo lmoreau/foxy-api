@@ -54,7 +54,7 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
     if (userAccess === 'admin') {
       baseItems.push({
         key: 'incoming-wireline-payments',
-        label: <Link to="/incoming-wireline-payments">Incoming Wireline Payments</Link>,
+        label: <Link to="/incoming-wireline-payments">Callidus Wireline Payments</Link>,
         icon: <UnorderedListOutlined />,
       });
     }

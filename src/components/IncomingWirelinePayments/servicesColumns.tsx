@@ -25,6 +25,17 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
+    title: 'Payment Status',
+    dataIndex: 'foxy_inpaymentstatus',
+    key: 'inPaymentStatus',
+    render: (value: number) => inPaymentStatusMapper[value] || value,
+    ellipsis: true,
+    width: 140,
+    onCell: () => ({
+      style: { maxWidth: '140px' }
+    })
+  },
+  {
     title: 'TCV',
     dataIndex: 'foxy_tcv',
     key: 'tcv',
@@ -34,17 +45,30 @@ export const servicesColumns: ColumnsType<WonService> = [
     ...CURRENCY_COLUMN_STYLE,
   },
   {
-    title: 'Existing MRR',
-    dataIndex: 'crc9f_existingmrr',
-    key: 'existingMrr',
-    render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
+    title: 'Expected Comp',
+    dataIndex: 'foxy_expectedcomp',
+    key: 'expectedComp',
+    render: (amount: number, record: WonService) => (
+      <Tooltip title={record.crc9f_expectedcompbreakdown}>
+        {formatCurrency(amount)}
+      </Tooltip>
+    ),
+    sorter: (a, b) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
     ellipsis: true,
     ...CURRENCY_COLUMN_STYLE,
-    width: 130,
+    width: 150,
     onCell: () => ({
-      style: { maxWidth: '130px' }
+      style: { maxWidth: '150px' }
     })
+  },
+  {
+    title: 'MRR',
+    dataIndex: 'foxy_mrr',
+    key: 'mrr',
+    render: (amount: number) => formatCurrency(amount),
+    sorter: (a, b) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
+    ellipsis: true,
+    ...CURRENCY_COLUMN_STYLE,
   },
   {
     title: 'Product',
@@ -67,37 +91,6 @@ export const servicesColumns: ColumnsType<WonService> = [
     dataIndex: 'foxy_quantity',
     key: 'quantity',
     ellipsis: true,
-  },
-  {
-    title: 'MRR',
-    dataIndex: 'foxy_mrr',
-    key: 'mrr',
-    render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
-    ellipsis: true,
-    ...CURRENCY_COLUMN_STYLE,
-  },
-  {
-    title: 'Comp Rate',
-    dataIndex: 'foxy_comprate',
-    key: 'compRate',
-    render: (value: number) => formatPercentage(value),
-    sorter: (a, b) => (a.foxy_comprate || 0) - (b.foxy_comprate || 0),
-    ellipsis: true,
-    width: 100,
-    onCell: () => ({
-      style: { maxWidth: '100px' }
-    })
-  },
-  {
-    title: 'Solo',
-    dataIndex: 'foxy_sololine',
-    key: 'soLine',
-    ellipsis: true,
-    width: 50,
-    onCell: () => ({
-      style: { maxWidth: '50px' }
-    })
   },
   {
     title: 'Revenue Type',
@@ -137,17 +130,6 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
-    title: 'Payment Status',
-    dataIndex: 'foxy_inpaymentstatus',
-    key: 'inPaymentStatus',
-    render: (value: number) => inPaymentStatusMapper[value] || value,
-    ellipsis: true,
-    width: 140,
-    onCell: () => ({
-      style: { maxWidth: '140px' }
-    })
-  },
-  {
     title: 'MRR Uptick',
     dataIndex: 'foxy_mrruptick',
     key: 'mrrUptick',
@@ -157,20 +139,16 @@ export const servicesColumns: ColumnsType<WonService> = [
     ...CURRENCY_COLUMN_STYLE,
   },
   {
-    title: 'Expected Comp',
-    dataIndex: 'foxy_expectedcomp',
-    key: 'expectedComp',
-    render: (amount: number, record: WonService) => (
-      <Tooltip title={record.crc9f_expectedcompbreakdown}>
-        {formatCurrency(amount)}
-      </Tooltip>
-    ),
-    sorter: (a, b) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
+    title: 'Existing MRR',
+    dataIndex: 'crc9f_existingmrr',
+    key: 'existingMrr',
+    render: (amount: number) => formatCurrency(amount),
+    sorter: (a, b) => (a.crc9f_existingmrr || 0) - (b.crc9f_existingmrr || 0),
     ellipsis: true,
     ...CURRENCY_COLUMN_STYLE,
-    width: 150,
+    width: 130,
     onCell: () => ({
-      style: { maxWidth: '150px' }
+      style: { maxWidth: '130px' }
     })
   },
 ];
