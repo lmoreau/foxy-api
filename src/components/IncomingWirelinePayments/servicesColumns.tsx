@@ -87,7 +87,7 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
-    title: 'Quantity',
+    title: 'Qty',
     dataIndex: 'foxy_quantity',
     key: 'quantity',
     ellipsis: true,
@@ -108,6 +108,16 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
+    title: 'Term',
+    dataIndex: 'foxy_term',
+    key: 'term',
+    ellipsis: true,
+    width: 70,
+    onCell: () => ({
+      style: { maxWidth: '70px' }
+    })
+  },
+  {
     title: 'Margin',
     dataIndex: 'foxy_linemargin',
     key: 'lineMargin',
@@ -117,16 +127,6 @@ export const servicesColumns: ColumnsType<WonService> = [
     width: 100,
     onCell: () => ({
       style: { maxWidth: '100px' }
-    })
-  },
-  {
-    title: 'Term',
-    dataIndex: 'foxy_term',
-    key: 'term',
-    ellipsis: true,
-    width: 70,
-    onCell: () => ({
-      style: { maxWidth: '70px' }
     })
   },
   {

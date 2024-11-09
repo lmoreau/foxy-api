@@ -140,6 +140,16 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
+    title: 'Qty',
+    dataIndex: 'crc9f_units',
+    key: 'units',
+    ellipsis: true,
+    width: 50,
+    onCell: () => ({
+      style: { maxWidth: '100px' }
+    })
+  },
+  {
     title: 'Payment Date',
     dataIndex: 'foxy_paymentdate',
     key: 'paymentDate',
@@ -200,5 +210,25 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'orderNumber',
     ellipsis: true,
     width: 120,
+  },
+  {
+    title: 'Compensation Metric',
+    dataIndex: 'crc9f_compensationmetric',
+    key: 'compensationMetric',
+    ellipsis: true,
+    width: 150,
+    onCell: () => ({
+      style: { maxWidth: '150px' }
+    })
+  },
+  {
+    title: 'Dispute Number',
+    dataIndex: 'crc9f_disputenumber',
+    key: 'disputeNumber',
+    ellipsis: true,
+    width: 130,
+    onCell: () => ({
+      style: { maxWidth: '130px' }
+    })
   },
 ];
