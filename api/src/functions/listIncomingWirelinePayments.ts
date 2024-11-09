@@ -28,7 +28,14 @@ export async function listIncomingWirelinePayments(request: HttpRequest, context
         
         // Add filter if not showing all
         if (!showAll) {
-            params.append('$filter', 'foxy_WonService eq null');
+            // Calculate date 6 months ago
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            
+            // Format date for Dataverse API (ISO string without milliseconds)
+            const formattedDate = sixMonthsAgo.toISOString().split('.')[0] + 'Z';
+            
+            params.append('$filter', `crc9f_paydate ge ${formattedDate}`);
         }
         
         // Add expand parameter

@@ -1,14 +1,18 @@
 import React from 'react';
-import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip } from 'antd';
+import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip, message, DatePicker } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
 import { paymentsColumns } from './paymentsColumns';
 import { servicesColumns } from './servicesColumns';
 import { resetColorMap } from '../../utils/constants/relationshipColors';
+import { updateIncomingPayment } from '../../utils/api';
 import '../table.css';
+import type { Dayjs } from 'dayjs';
 
 const CRM_BASE_URL = 'https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=';
+
+const { RangePicker } = DatePicker;
 
 const IncomingWirelinePayments: React.FC = () => {
   const {
@@ -29,15 +33,42 @@ const IncomingWirelinePayments: React.FC = () => {
   } = useWonServices(selectedPaymentId, allPaymentsData);
 
   const [sfdcFilter, setSfdcFilter] = React.useState('');
+  const [mapping, setMapping] = React.useState(false);
+  const [dateRange, setDateRange] = React.useState<[Dayjs | null, Dayjs | null] | null>(null);
 
   // Reset color mappings when data changes
   React.useEffect(() => {
     resetColorMap();
   }, [allPaymentsData, servicesData]);
 
-  const filteredPaymentsData = displayedPaymentsData.filter(payment => 
-    payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase())
-  );
+  const filteredPaymentsData = displayedPaymentsData.filter(payment => {
+    const matchesSfdc = payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase());
+    
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const payDate = new Date(payment.crc9f_paydate);
+      return matchesSfdc && 
+        payDate >= dateRange[0].toDate() && 
+        payDate <= dateRange[1].toDate();
+    }
+    
+    return matchesSfdc;
+  });
+
+  const handleMapClick = async () => {
+    if (!selectedPaymentId || !selectedServiceId) return;
+    
+    setMapping(true);
+    try {
+      await updateIncomingPayment(selectedPaymentId, selectedServiceId);
+      message.success('Successfully mapped payment to service');
+      handleRowSelection([]);
+      handleServiceSelection([]);
+    } catch (error) {
+      message.error('Failed to map payment to service');
+      console.error('Error mapping payment to service:', error);
+    }
+    setMapping(false);
+  };
 
   return (
     <GroupProtectedRoute requiredAccess="admin">
@@ -62,6 +93,8 @@ const IncomingWirelinePayments: React.FC = () => {
                   sfdcFilter={sfdcFilter}
                   setSfdcFilter={setSfdcFilter}
                   showTable={true}
+                  dateRange={dateRange}
+                  setDateRange={setDateRange}
                 />
               ),
             },
@@ -87,6 +120,18 @@ const IncomingWirelinePayments: React.FC = () => {
         />
 
         <Divider style={{ margin: '12px 0' }} />
+
+        {selectedPaymentId && selectedServiceId && (
+          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+            <Button 
+              type="primary"
+              onClick={handleMapClick}
+              loading={mapping}
+            >
+              Map
+            </Button>
+          </div>
+        )}
 
         <Tabs
           items={[
@@ -130,6 +175,8 @@ const PaymentsTable: React.FC<{
   sfdcFilter: string;
   setSfdcFilter: (value: string) => void;
   showTable?: boolean;
+  dateRange: [Dayjs | null, Dayjs | null] | null;
+  setDateRange: (dates: [Dayjs | null, Dayjs | null] | null) => void;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -141,12 +188,21 @@ const PaymentsTable: React.FC<{
   sfdcFilter,
   setSfdcFilter,
   showTable = false,
+  dateRange,
+  setDateRange,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {!showTable && <h2 style={{ fontSize: '24px', margin: '0 0 4px 0' }}>Incoming Wireline Payments</h2>}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <RangePicker
+            onChange={(dates) => setDateRange(dates)}
+            value={dateRange}
+            style={{ width: 300 }}
+            placeholder={['Start Date', 'End Date']}
+            allowClear
+          />
           <Input
             placeholder="Filter by SFDC Opp"
             value={sfdcFilter}

@@ -150,30 +150,9 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
-    title: 'Payment Date',
-    dataIndex: 'foxy_paymentdate',
-    key: 'paymentDate',
-    render: (date: string) => formatDate(date),
-    sorter: (a, b) => new Date(a.foxy_paymentdate).getTime() - new Date(b.foxy_paymentdate).getTime(),
-    ellipsis: true,
-    width: 120,
-  },
-  {
     title: 'Term',
     dataIndex: 'foxy_term',
     key: 'term',
-    ellipsis: true,
-    width: 80,
-    onCell: () => ({
-      style: { maxWidth: '80px' }
-    })
-  },
-  {
-    title: 'Margin',
-    dataIndex: 'foxy_margin',
-    key: 'margin',
-    render: (value: number) => formatPercentage(value),
-    sorter: (a, b) => (a.foxy_margin || 0) - (b.foxy_margin || 0),
     ellipsis: true,
     width: 80,
     onCell: () => ({
@@ -230,5 +209,14 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     onCell: () => ({
       style: { maxWidth: '130px' }
     })
+  },
+  {
+    title: 'Pay Date',
+    dataIndex: 'crc9f_paydate',
+    key: 'payDate',
+    render: (date: string) => formatDate(date),
+    sorter: (a: any, b: any) => new Date(a.crc9f_paydate || '').getTime() - new Date(b.crc9f_paydate || '').getTime(),
+    ellipsis: true,
+    width: 120,
   },
 ];

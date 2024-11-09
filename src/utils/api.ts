@@ -189,6 +189,25 @@ export const updateWonService = async ({ id, expectedComp, paymentStatus }: Upda
   }
 };
 
+export const updateIncomingPayment = async (paymentId: string, wonServiceId: string) => {
+  try {
+    const headers = await getAuthHeaders();
+    const formattedPaymentId = paymentId.replace(/[{}]/g, '');
+    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_incomingpayments(${formattedPaymentId})`;
+    
+    const updateData = {
+      "foxy_WonService@odata.bind": `/foxy_wonservices(${wonServiceId})`
+    };
+    
+    await axios.patch(url, updateData, { headers });
+    return { message: "Successfully updated incoming payment" };
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to update incoming payment:', err.response?.data);
+    throw error;
+  }
+};
+
 export const calculateWonServicesComp = async (ids: string[]) => {
   try {
     const headers = await getAuthHeaders();

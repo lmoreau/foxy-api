@@ -5,7 +5,10 @@ import { corsHandler } from "../shared/cors";
 
 interface UpdateIncomingPaymentRequest {
     id: string;
-    [key: string]: any;  // Allows for any additional fields
+    foxy_WonService?: {
+        "@odata.bind": string;
+    };
+    [key: string]: any;
 }
 
 export async function updateIncomingPayment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -40,6 +43,7 @@ export async function updateIncomingPayment(request: HttpRequest, context: Invoc
         // Create update data object by excluding the id field
         const { id, ...updateData } = requestBody;
 
+        // Send the update request to Dataverse
         await axios.patch(apiUrl, updateData, { headers });
 
         return { 
@@ -77,5 +81,6 @@ export async function updateIncomingPayment(request: HttpRequest, context: Invoc
 app.http('updateIncomingPayment', {
     methods: ['PATCH', 'OPTIONS'],
     authLevel: 'anonymous',
-    handler: updateIncomingPayment
-}); 
+    handler: updateIncomingPayment,
+    route: 'updateIncomingPayment'  // Explicitly set the route
+});
