@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip, message, DatePicker } from 'antd';
+import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip, message, DatePicker, Modal } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
@@ -36,6 +36,7 @@ const IncomingWirelinePayments: React.FC = () => {
 
   const [sfdcFilter, setSfdcFilter] = React.useState('');
   const [mapping, setMapping] = React.useState(false);
+  const [unlinkModalVisible, setUnlinkModalVisible] = React.useState(false);
 
   // Reset color mappings when data changes
   React.useEffect(() => {
@@ -45,6 +46,10 @@ const IncomingWirelinePayments: React.FC = () => {
   const filteredPaymentsData = displayedPaymentsData.filter(payment => 
     payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase())
   );
+
+  const selectedPayment = selectedPaymentId 
+    ? allPaymentsData.find(p => p.foxy_incomingpaymentid === selectedPaymentId)
+    : null;
 
   const handleMapClick = async () => {
     if (!selectedPaymentId || !selectedServiceId) return;
@@ -60,6 +65,28 @@ const IncomingWirelinePayments: React.FC = () => {
       console.error('Error mapping payment to service:', error);
     }
     setMapping(false);
+  };
+
+  const handleUnlinkClick = () => {
+    setUnlinkModalVisible(true);
+  };
+
+  const handleUnlinkConfirm = async () => {
+    if (!selectedPaymentId) return;
+    
+    setMapping(true);
+    try {
+      await updateIncomingPayment(selectedPaymentId, null);
+      message.success('Successfully unlinked payment from service');
+      handleRowSelection([]);
+      handleServiceSelection([]);
+    } catch (error) {
+      message.error('Failed to unlink payment from service');
+      console.error('Error unlinking payment from service:', error);
+    } finally {
+      setMapping(false);
+      setUnlinkModalVisible(false);
+    }
   };
 
   return (
@@ -113,8 +140,8 @@ const IncomingWirelinePayments: React.FC = () => {
 
         <Divider style={{ margin: '12px 0' }} />
 
-        {selectedPaymentId && selectedServiceId && (
-          <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center', gap: '8px' }}>
+          {selectedPaymentId && selectedServiceId && (
             <Button 
               type="primary"
               onClick={handleMapClick}
@@ -122,8 +149,17 @@ const IncomingWirelinePayments: React.FC = () => {
             >
               Map
             </Button>
-          </div>
-        )}
+          )}
+          {selectedPayment?.foxy_WonService && (
+            <Button
+              danger
+              onClick={handleUnlinkClick}
+              loading={mapping}
+            >
+              Unlink
+            </Button>
+          )}
+        </div>
 
         <Tabs
           items={[
@@ -151,6 +187,18 @@ const IncomingWirelinePayments: React.FC = () => {
             },
           ]}
         />
+
+        <Modal
+          title="Confirm Unlink"
+          open={unlinkModalVisible}
+          onOk={handleUnlinkConfirm}
+          onCancel={() => setUnlinkModalVisible(false)}
+          okText="Unlink"
+          cancelText="Cancel"
+          okButtonProps={{ danger: true }}
+        >
+          <p>Are you sure you want to unlink this payment from its won service?</p>
+        </Modal>
       </div>
     </GroupProtectedRoute>
   );
