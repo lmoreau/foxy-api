@@ -25,6 +25,7 @@ const IncomingWirelinePayments: React.FC = () => {
     handleRowSelection,
     toggleShowAll,
     handleDateRangeChange,
+    refreshData,
   } = useIncomingWirelinePayments();
 
   const {
@@ -58,8 +59,8 @@ const IncomingWirelinePayments: React.FC = () => {
     try {
       await updateIncomingPayment(selectedPaymentId, selectedServiceId);
       message.success('Successfully mapped payment to service');
-      handleRowSelection([]);
       handleServiceSelection([]);
+      await refreshData(); // Refresh while maintaining filters
     } catch (error) {
       message.error('Failed to map payment to service');
       console.error('Error mapping payment to service:', error);
@@ -78,8 +79,8 @@ const IncomingWirelinePayments: React.FC = () => {
     try {
       await updateIncomingPayment(selectedPaymentId, null);
       message.success('Successfully unlinked payment from service');
-      handleRowSelection([]);
       handleServiceSelection([]);
+      await refreshData(); // Refresh while maintaining filters
     } catch (error) {
       message.error('Failed to unlink payment from service');
       console.error('Error unlinking payment from service:', error);

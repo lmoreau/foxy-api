@@ -10,6 +10,7 @@ export const useIncomingWirelinePayments = () => {
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const [showAllRecords, setShowAllRecords] = useState(false);
+  const [lastSfdcOpp, setLastSfdcOpp] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>(() => {
     const today = dayjs();
     const sixtyDaysAgo = today.subtract(60, 'day');
@@ -28,13 +29,20 @@ export const useIncomingWirelinePayments = () => {
       
       const response = await listIncomingWirelinePayments(showAll, startDate, endDate);
       setAllPaymentsData(response);
-      setDisplayedPaymentsData(response);
+      
+      // If we have a lastSfdcOpp, filter by it
+      if (lastSfdcOpp) {
+        const filtered = response.filter(p => p.foxy_opportunitynumber === lastSfdcOpp);
+        setDisplayedPaymentsData(filtered);
+      } else {
+        setDisplayedPaymentsData(response);
+      }
     } catch (error) {
       console.error('Error fetching payments data:', error);
     } finally {
       setPaymentsLoading(false);
     }
-  }, [isAuthenticated, dateRange]);
+  }, [isAuthenticated, dateRange, lastSfdcOpp]);
 
   useEffect(() => {
     fetchPaymentsData(showAllRecords);
@@ -47,25 +55,38 @@ export const useIncomingWirelinePayments = () => {
     if (selectedId) {
       const selectedPayment = allPaymentsData.find(p => p.foxy_incomingpaymentid === selectedId);
       if (selectedPayment?.foxy_opportunitynumber) {
+        setLastSfdcOpp(selectedPayment.foxy_opportunitynumber);
         const filteredPayments = allPaymentsData.filter(
           p => p.foxy_opportunitynumber === selectedPayment.foxy_opportunitynumber
         );
         setDisplayedPaymentsData(filteredPayments);
       }
     } else {
+      setLastSfdcOpp(null);
       setDisplayedPaymentsData(allPaymentsData);
     }
   };
 
   const toggleShowAll = () => {
     setShowAllRecords(!showAllRecords);
-    setSelectedPaymentId(null); // Reset selection when toggling
+    setSelectedPaymentId(null);
+    setLastSfdcOpp(null);
   };
 
   const handleDateRangeChange = (dates: [Dayjs, Dayjs] | null) => {
     if (dates) {
       setDateRange(dates);
     }
+  };
+
+  const refreshData = useCallback(async () => {
+    await fetchPaymentsData(showAllRecords);
+  }, [fetchPaymentsData, showAllRecords]);
+
+  const clearSelection = () => {
+    setSelectedPaymentId(null);
+    setLastSfdcOpp(null);
+    setDisplayedPaymentsData(allPaymentsData);
   };
 
   return {
@@ -78,5 +99,7 @@ export const useIncomingWirelinePayments = () => {
     handleRowSelection,
     toggleShowAll,
     handleDateRangeChange,
+    refreshData,
+    clearSelection,
   };
 };
