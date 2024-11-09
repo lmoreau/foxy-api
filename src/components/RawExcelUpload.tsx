@@ -214,6 +214,30 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
     }
   };
 
+  const handleDownloadExcel = () => {
+    const groupedData = getGroupedData();
+    if (!groupedData?.OPTIC || groupedData.OPTIC.length === 0) {
+      message.error('No OPTIC data to download.');
+      return;
+    }
+
+    try {
+      const ws = XLSX.utils.json_to_sheet(groupedData.OPTIC);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'OPTIC Data');
+      
+      // Generate filename with date
+      const monthStr = (months.indexOf(selectedMonth) + 1).toString().padStart(2, '0');
+      const filename = `OPTIC_Data_${selectedYear}-${monthStr}.xlsx`;
+      
+      XLSX.writeFile(wb, filename);
+      message.success('Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      message.error('Failed to download Excel file');
+    }
+  };
+
   const triggerFlow = async () => {
     const groupedData = getGroupedData();
     if (!groupedData?.OPTIC || groupedData.OPTIC.length === 0) {
@@ -323,13 +347,21 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
               style={{ width: 200 }}
             />
             {payDate && (
-              <Button 
-                type="primary"
-                onClick={triggerFlow}
-                disabled={!groupedData?.OPTIC || groupedData.OPTIC.length === 0}
-              >
-                Run Flow
-              </Button>
+              <>
+                <Button 
+                  type="primary"
+                  onClick={triggerFlow}
+                  disabled={!groupedData?.OPTIC || groupedData.OPTIC.length === 0}
+                >
+                  Run Flow
+                </Button>
+                <Button
+                  onClick={handleDownloadExcel}
+                  disabled={!groupedData?.OPTIC || groupedData.OPTIC.length === 0}
+                >
+                  Download Excel
+                </Button>
+              </>
             )}
           </div>
           <div style={{ 
