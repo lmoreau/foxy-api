@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
-import { message, Select, Input, Button, Alert, Typography, Tabs } from 'antd';
+import { message, Select, Input, Button, Alert, Typography, Tabs, DatePicker } from 'antd';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -11,6 +11,8 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
   const [data, setData] = useState<any[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string>('');
+  const [payDate, setPayDate] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>('');
 
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -138,7 +140,6 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
       'Last Name',
       'Order Date',
       'Original Actv Date',
-      'Margin',
       'DISCOUNT PERCENT',
       'Subtotal',
       'Activity Code Desc'
@@ -153,6 +154,11 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
     const monthIndex = months.indexOf(selectedMonth) + 1;
     const monthStr = monthIndex.toString().padStart(2, '0');
     filteredRow['Callidus Statement'] = `${selectedYear}-${monthStr}-01`;
+
+    // Add Pay Date field
+    if (payDate) {
+      filteredRow['Pay Date'] = payDate;
+    }
 
     return filteredRow;
   };
@@ -189,6 +195,7 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
           const rawJson = XLSX.utils.sheet_to_json(firstSheet);
           const transformedData = rawJson.map(transformRow);
           setData(transformedData);
+          setPayDate(null); // Reset pay date when new data is parsed
           message.success(`File parsed successfully with ${transformedData.length} rows`);
         } catch (error) {
           console.error('Error parsing Excel:', error);
@@ -197,6 +204,56 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
       }
     };
     reader.readAsBinaryString(file);
+  };
+
+  const handlePayDateChange = (date: any) => {
+    if (date) {
+      setPayDate(date.format('YYYY-MM-DD'));
+    } else {
+      setPayDate(null);
+    }
+  };
+
+  const triggerFlow = async () => {
+    const groupedData = getGroupedData();
+    if (!groupedData?.OPTIC || groupedData.OPTIC.length === 0) {
+      message.error('No OPTIC data to send.');
+      return;
+    }
+
+    if (!payDate) {
+      message.error('Please select a pay date first.');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://prod-09.canadacentral.logic.azure.com:443/workflows/329726db42d7496ba974701e5976dec6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=2ucnXnDLQQW2Qy6SbJSRBU7piD0ph_e5to9Cjv7jyE8', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(groupedData.OPTIC)
+      });
+
+      const responseText = await response.text();
+      console.log('Response status:', response.status);
+      console.log('Response text:', responseText);
+
+      if (response.ok) {
+        message.success('Flow triggered successfully');
+        setStatus('Flow triggered successfully.');
+      } else {
+        const errorMsg = `Failed to trigger flow. Status: ${response.status}. Response: ${responseText}`;
+        console.error(errorMsg);
+        message.error(errorMsg);
+        setStatus(errorMsg);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Error:', errorMessage);
+      message.error(`Error: ${errorMessage}`);
+      setStatus(`Error: ${errorMessage}`);
+    }
   };
 
   const getGroupedData = () => {
@@ -258,16 +315,44 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
         </Button>
       </div>
       {data.length > 0 && (
-        <div style={{ 
-          padding: '16px',
-          background: '#f0f0f0',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          fontSize: '18px',
-          fontWeight: 'bold'
+        <>
+          <div style={{ marginBottom: '20px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <DatePicker
+              onChange={handlePayDateChange}
+              placeholder="Select Pay Date"
+              style={{ width: 200 }}
+            />
+            {payDate && (
+              <Button 
+                type="primary"
+                onClick={triggerFlow}
+                disabled={!groupedData?.OPTIC || groupedData.OPTIC.length === 0}
+              >
+                Run Flow
+              </Button>
+            )}
+          </div>
+          <div style={{ 
+            padding: '16px',
+            background: '#f0f0f0',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            fontSize: '18px',
+            fontWeight: 'bold'
+          }}>
+            Total Records: {data.length} (OPTIC: {groupedData?.OPTIC.length}, Other: {groupedData?.Other.length})
+          </div>
+        </>
+      )}
+      {status && (
+        <p style={{ 
+          padding: '8px', 
+          background: '#f0f0f0', 
+          borderRadius: '4px', 
+          marginTop: '16px' 
         }}>
-          Total Records: {data.length} (OPTIC: {groupedData?.OPTIC.length}, Other: {groupedData?.Other.length})
-        </div>
+          {status}
+        </p>
       )}
       {groupedData && (
         <div>
