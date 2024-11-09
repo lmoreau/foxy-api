@@ -15,6 +15,7 @@ export interface WonService {
     foxy_revenuetype: number;
     foxy_inpaymentstatus: number;
     foxy_mrruptick: number | null;
+    foxy_totalinpayments: number | null;
     crc9f_existingmrr: number | null;
     crc9f_expectedcompbreakdown: string | null;
     foxy_Product: {

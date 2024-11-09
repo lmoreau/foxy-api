@@ -63,6 +63,18 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
+    title: 'Total Received',
+    dataIndex: 'foxy_totalinpayments',
+    key: 'totalReceived',
+    render: (amount: number) => formatCurrency(amount),
+    sorter: (a, b) => (a.foxy_totalinpayments || 0) - (b.foxy_totalinpayments || 0),
+    ellipsis: true,
+    width: 150,
+    onCell: () => ({
+      style: { maxWidth: '150px' }
+    })
+  },
+  {
     title: 'MRR',
     dataIndex: 'foxy_mrr',
     key: 'mrr',
