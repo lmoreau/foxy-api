@@ -65,12 +65,6 @@ export const servicesColumns: ColumnsType<WonService> = [
     })
   },
   {
-    title: 'Renewal Type',
-    dataIndex: 'foxy_renewaltype',
-    key: 'renewalType',
-    ellipsis: true,
-  },
-  {
     title: 'Quantity',
     dataIndex: 'foxy_quantity',
     key: 'quantity',
@@ -111,7 +105,11 @@ export const servicesColumns: ColumnsType<WonService> = [
     title: 'Revenue Type',
     dataIndex: 'foxy_revenuetype',
     key: 'revenueType',
-    render: (value: number) => revenueTypeMapper[value] || value,
+    render: (value: number, record: WonService) => (
+      <Tooltip title={record.foxy_renewaltype}>
+        {revenueTypeMapper[value] || value}
+      </Tooltip>
+    ),
     ellipsis: true,
     width: 120,
     onCell: () => ({
