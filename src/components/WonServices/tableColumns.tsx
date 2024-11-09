@@ -208,28 +208,41 @@ export const getWonServicesColumns = (userAccess: UserAccessLevel = 'none'): Tab
         },
     ];
 
-    // Only include Expected column for admin users
+    // Only include Expected and Total Received columns for admin users
     if (userAccess === 'admin') {
-        columns.splice(8, 0, {
-            title: 'Expected',
-            dataIndex: 'foxy_expectedcomp',
-            key: 'foxy_expectedcomp',
-            width: 120,
-            sorter: (a: any, b: any) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
-            onCell: (record) => ({
-                colSpan: isGroupData(record) ? 0 : 1
-            }),
-            render: (value: number, record: GroupedData | WonService) => {
-                if (isGroupData(record)) return value ? formatCurrency(value) : '-';
-                
-                const wonService = record as WonService;
-                return (
-                    <Tooltip title={wonService.crc9f_expectedcompbreakdown} placement="topLeft">
-                        <div>{value ? formatCurrency(value) : '-'}</div>
-                    </Tooltip>
-                );
+        columns.splice(8, 0, 
+            {
+                title: 'Expected',
+                dataIndex: 'foxy_expectedcomp',
+                key: 'foxy_expectedcomp',
+                width: 120,
+                sorter: (a: any, b: any) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
+                onCell: (record) => ({
+                    colSpan: isGroupData(record) ? 0 : 1
+                }),
+                render: (value: number, record: GroupedData | WonService) => {
+                    if (isGroupData(record)) return value ? formatCurrency(value) : '-';
+                    
+                    const wonService = record as WonService;
+                    return (
+                        <Tooltip title={wonService.crc9f_expectedcompbreakdown} placement="topLeft">
+                            <div>{value ? formatCurrency(value) : '-'}</div>
+                        </Tooltip>
+                    );
+                },
             },
-        });
+            {
+                title: 'Total Received',
+                dataIndex: 'foxy_totalinpayments',
+                key: 'foxy_totalinpayments',
+                width: 120,
+                sorter: (a: any, b: any) => (a.foxy_totalinpayments || 0) - (b.foxy_totalinpayments || 0),
+                onCell: (record) => ({
+                    colSpan: isGroupData(record) ? 0 : 1
+                }),
+                render: (value: number) => value ? formatCurrency(value) : '-',
+            }
+        );
     }
 
     return columns;

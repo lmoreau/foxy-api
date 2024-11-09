@@ -60,6 +60,7 @@ export async function listWonServices(request: HttpRequest, context: InvocationC
             'foxy_term',
             'foxy_inpaymentstatus',
             'foxy_mrruptick',
+            'foxy_totalinpayments',
             'foxy_expectedcomp'
         ];
 

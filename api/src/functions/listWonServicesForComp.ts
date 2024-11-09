@@ -59,7 +59,8 @@ export async function listWonServicesForComp(request: HttpRequest, context: Invo
             'foxy_term',
             'foxy_inpaymentstatus',
             'foxy_mrruptick',
-            'foxy_expectedcomp'
+            'foxy_expectedcomp',
+            'foxy_totalinpayments'
         ];
 
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices?$select=${selectFields.join(',')}&$expand=foxy_Product($select=name),foxy_Account($select=name),foxy_Opportunity($select=name,foxy_sfdcoppid,actualclosedate,actualvalue),foxy_AccountLocation($expand=foxy_Building($select=foxy_fulladdress))&$filter=foxy_Opportunity/foxy_sfdcoppid eq '${sfdcOppID}'`;
