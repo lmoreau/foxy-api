@@ -64,9 +64,9 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
       showTitle: false
     },
     width: 300,
-    render: (description: string) => (
-      <Tooltip title={description}>
-        <span>{description}</span>
+    render: (description: string, record: IncomingWirelinePayment) => (
+      <Tooltip title={`${description} (${record.foxy_productname})`}>
+        <span>{description} ({record.foxy_productname})</span>
       </Tooltip>
     ),
     onCell: () => ({
@@ -94,11 +94,11 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     width: 120,
   },
   {
-    title: 'Existing MRR',
-    dataIndex: 'foxy_existingmrr',
-    key: 'existingMrr',
+    title: 'New MRR',
+    dataIndex: 'foxy_newmrr',
+    key: 'newMrr',
     render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.foxy_existingmrr || 0) - (b.foxy_existingmrr || 0),
+    sorter: (a, b) => (a.foxy_newmrr || 0) - (b.foxy_newmrr || 0),
     ellipsis: true,
     ...CURRENCY_COLUMN_STYLE,
     width: 150,
@@ -107,11 +107,11 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
-    title: 'New MRR',
-    dataIndex: 'foxy_newmrr',
-    key: 'newMrr',
+    title: 'Existing MRR',
+    dataIndex: 'foxy_existingmrr',
+    key: 'existingMrr',
     render: (amount: number) => formatCurrency(amount),
-    sorter: (a, b) => (a.foxy_newmrr || 0) - (b.foxy_newmrr || 0),
+    sorter: (a, b) => (a.foxy_existingmrr || 0) - (b.foxy_existingmrr || 0),
     ellipsis: true,
     ...CURRENCY_COLUMN_STYLE,
     width: 150,
@@ -165,7 +165,7 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
-    title: 'Net New Rate',
+    title: 'New Rate',
     dataIndex: 'foxy_netnewrate',
     key: 'netNewRate',
     render: (value: number) => formatPercentage(value),
@@ -182,16 +182,5 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     key: 'orderNumber',
     ellipsis: true,
     width: 120,
-  },
-  {
-    title: 'Product',
-    dataIndex: 'foxy_productname',
-    key: 'product',
-    sorter: (a, b) => (a.foxy_productname || '').localeCompare(b.foxy_productname || ''),
-    ellipsis: true,
-    width: 250,
-    onCell: () => ({
-      style: { maxWidth: '250px' }
-    })
   },
 ];

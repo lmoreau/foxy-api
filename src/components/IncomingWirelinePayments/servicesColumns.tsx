@@ -1,10 +1,12 @@
 import { ColumnsType } from 'antd/es/table';
+import { Tooltip } from 'antd';
 import { WonService } from '../../types/wonServices';
 import { formatCurrency, formatPercentage } from '../../utils/formatters';
 import { revenueTypeMapper } from '../../utils/constants/revenueTypeMapper';
 import { inPaymentStatusMapper } from '../../utils/constants/inPaymentStatusMapper';
 
 const CURRENCY_COLUMN_STYLE = { width: 120, minWidth: 120 };
+const CRM_BASE_URL = 'https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=';
 
 export const servicesColumns: ColumnsType<WonService> = [
   {
@@ -162,7 +164,11 @@ export const servicesColumns: ColumnsType<WonService> = [
     title: 'Expected Comp',
     dataIndex: 'foxy_expectedcomp',
     key: 'expectedComp',
-    render: (amount: number) => formatCurrency(amount),
+    render: (amount: number, record: WonService) => (
+      <Tooltip title={record.crc9f_expectedcompbreakdown}>
+        {formatCurrency(amount)}
+      </Tooltip>
+    ),
     sorter: (a, b) => (a.foxy_expectedcomp || 0) - (b.foxy_expectedcomp || 0),
     ellipsis: true,
     ...CURRENCY_COLUMN_STYLE,
@@ -176,5 +182,21 @@ export const servicesColumns: ColumnsType<WonService> = [
     dataIndex: ['foxy_Opportunity', 'name'],
     key: 'opportunity',
     ellipsis: true,
+    render: (text: string, record: WonService) => {
+      const opportunityId = record.foxy_Opportunity?.opportunityid;
+      return opportunityId ? (
+        <a 
+          href={`${CRM_BASE_URL}${opportunityId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {text}
+        </a>
+      ) : text;
+    },
+    width: 250,
+    onCell: () => ({
+      style: { maxWidth: '250px' }
+    })
   },
 ];

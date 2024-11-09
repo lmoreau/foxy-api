@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Empty, Divider, Button } from 'antd';
+import { Table, Empty, Divider, Button, Tabs } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
@@ -94,6 +94,28 @@ const PaymentsTable: React.FC<{
           emptyText: <Empty description="No records found" />
         }}
       />
+      <Tabs
+        items={[
+          {
+            key: '1',
+            label: 'Displayed Data',
+            children: (
+              <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                {JSON.stringify(displayedPaymentsData, null, 2)}
+              </pre>
+            ),
+          },
+          {
+            key: '2',
+            label: 'All Data',
+            children: (
+              <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                {JSON.stringify(allPaymentsData, null, 2)}
+              </pre>
+            ),
+          },
+        ]}
+      />
     </div>
   </div>
 );
@@ -128,6 +150,19 @@ const ServicesTable: React.FC<{
         locale={{
           emptyText: <Empty description="No records found" />
         }}
+      />
+      <Tabs
+        items={[
+          {
+            key: '1',
+            label: 'Services Data',
+            children: (
+              <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                {JSON.stringify(servicesData, null, 2)}
+              </pre>
+            ),
+          },
+        ]}
       />
     </div>
   </div>
