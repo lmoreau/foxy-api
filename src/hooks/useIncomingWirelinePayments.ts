@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useIsAuthenticated } from "@azure/msal-react";
 import { listIncomingWirelinePayments } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
@@ -11,7 +11,7 @@ export const useIncomingWirelinePayments = () => {
   const [showAllRecords, setShowAllRecords] = useState(false);
   const isAuthenticated = useIsAuthenticated();
 
-  const fetchPaymentsData = async (showAll: boolean) => {
+  const fetchPaymentsData = useCallback(async (showAll: boolean) => {
     if (!isAuthenticated) return;
     
     setPaymentsLoading(true);
@@ -24,11 +24,11 @@ export const useIncomingWirelinePayments = () => {
     } finally {
       setPaymentsLoading(false);
     }
-  };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchPaymentsData(showAllRecords);
-  }, [isAuthenticated, showAllRecords]);
+  }, [fetchPaymentsData, showAllRecords]);
 
   const handleRowSelection = (selectedRowKeys: React.Key[]) => {
     const selectedId = selectedRowKeys[0] as string;
