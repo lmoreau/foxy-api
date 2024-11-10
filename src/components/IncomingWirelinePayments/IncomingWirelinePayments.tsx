@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip, message, DatePicker, Modal } from 'antd';
+import { Table, Empty, Divider, Button, Tabs, Switch, Input, Tooltip, message, DatePicker, Modal, Space } from 'antd';
 import GroupProtectedRoute from '../GroupProtectedRoute';
 import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePayments';
 import { useWonServices } from '../../hooks/useWonServices';
@@ -128,6 +128,11 @@ const IncomingWirelinePayments: React.FC = () => {
                   showTable={true}
                   dateRange={dateRange}
                   handleDateRangeChange={handleDateRangeChange}
+                  selectedPayment={selectedPayment}
+                  selectedServiceId={selectedServiceId}
+                  handleMapClick={handleMapClick}
+                  handleUnlinkClick={handleUnlinkClick}
+                  mapping={mapping}
                 />
               ),
             },
@@ -153,27 +158,6 @@ const IncomingWirelinePayments: React.FC = () => {
         />
 
         <Divider style={{ margin: '12px 0' }} />
-
-        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center', gap: '8px' }}>
-          {selectedPaymentId && selectedServiceId && (
-            <Button 
-              type="primary"
-              onClick={handleMapClick}
-              loading={mapping}
-            >
-              Map
-            </Button>
-          )}
-          {selectedPayment?.foxy_WonService && (
-            <Button
-              danger
-              onClick={handleUnlinkClick}
-              loading={mapping}
-            >
-              Unlink
-            </Button>
-          )}
-        </div>
 
         <Tabs
           items={[
@@ -261,6 +245,11 @@ const PaymentsTable: React.FC<{
   dateRange: [Dayjs, Dayjs];
   handleDateRangeChange: (dates: [Dayjs, Dayjs] | null) => void;
   disableSelection?: boolean;
+  selectedPayment?: any;
+  selectedServiceId?: string | null;
+  handleMapClick?: () => void;
+  handleUnlinkClick?: () => void;
+  mapping?: boolean;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -275,6 +264,11 @@ const PaymentsTable: React.FC<{
   dateRange,
   handleDateRangeChange,
   disableSelection = false,
+  selectedPayment,
+  selectedServiceId,
+  handleMapClick,
+  handleUnlinkClick,
+  mapping,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
@@ -300,22 +294,44 @@ const PaymentsTable: React.FC<{
             onChange={toggleShowAll}
             size="small"
           />
+          <Space>
+            {selectedPaymentId && (
+              <Button 
+                size="small"
+                onClick={() => handleRowSelection([])}
+              >
+                Clear Selection
+              </Button>
+            )}
+            {selectedPaymentId && selectedServiceId && handleMapClick && (
+              <Button 
+                type="primary"
+                size="small"
+                onClick={handleMapClick}
+                loading={mapping}
+              >
+                Map
+              </Button>
+            )}
+            {selectedPayment?.foxy_WonService && handleUnlinkClick && (
+              <Button
+                danger
+                size="small"
+                onClick={handleUnlinkClick}
+                loading={mapping}
+              >
+                Unlink
+              </Button>
+            )}
+          </Space>
         </div>
       </div>
-      <div style={{ color: '#666', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ color: '#666', fontSize: '14px', marginTop: '4px' }}>
         <span>
           Displaying {displayedPaymentsData.length} {displayedPaymentsData.length === 1 ? 'payment' : 'payments'}
           {selectedPaymentId && displayedPaymentsData.length < allPaymentsData.length && 
             ` (filtered by SFDC Opp ID)`}
         </span>
-        {selectedPaymentId && (
-          <Button 
-            size="small"
-            onClick={() => handleRowSelection([])}
-          >
-            Clear Selection
-          </Button>
-        )}
       </div>
     </div>
     <div className="rounded-table">
