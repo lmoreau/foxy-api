@@ -31,4 +31,5 @@ export interface IncomingWirelinePayment {
     foxy_serviceid: string;
   } | null;
   crc9f_paydate: string;
+  crc9f_ordernumber?: string;
 }

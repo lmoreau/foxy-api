@@ -57,9 +57,14 @@ const IncomingWirelinePayments: React.FC = () => {
     resetColorMap();
   }, [allPaymentsData, servicesData]);
 
-  const filteredPaymentsData = displayedPaymentsData.filter(payment => 
-    payment.foxy_opportunitynumber?.toLowerCase().includes(sfdcFilter.toLowerCase())
-  );
+  const filteredPaymentsData = displayedPaymentsData.filter(payment => {
+    const searchTerm = sfdcFilter.toLowerCase();
+    return (
+      (payment.foxy_opportunitynumber || '').toLowerCase().includes(searchTerm) ||
+      (payment.foxy_companyname || '').toLowerCase().includes(searchTerm) ||
+      (payment.crc9f_ordernumber || '').toLowerCase().includes(searchTerm)
+    );
+  });
 
   const selectedPayment = selectedPaymentId 
     ? allPaymentsData.find(p => p.foxy_incomingpaymentid === selectedPaymentId)
@@ -282,10 +287,10 @@ const PaymentsTable: React.FC<{
             allowClear={false}
           />
           <Input
-            placeholder="Filter by SFDC Opp"
+            placeholder="Filter by SFDC Opp ID, Company, or COP"
             value={sfdcFilter}
             onChange={(e) => setSfdcFilter(e.target.value)}
-            style={{ width: 200 }}
+            style={{ width: 250 }}
             allowClear
           />
           <span style={{ color: '#666', fontSize: '14px' }}>Show All Records</span>
