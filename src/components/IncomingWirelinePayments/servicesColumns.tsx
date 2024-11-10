@@ -70,15 +70,15 @@ export const servicesColumns: ColumnsType<WonService> = [
       const totalReceived = amount || 0;
       const expectedComp = record.foxy_expectedcomp || 0;
       
-      let color = 'red';
+      let color = '#ff4d4f'; // solid red
       if (totalReceived === expectedComp) {
-        color = 'success';
+        color = '#52c41a'; // solid green
       } else if (totalReceived > expectedComp) {
-        color = 'blue';
+        color = '#1890ff'; // solid blue
       }
       
       return (
-        <Tag color={color} style={{ margin: 0 }}>
+        <Tag color={color} style={{ margin: 0, color: '#fff' }}>
           {formatCurrency(totalReceived)}
         </Tag>
       );
