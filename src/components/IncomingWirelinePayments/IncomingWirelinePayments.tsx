@@ -303,7 +303,7 @@ const PaymentsTable: React.FC<{
                 Clear Selection
               </Button>
             )}
-            {selectedPaymentId && selectedServiceId && handleMapClick && (
+            {selectedPaymentId && selectedServiceId && !selectedPayment?.foxy_WonService && handleMapClick && (
               <Button 
                 type="primary"
                 size="small"
