@@ -5,6 +5,7 @@ import { useIncomingWirelinePayments } from '../../hooks/useIncomingWirelinePaym
 import { useWonServices } from '../../hooks/useWonServices';
 import { paymentsColumns } from './paymentsColumns';
 import { servicesColumns } from './servicesColumns';
+import { relatedPaymentsColumns } from './relatedPaymentsColumns';
 import { resetColorMap } from '../../utils/constants/relationshipColors';
 import { updateIncomingPayment } from '../../utils/api';
 import '../table.css';
@@ -420,7 +421,6 @@ const ServicesTable: React.FC<{
   );
 }
 
-// New simplified table component for the third section
 const RelatedPaymentsTable: React.FC<{
   displayedPaymentsData: any[];
   paymentsLoading: boolean;
@@ -431,7 +431,7 @@ const RelatedPaymentsTable: React.FC<{
   <div>
     <div className="rounded-table">
       <Table
-        columns={paymentsColumns}
+        columns={relatedPaymentsColumns}
         dataSource={displayedPaymentsData}
         loading={paymentsLoading}
         rowKey="foxy_incomingpaymentid"
