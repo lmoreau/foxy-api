@@ -204,20 +204,9 @@ const IncomingWirelinePayments: React.FC = () => {
                   key: '1',
                   label: 'Related Callidus Wireline Payments',
                   children: (
-                    <PaymentsTable
+                    <RelatedPaymentsTable
                       displayedPaymentsData={servicePaymentsData}
                       paymentsLoading={servicePaymentsLoading}
-                      selectedPaymentId={null}
-                      handleRowSelection={() => {}}
-                      allPaymentsData={servicePaymentsData}
-                      showAllRecords={true}
-                      toggleShowAll={() => {}}
-                      sfdcFilter=""
-                      setSfdcFilter={() => {}}
-                      showTable={true}
-                      dateRange={dateRange}
-                      handleDateRangeChange={() => {}}
-                      disableSelection={true}
                     />
                   ),
                 },
@@ -430,5 +419,38 @@ const ServicesTable: React.FC<{
     </div>
   );
 }
+
+// New simplified table component for the third section
+const RelatedPaymentsTable: React.FC<{
+  displayedPaymentsData: any[];
+  paymentsLoading: boolean;
+}> = ({ 
+  displayedPaymentsData, 
+  paymentsLoading, 
+}) => (
+  <div>
+    <div className="rounded-table">
+      <Table
+        columns={paymentsColumns}
+        dataSource={displayedPaymentsData}
+        loading={paymentsLoading}
+        rowKey="foxy_incomingpaymentid"
+        scroll={{ x: 'max-content', y: '35vh' }}
+        size="small"
+        rowSelection={{
+          type: 'radio',
+          selectedRowKeys: [],
+          getCheckboxProps: () => ({
+            disabled: true
+          }),
+        }}
+        pagination={false}
+        locale={{
+          emptyText: <Empty description="No records found" />
+        }}
+      />
+    </div>
+  </div>
+);
 
 export default IncomingWirelinePayments;
