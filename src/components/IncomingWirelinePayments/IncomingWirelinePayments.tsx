@@ -24,7 +24,7 @@ const IncomingWirelinePayments: React.FC = () => {
     selectedPaymentId,
     showAllRecords,
     dateRange,
-    handleRowSelection,
+    handleRowSelection: originalHandleRowSelection,
     toggleShowAll,
     handleDateRangeChange,
     refreshData,
@@ -45,6 +45,12 @@ const IncomingWirelinePayments: React.FC = () => {
     servicePaymentsData,
     servicePaymentsLoading,
   } = useServiceWirelinePayments(selectedServiceId);
+
+  // Wrap the original handleRowSelection to also clear service selection
+  const handleRowSelection = (selectedRowKeys: React.Key[]) => {
+    handleServiceSelection([]); // Clear service selection when a new payment is selected
+    originalHandleRowSelection(selectedRowKeys);
+  };
 
   // Reset color mappings when data changes
   React.useEffect(() => {
