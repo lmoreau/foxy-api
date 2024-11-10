@@ -66,13 +66,26 @@ export const servicesColumns: ColumnsType<WonService> = [
     title: 'Total Received',
     dataIndex: 'foxy_totalinpayments',
     key: 'totalReceived',
-    render: (amount: number) => formatCurrency(amount),
+    render: (amount: number | null, record: WonService) => {
+      const totalReceived = amount || 0;
+      const expectedComp = record.foxy_expectedcomp || 0;
+      
+      let color = 'red';
+      if (totalReceived === expectedComp) {
+        color = 'success';
+      } else if (totalReceived > expectedComp) {
+        color = 'blue';
+      }
+      
+      return (
+        <Tag color={color} style={{ margin: 0 }}>
+          {formatCurrency(totalReceived)}
+        </Tag>
+      );
+    },
     sorter: (a, b) => (a.foxy_totalinpayments || 0) - (b.foxy_totalinpayments || 0),
     ellipsis: true,
-    width: 150,
-    onCell: () => ({
-      style: { maxWidth: '150px' }
-    })
+    ...CURRENCY_COLUMN_STYLE,
   },
   {
     title: 'MRR',
