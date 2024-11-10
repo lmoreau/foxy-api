@@ -40,6 +40,7 @@ const IncomingWirelinePayments: React.FC = () => {
   const [sfdcFilter, setSfdcFilter] = React.useState('');
   const [mapping, setMapping] = React.useState(false);
   const [unlinkModalVisible, setUnlinkModalVisible] = React.useState(false);
+  const [showUnmappedOnly, setShowUnmappedOnly] = React.useState(false);
 
   const {
     servicePaymentsData,
@@ -59,11 +60,14 @@ const IncomingWirelinePayments: React.FC = () => {
 
   const filteredPaymentsData = displayedPaymentsData.filter(payment => {
     const searchTerm = sfdcFilter.toLowerCase();
-    return (
+    const matchesSearch = (
       (payment.foxy_opportunitynumber || '').toLowerCase().includes(searchTerm) ||
       (payment.foxy_companyname || '').toLowerCase().includes(searchTerm) ||
       (payment.crc9f_ordernumber || '').toLowerCase().includes(searchTerm)
     );
+    
+    // Add unmapped filter
+    return matchesSearch && (!showUnmappedOnly || !payment.foxy_WonService);
   });
 
   const selectedPayment = selectedPaymentId 
@@ -138,6 +142,8 @@ const IncomingWirelinePayments: React.FC = () => {
                   handleMapClick={handleMapClick}
                   handleUnlinkClick={handleUnlinkClick}
                   mapping={mapping}
+                  showUnmappedOnly={showUnmappedOnly}
+                  setShowUnmappedOnly={setShowUnmappedOnly}
                 />
               ),
             },
@@ -255,6 +261,8 @@ const PaymentsTable: React.FC<{
   handleMapClick?: () => void;
   handleUnlinkClick?: () => void;
   mapping?: boolean;
+  showUnmappedOnly: boolean;
+  setShowUnmappedOnly: (value: boolean) => void;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -274,6 +282,8 @@ const PaymentsTable: React.FC<{
   handleMapClick,
   handleUnlinkClick,
   mapping,
+  showUnmappedOnly,
+  setShowUnmappedOnly,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
@@ -297,6 +307,12 @@ const PaymentsTable: React.FC<{
           <Switch
             checked={showAllRecords}
             onChange={toggleShowAll}
+            size="small"
+          />
+          <span style={{ color: '#666', fontSize: '14px' }}>Show Unmapped Only</span>
+          <Switch
+            checked={showUnmappedOnly}
+            onChange={setShowUnmappedOnly}
             size="small"
           />
           <Space>
