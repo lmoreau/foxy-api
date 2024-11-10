@@ -9,6 +9,7 @@ import { resetColorMap } from '../../utils/constants/relationshipColors';
 import { updateIncomingPayment } from '../../utils/api';
 import '../table.css';
 import type { Dayjs } from 'dayjs';
+import { useServiceWirelinePayments } from '../../hooks/useServiceWirelinePayments';
 
 const CRM_BASE_URL = 'https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=';
 
@@ -38,6 +39,11 @@ const IncomingWirelinePayments: React.FC = () => {
   const [sfdcFilter, setSfdcFilter] = React.useState('');
   const [mapping, setMapping] = React.useState(false);
   const [unlinkModalVisible, setUnlinkModalVisible] = React.useState(false);
+
+  const {
+    servicePaymentsData,
+    servicePaymentsLoading,
+  } = useServiceWirelinePayments(selectedServiceId);
 
   // Reset color mappings when data changes
   React.useEffect(() => {
@@ -189,6 +195,46 @@ const IncomingWirelinePayments: React.FC = () => {
           ]}
         />
 
+        {selectedServiceId && (
+          <>
+            <Divider style={{ margin: '12px 0' }} />
+            <Tabs
+              items={[
+                {
+                  key: '1',
+                  label: 'Related Callidus Wireline Payments',
+                  children: (
+                    <PaymentsTable
+                      displayedPaymentsData={servicePaymentsData}
+                      paymentsLoading={servicePaymentsLoading}
+                      selectedPaymentId={null}
+                      handleRowSelection={() => {}}
+                      allPaymentsData={servicePaymentsData}
+                      showAllRecords={true}
+                      toggleShowAll={() => {}}
+                      sfdcFilter=""
+                      setSfdcFilter={() => {}}
+                      showTable={true}
+                      dateRange={dateRange}
+                      handleDateRangeChange={() => {}}
+                      disableSelection={true}
+                    />
+                  ),
+                },
+                {
+                  key: '2',
+                  label: 'Raw Data',
+                  children: (
+                    <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
+                      {JSON.stringify(servicePaymentsData, null, 2)}
+                    </pre>
+                  ),
+                },
+              ]}
+            />
+          </>
+        )}
+
         <Modal
           title="Confirm Unlink"
           open={unlinkModalVisible}
@@ -218,6 +264,7 @@ const PaymentsTable: React.FC<{
   showTable?: boolean;
   dateRange: [Dayjs, Dayjs];
   handleDateRangeChange: (dates: [Dayjs, Dayjs] | null) => void;
+  disableSelection?: boolean;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -231,6 +278,7 @@ const PaymentsTable: React.FC<{
   showTable = false,
   dateRange,
   handleDateRangeChange,
+  disableSelection = false,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
@@ -282,7 +330,13 @@ const PaymentsTable: React.FC<{
         rowKey="foxy_incomingpaymentid"
         scroll={{ x: 'max-content', y: '35vh' }}
         size="small"
-        rowSelection={{
+        rowSelection={disableSelection ? {
+          type: 'radio',
+          selectedRowKeys: [],
+          getCheckboxProps: () => ({
+            disabled: true
+          }),
+        } : {
           type: 'radio',
           selectedRowKeys: selectedPaymentId ? [selectedPaymentId] : [],
           onChange: handleRowSelection

@@ -296,3 +296,10 @@ export const listOpportunityRows = async (accountId: string) => {
     const response = await axios.get(url, { headers });
     return response.data;
 };
+
+export const listIncomingWirelinePaymentsByWonService = async (wonServiceId: string) => {
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listIncomingWirelinePaymentsByWonService?wonServiceID=${wonServiceId}`;
+  const response = await axios.get(url, { headers });
+  return response.data; // This will return the OData response with value array
+};
