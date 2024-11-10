@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { listIncomingWirelinePaymentsByWonService } from '../utils/api';
 import { IncomingWirelinePayment } from '../types/wirelinePayments';
 
@@ -6,7 +6,7 @@ export const useServiceWirelinePayments = (selectedServiceId: string | null) => 
   const [servicePaymentsData, setServicePaymentsData] = useState<IncomingWirelinePayment[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!selectedServiceId) {
       setServicePaymentsData([]);
       return;
@@ -22,14 +22,14 @@ export const useServiceWirelinePayments = (selectedServiceId: string | null) => 
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedServiceId]);
 
   useEffect(() => {
     fetchData();
-  }, [selectedServiceId]);
+  }, [fetchData]);
 
   return {
     servicePaymentsData,
     servicePaymentsLoading: loading,
   };
-}; 
+};
