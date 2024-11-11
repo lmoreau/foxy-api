@@ -76,6 +76,13 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
     return transformed;
   };
 
+  const adjustDateForTimezone = (dateStr: string): string => {
+    // Create date object for the next day to account for UTC interpretation
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().split('T')[0];
+  };
+
   const filterOpticFields = (row: any) => {
     const fieldsToRemove = [
       'Vesting Date',
@@ -150,14 +157,15 @@ const RawExcelUpload: React.FC = (): JSX.Element => {
       delete filteredRow[field];
     });
 
-    // Add Callidus Statement field
+    // Add Callidus Statement field with timezone adjustment
     const monthIndex = months.indexOf(selectedMonth) + 1;
     const monthStr = monthIndex.toString().padStart(2, '0');
-    filteredRow['Callidus Statement'] = `${selectedYear}-${monthStr}-01`;
+    const callidusDate = `${selectedYear}-${monthStr}-01`;
+    filteredRow['Callidus Statement'] = adjustDateForTimezone(callidusDate);
 
-    // Add Pay Date field
+    // Add Pay Date field with timezone adjustment
     if (payDate) {
-      filteredRow['Pay Date'] = payDate;
+      filteredRow['Pay Date'] = adjustDateForTimezone(payDate);
     }
 
     return filteredRow;
