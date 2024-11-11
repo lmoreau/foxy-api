@@ -7,7 +7,7 @@ import { paymentsColumns } from './paymentsColumns';
 import { servicesColumns } from './servicesColumns';
 import { relatedPaymentsColumns } from './relatedPaymentsColumns';
 import { resetColorMap } from '../../utils/constants/relationshipColors';
-import { updateIncomingPayment } from '../../utils/api';
+import { updateIncomingPayment, recalculateWonServicePayments } from '../../utils/api';
 import '../table.css';
 import type { Dayjs } from 'dayjs';
 import { useServiceWirelinePayments } from '../../hooks/useServiceWirelinePayments';
@@ -41,6 +41,7 @@ const IncomingWirelinePayments: React.FC = () => {
   const [mapping, setMapping] = React.useState(false);
   const [unlinkModalVisible, setUnlinkModalVisible] = React.useState(false);
   const [showUnmappedOnly, setShowUnmappedOnly] = React.useState(false);
+  const [recalculating, setRecalculating] = React.useState(false);
 
   const {
     servicePaymentsData,
@@ -112,6 +113,22 @@ const IncomingWirelinePayments: React.FC = () => {
     }
   };
 
+  const handleRecalculateClick = async () => {
+    if (!selectedServiceId) return;
+    
+    setRecalculating(true);
+    try {
+      await recalculateWonServicePayments(selectedServiceId);
+      message.success('Successfully triggered payment recalculation');
+      await refreshData(); // Refresh while maintaining filters
+    } catch (error) {
+      message.error('Failed to recalculate payments');
+      console.error('Error recalculating payments:', error);
+    } finally {
+      setRecalculating(false);
+    }
+  };
+
   return (
     <GroupProtectedRoute requiredAccess="admin">
       <div style={{ 
@@ -144,6 +161,8 @@ const IncomingWirelinePayments: React.FC = () => {
                   mapping={mapping}
                   showUnmappedOnly={showUnmappedOnly}
                   setShowUnmappedOnly={setShowUnmappedOnly}
+                  handleRecalculateClick={handleRecalculateClick}
+                  recalculating={recalculating}
                 />
               ),
             },
@@ -263,6 +282,8 @@ const PaymentsTable: React.FC<{
   mapping?: boolean;
   showUnmappedOnly: boolean;
   setShowUnmappedOnly: (value: boolean) => void;
+  handleRecalculateClick?: () => void;
+  recalculating?: boolean;
 }> = ({ 
   displayedPaymentsData, 
   paymentsLoading, 
@@ -284,6 +305,8 @@ const PaymentsTable: React.FC<{
   mapping,
   showUnmappedOnly,
   setShowUnmappedOnly,
+  handleRecalculateClick,
+  recalculating,
 }) => (
   <div>
     <div style={{ marginBottom: '4px' }}>
@@ -342,6 +365,15 @@ const PaymentsTable: React.FC<{
                 loading={mapping}
               >
                 Unlink
+              </Button>
+            )}
+            {selectedServiceId && handleRecalculateClick && (
+              <Button
+                size="small"
+                onClick={handleRecalculateClick}
+                loading={recalculating}
+              >
+                Recalculate Payments
               </Button>
             )}
           </Space>
