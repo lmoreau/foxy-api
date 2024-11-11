@@ -13,6 +13,13 @@ export const formatDate = (dateString: string) => {
   });
 };
 
+export const formatCallidusDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long'
+  });
+};
+
 export const formatPercentage = (value: number) => {
   return `${(value * 100).toFixed(1)}%`;
 };

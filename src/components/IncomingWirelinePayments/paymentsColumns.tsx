@@ -1,6 +1,6 @@
 import { ColumnsType } from 'antd/es/table';
 import { IncomingWirelinePayment } from '../../types/wirelinePayments';
-import { formatCurrency, formatDate, formatPercentage } from '../../utils/formatters';
+import { formatCurrency, formatCallidusDate, formatPercentage } from '../../utils/formatters';
 import { SortOrder } from 'antd/lib/table/interface';
 import { Tag, Tooltip } from 'antd';
 import { getColorForService } from '../../utils/constants/relationshipColors';
@@ -184,6 +184,15 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     })
   },
   {
+    title: 'Callidus Statement',
+    dataIndex: 'crc9f_paydate',
+    key: 'payDate',
+    render: (date: string) => formatCallidusDate(date),
+    sorter: (a: any, b: any) => new Date(a.crc9f_paydate || '').getTime() - new Date(b.crc9f_paydate || '').getTime(),
+    ellipsis: true,
+    width: 120,
+  },
+  {
     title: 'COP',
     dataIndex: 'crc9f_ordernumber',
     key: 'orderNumber',
@@ -209,14 +218,5 @@ export const paymentsColumns: ColumnsType<IncomingWirelinePayment> = [
     onCell: () => ({
       style: { maxWidth: '130px' }
     })
-  },
-  {
-    title: 'Pay Date',
-    dataIndex: 'crc9f_paydate',
-    key: 'payDate',
-    render: (date: string) => formatDate(date),
-    sorter: (a: any, b: any) => new Date(a.crc9f_paydate || '').getTime() - new Date(b.crc9f_paydate || '').getTime(),
-    ellipsis: true,
-    width: 120,
   },
 ];
