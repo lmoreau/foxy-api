@@ -13,7 +13,7 @@ const wirelineResidualsMap: MapItem[] = [
   { value: '755280006', label: 'Issue - Ready to Submit' },
   { value: '755280007', label: 'Issue - Clarification Needed' },
   { value: '755280008', label: 'Issue - Disputed to Comp' },
-  { value: '947760001', label: 'Legacy Issue' },
+  { value: '947760001', label: 'Issue - Unison not paying' },
 ];
 
 export const getWirelineResidualsLabel = (value: string | number): string => {

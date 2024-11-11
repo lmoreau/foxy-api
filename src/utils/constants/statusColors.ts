@@ -9,7 +9,7 @@ export const getStatusColor = (status: number): string => {
     755280006: 'cyan',       // Issue - Ready to Submit
     755280007: 'purple',     // Issue - Clarification Needed
     755280008: 'magenta',    // Issue - Disputed to Comp
-    947760001: 'gold',       // Legacy Issue
+    947760001: 'gold',       // Issue - Unison not paying
   };
   return colorMap[status] || 'default';
 };

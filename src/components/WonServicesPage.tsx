@@ -11,6 +11,7 @@ import WonServicesFilters from './WonServices/WonServicesFilters';
 import WonServicesTable from './WonServices/WonServicesTable';
 import OverrideCompModal from './WonServices/OverrideCompModal';
 import PaymentStatusModal from './WonServices/PaymentStatusModal';
+import DisputeModal from './WonServices/DisputeModal';
 import { AxiosError } from 'axios';
 import { getInPaymentStatus } from '../utils/constants/inPaymentStatusMapper';
 import { getRevenueType } from '../utils/constants/revenueTypeMapper';
@@ -30,6 +31,7 @@ const WonServicesPage: React.FC = () => {
     const [searchText, setSearchText] = useState('');
     const [overrideModalVisible, setOverrideModalVisible] = useState(false);
     const [paymentStatusModalVisible, setPaymentStatusModalVisible] = useState(false);
+    const [disputeModalVisible, setDisputeModalVisible] = useState(false);
 
     const filterData = useCallback((sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
         let filtered = sourceData;
@@ -180,6 +182,36 @@ const WonServicesPage: React.FC = () => {
         }
     };
 
+    const handleCreateDispute = async (internalNotes: string | undefined, disputeNotes: string) => {
+        if (selectedRowKeys.length === 0) return;
+
+        setCalculating(true);
+        try {
+            // Update each selected service
+            for (const id of selectedRowKeys) {
+                console.log('Creating dispute for service:', id);
+                const updateData = {
+                    id: id as string,
+                    foxyflow_internalnotes: internalNotes || null,
+                    foxyflow_claimnotes: disputeNotes
+                };
+                console.log('Update data:', updateData);
+                await updateWonService(updateData);
+            }
+            message.success('Successfully created dispute');
+            setDisputeModalVisible(false);
+            await fetchData(); // Refresh the data
+        } catch (error) {
+            console.error('Error creating dispute:', error);
+            if (error instanceof AxiosError) {
+                console.error('API Error details:', error.response?.data);
+            }
+            message.error('Failed to create dispute');
+        } finally {
+            setCalculating(false);
+        }
+    };
+
     const handleExportToExcel = () => {
         if (selectedRowKeys.length === 0) {
             message.warning('Please select at least one service to export');
@@ -258,6 +290,11 @@ const WonServicesPage: React.FC = () => {
             key: 'payment_status',
             label: 'Change Payment Status',
             onClick: () => setPaymentStatusModalVisible(true),
+        },
+        {
+            key: 'create_dispute',
+            label: 'Create Dispute',
+            onClick: () => setDisputeModalVisible(true),
         },
         {
             key: 'recalculate_payments',
@@ -347,6 +384,12 @@ const WonServicesPage: React.FC = () => {
                 visible={paymentStatusModalVisible}
                 onCancel={() => setPaymentStatusModalVisible(false)}
                 onConfirm={handlePaymentStatusChange}
+                selectedCount={selectedRowKeys.length}
+            />
+            <DisputeModal
+                visible={disputeModalVisible}
+                onCancel={() => setDisputeModalVisible(false)}
+                onConfirm={handleCreateDispute}
                 selectedCount={selectedRowKeys.length}
             />
         </>

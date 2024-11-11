@@ -182,9 +182,11 @@ interface UpdateWonServiceParams {
   id: string;
   expectedComp?: number;
   paymentStatus?: number;
+  foxyflow_internalnotes?: string | null;
+  foxyflow_claimnotes?: string;
 }
 
-export const updateWonService = async ({ id, expectedComp, paymentStatus }: UpdateWonServiceParams) => {
+export const updateWonService = async ({ id, expectedComp, paymentStatus, foxyflow_internalnotes, foxyflow_claimnotes }: UpdateWonServiceParams) => {
   try {
     const headers = await getAuthHeaders();
     const formattedId = id.replace(/[{}]/g, '');
@@ -200,6 +202,17 @@ export const updateWonService = async ({ id, expectedComp, paymentStatus }: Upda
     if (paymentStatus !== undefined) {
       updateData.foxy_inpaymentstatus = paymentStatus;
     }
+
+    if (foxyflow_internalnotes !== undefined) {
+      updateData.foxyflow_internalnotes = foxyflow_internalnotes;
+    }
+
+    if (foxyflow_claimnotes !== undefined) {
+      updateData.foxyflow_claimnotes = foxyflow_claimnotes;
+    }
+    
+    console.log('Making PATCH request to:', url);
+    console.log('Update data:', updateData);
     
     await axios.patch(url, updateData, { headers });
     return { message: "Successfully updated won service" };

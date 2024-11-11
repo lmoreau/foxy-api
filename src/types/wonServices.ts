@@ -21,6 +21,7 @@ export interface WonService {
     crc9f_existingmrr: number | null;
     crc9f_expectedcompbreakdown: string | null;
     foxyflow_internalnotes: string | null;
+    foxyflow_claimnotes: string | null;
     foxy_Product: {
         name: string;
         productid: string;

@@ -52,7 +52,7 @@ type WirelineResidualLabel =
   | 'Issue - Ready to Submit'
   | 'Issue - Clarification Needed'
   | 'Issue - Disputed to Comp'
-  | 'Legacy Issue';
+  | 'Issue - Unison not paying';
 
 const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
   'Active': 'green',
@@ -64,7 +64,7 @@ const wirelineResidualColors: Record<WirelineResidualLabel, string> = {
   'Issue - Ready to Submit': 'red',
   'Issue - Clarification Needed': 'red',
   'Issue - Disputed to Comp': 'red',
-  'Legacy Issue': 'red',
+  'Issue - Unison not paying': 'red',
 };
 
 const formatCurrency = (value: string | number | null | undefined) => {
