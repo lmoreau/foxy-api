@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import { Button, message, Dropdown, Tabs } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import * as XLSX from 'xlsx';
 import { listWonServices, calculateWonServicesComp, updateWonService, recalculateWonServicePayments } from '../utils/api';
 import { groupWonServicesByOpportunity } from '../utils/wonServicesUtils';
 import { GroupedData, WonService } from '../types/wonServices';
@@ -11,6 +12,8 @@ import WonServicesTable from './WonServices/WonServicesTable';
 import OverrideCompModal from './WonServices/OverrideCompModal';
 import PaymentStatusModal from './WonServices/PaymentStatusModal';
 import { AxiosError } from 'axios';
+import { getInPaymentStatus } from '../utils/constants/inPaymentStatusMapper';
+import { getRevenueType } from '../utils/constants/revenueTypeMapper';
 
 const WonServicesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
@@ -177,6 +180,69 @@ const WonServicesPage: React.FC = () => {
         }
     };
 
+    const handleExportToExcel = () => {
+        if (selectedRowKeys.length === 0) {
+            message.warning('Please select at least one service to export');
+            return;
+        }
+
+        try {
+            // Get selected services with their group data
+            const selectedServices: any[] = [];
+            filteredData.forEach(group => {
+                group.children?.forEach(service => {
+                    if (selectedRowKeys.includes(service.foxy_wonserviceid)) {
+                        selectedServices.push({
+                            // Group level data
+                            'SFDC Opp ID': group.foxy_sfdcoppid,
+                            'Actual Close Date': group.actualclosedate,
+                            'Actual Amount': group.actualvalue,
+                            'Account Name': service.foxy_Account?.name,
+                            'Opportunity Name': group.opportunity_name,
+                            // Service level data
+                            'Product': service.foxy_Product?.name,
+                            'Revenue Type': getRevenueType(service.foxy_revenuetype || 0),
+                            'Payment Status': getInPaymentStatus(service.foxy_inpaymentstatus || 0),
+                            'Address': service.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress,
+                            'Quantity': service.foxy_quantity,
+                            'MRR': service.foxy_mrr,
+                            'Existing MRR': service.crc9f_existingmrr,
+                            'Delta MRR': service.foxy_mrruptick,
+                            'Term': service.foxy_term,
+                            'TCV': service.foxy_tcv,
+                            'Margin': service.foxy_linemargin,
+                            'Expected Comp': service.foxy_expectedcomp,
+                            'Total Received': service.foxy_totalinpayments,
+                            'Service ID': service.foxy_serviceid,
+                            'Contract Start': service.foxy_contractstart,
+                            'Contract End': service.foxy_contractend,
+                            'Comp Rate': service.foxy_comprate,
+                            'Renewal Type': service.foxy_renewaltype,
+                            'Internal Notes': service.foxyflow_internalnotes,
+                        });
+                    }
+                });
+            });
+
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(selectedServices);
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Won Services');
+
+            // Generate filename with current date
+            const filename = `Won_Services_Export_${dayjs().format('YYYY-MM-DD')}.xlsx`;
+
+            // Save file
+            XLSX.writeFile(wb, filename);
+            message.success('Successfully exported to Excel');
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+            message.error('Failed to export to Excel');
+        }
+    };
+
     const items: MenuProps['items'] = [
         {
             key: 'calculate',
@@ -197,6 +263,11 @@ const WonServicesPage: React.FC = () => {
             key: 'recalculate_payments',
             label: 'Recalculate Total Received',
             onClick: handleRecalculatePayments,
+        },
+        {
+            key: 'export_excel',
+            label: 'Export to Excel',
+            onClick: handleExportToExcel,
         },
     ];
 

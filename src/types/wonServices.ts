@@ -16,8 +16,11 @@ export interface WonService {
     foxy_inpaymentstatus: number;
     foxy_mrruptick: number | null;
     foxy_totalinpayments: number | null;
+    foxy_contractstart: string | null;
+    foxy_contractend: string | null;
     crc9f_existingmrr: number | null;
     crc9f_expectedcompbreakdown: string | null;
+    foxyflow_internalnotes: string | null;
     foxy_Product: {
         name: string;
         productid: string;
