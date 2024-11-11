@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { Button, message, Dropdown, Tabs } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { listWonServices, calculateWonServicesComp, updateWonService } from '../utils/api';
+import { listWonServices, calculateWonServicesComp, updateWonService, recalculateWonServicePayments } from '../utils/api';
 import { groupWonServicesByOpportunity } from '../utils/wonServicesUtils';
 import { GroupedData, WonService } from '../types/wonServices';
 import WonServicesFilters from './WonServices/WonServicesFilters';
@@ -115,6 +115,28 @@ const WonServicesPage: React.FC = () => {
         }
     };
 
+    const handleRecalculatePayments = async () => {
+        if (selectedRowKeys.length === 0) {
+            message.warning('Please select at least one service to recalculate payments');
+            return;
+        }
+
+        setCalculating(true);
+        try {
+            // Recalculate payments for each selected service
+            for (const id of selectedRowKeys) {
+                await recalculateWonServicePayments(id as string);
+            }
+            message.success('Successfully recalculated total received payments');
+            await fetchData(); // Refresh the data
+        } catch (error) {
+            console.error('Error recalculating payments:', error);
+            message.error('Failed to recalculate payments');
+        } finally {
+            setCalculating(false);
+        }
+    };
+
     const handleOverrideComp = async (amount: number) => {
         if (selectedRowKeys.length === 0) return;
 
@@ -170,6 +192,11 @@ const WonServicesPage: React.FC = () => {
             key: 'payment_status',
             label: 'Change Payment Status',
             onClick: () => setPaymentStatusModalVisible(true),
+        },
+        {
+            key: 'recalculate_payments',
+            label: 'Recalculate Total Received',
+            onClick: handleRecalculatePayments,
         },
     ];
 
