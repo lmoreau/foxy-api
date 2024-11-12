@@ -122,6 +122,14 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     message.success('Line item deleted successfully');
   };
 
+  const handleAddLine = (locationId: string, newItem: QuoteLineItem) => {
+    const updatedLineItems = {
+      ...lineItems,
+      [locationId]: [...(lineItems[locationId] || []), newItem]
+    };
+    refetchLocations();
+  };
+
   if (loading) {
     return (
       <Layout style={{ minHeight: '100vh', padding: '12px' }}>

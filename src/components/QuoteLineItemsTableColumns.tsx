@@ -1,5 +1,5 @@
 import React from 'react';
-import { InputNumber, Select, Button, Tooltip, Form, DatePicker, Space } from 'antd';
+import { InputNumber, Select, Button, Tooltip, Form, DatePicker, Space, FormInstance } from 'antd';
 import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { QuoteLineItem, Product } from '../types';
@@ -15,9 +15,11 @@ const getQuoteLineItemsColumns = (
   editingKey: string,
   setConfigModalVisible: (visible: boolean) => void,
   setRevenueTypeModalVisible: (visible: boolean) => void,
-  fetchProducts: (search: string) => Promise<Product[]>,
+  fetchProducts: () => Promise<Product[]>,
   products: Product[],
-  loading: boolean
+  loading: boolean,
+  setProducts: (products: Product[]) => void,
+  form: FormInstance
 ): ColumnsType<QuoteLineItem> => [
   {
     title: 'Product',
@@ -36,17 +38,39 @@ const getQuoteLineItemsColumns = (
               <Select
                 showSearch
                 placeholder="Select a product"
-                onSearch={(value) => {
-                  fetchProducts(value).then((products) => {
-                    // Update the products state here if needed
-                  });
+                optionFilterProp="label"
+                filterOption={(input, option) =>
+                  typeof option?.label === 'string' 
+                    ? option.label.toLowerCase().includes(input.toLowerCase()) 
+                    : false
+                }
+                style={{ width: '300px' }}
+                onFocus={() => {
+                  if (products.length === 0) {
+                    fetchProducts().then((fetchedProducts) => {
+                      const sortedProducts = fetchedProducts.sort((a, b) => 
+                        a.name.localeCompare(b.name)
+                      );
+                      setProducts(sortedProducts);
+                    });
+                  }
                 }}
-                filterOption={false}
-                loading={loading}
-                style={{ width: '100%' }}
+                onClear={() => {
+                  form.setFieldsValue({ foxy_Product: { name: '' } });
+                }}
+                allowClear
+                defaultActiveFirstOption={false}
+                showArrow={true}
+                notFoundContent={loading ? 'Loading...' : 'No products found'}
+                listHeight={400}
+                virtual={false}
               >
                 {products.map(product => (
-                  <Select.Option key={product.name} value={product.name}>
+                  <Select.Option 
+                    key={product.name} 
+                    value={product.name}
+                    label={product.name}
+                  >
                     {product.name}
                   </Select.Option>
                 ))}

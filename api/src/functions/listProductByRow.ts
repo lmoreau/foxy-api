@@ -22,7 +22,7 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
     try {
         // Use the user's token directly
         const accessToken = userToken.replace('Bearer ', '');
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/products`;
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/products?$select=name&$orderby=name&$top=5000`;
 
         const response = await axios.get(apiUrl, {
             headers: {

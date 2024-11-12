@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { Table, Form } from 'antd';
+import React, { useMemo, useEffect } from 'react';
+import { Table, Form, message, Button } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { QuoteLineItem, Product } from 'types';
 import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
@@ -8,17 +9,22 @@ import RevenueTypeModal from 'components/RevenueTypeModal';
 import { formatCurrency } from 'utils/formatters';
 import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
+import { FormInstance } from 'antd/es/form';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
   onUpdateLineItem: (updatedItem: QuoteLineItem) => void;
   onDeleteLineItem: (itemId: string) => void;
+  triggerNewLine?: boolean;
+  onNewLineComplete?: () => void;
 }
 
 const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   initialLineItems,
   onUpdateLineItem,
   onDeleteLineItem,
+  triggerNewLine,
+  onNewLineComplete,
 }) => {
   const {
     lineItems,
@@ -40,15 +46,18 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setDeleteModalVisible,
     setProducts,
     setLoading,
+    addNewLine,
   } = useQuoteLineItems(initialLineItems, onUpdateLineItem, onDeleteLineItem);
 
-  const fetchProductsWrapper = async (search: string): Promise<Product[]> => {
+  const fetchProductsData = async () => {
     setLoading(true);
     try {
-      const fetchedProducts = await fetchProducts(search);
+      const fetchedProducts = await fetchProducts();
       setProducts(fetchedProducts);
       return fetchedProducts;
     } catch (error) {
+      console.error('Error fetching products:', error);
+      message.error('Failed to load products');
       return [];
     } finally {
       setLoading(false);
@@ -64,13 +73,22 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     editingKey,
     setConfigModalVisible,
     setRevenueTypeModalVisible,
-    fetchProductsWrapper,
+    fetchProductsData,
     products,
-    loading
+    loading,
+    setProducts,
+    form
   );
 
   const totalMRR = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_mrr, 0), [lineItems]);
   const totalTCV = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_linetcv, 0), [lineItems]);
+
+  useEffect(() => {
+    if (triggerNewLine) {
+      addNewLine();
+      onNewLineComplete?.();
+    }
+  }, [triggerNewLine]);
 
   return (
     <>

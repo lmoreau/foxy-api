@@ -58,8 +58,11 @@ export const listIncomingWirelinePayments = async (
   return response.data.value;
 };
 
-export const fetchProducts = async (search: string): Promise<Product[]> => {
-  return [];
+export const fetchProducts = async (): Promise<Product[]> => {
+  const headers = await getAuthHeaders();
+  const url = `${API_BASE_URL}/listProductByRow`;
+  const response = await axios.get(url, { headers });
+  return response.data.value || [];
 };
 
 export const getAccountById = async (id: string) => {

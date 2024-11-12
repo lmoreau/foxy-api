@@ -18,8 +18,10 @@ export const createNewLineItem = (): QuoteLineItem => ({
 
 export const handleAddLine = (locationId: string, newItem: QuoteLineItem) => {
   // This function should be implemented to add a new line item to the state
-  // For now, we'll just log the action
-  console.log(`Adding new line item to location ${locationId}:`, newItem);
+  return {
+    ...newItem,
+    foxy_foxyquoterequestlocationid: locationId
+  };
 };
 
 export const calculateTotals = (lineItems: { [key: string]: QuoteLineItem[] }) => {

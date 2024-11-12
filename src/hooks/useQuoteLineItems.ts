@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Form } from 'antd';
 import { QuoteLineItem, Product } from '../types';
 import dayjs from 'dayjs';
+import { fetchProducts } from '../utils/api';
 
 const useQuoteLineItems = (
   initialLineItems: QuoteLineItem[],
@@ -27,7 +28,9 @@ const useQuoteLineItems = (
   };
 
   const cancel = () => {
+    form.resetFields();
     setEditingKey('');
+    setLineItems(prev => prev.filter(item => !item.foxy_foxyquoterequestlineitemid.startsWith('temp-')));
   };
 
   const save = async (key: string) => {
@@ -67,6 +70,41 @@ const useQuoteLineItems = (
     }
   };
 
+  const addNewLine = async () => {
+    cancel();
+
+    if (products.length === 0) {
+      setLoading(true);
+      try {
+        const fetchedProducts = await fetchProducts();
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const newItem: QuoteLineItem = {
+      foxy_foxyquoterequestlineitemid: `temp-${Date.now()}`,
+      foxy_quantity: 1,
+      foxy_each: 0,
+      foxy_mrr: 0,
+      foxy_linetcv: 0,
+      foxy_term: 12,
+      foxy_revenuetype: 0,
+      foxy_renewaltype: '',
+      foxy_renewaldate: '',
+      foxy_Product: {
+        name: ''
+      }
+    };
+
+    setLineItems(prev => [...prev, newItem]);
+    setEditingKey(newItem.foxy_foxyquoterequestlineitemid);
+    form.setFieldsValue(newItem);
+  };
+
   return {
     lineItems,
     editingKey,
@@ -87,6 +125,7 @@ const useQuoteLineItems = (
     setDeleteModalVisible,
     setProducts,
     setLoading,
+    addNewLine,
   };
 };
 

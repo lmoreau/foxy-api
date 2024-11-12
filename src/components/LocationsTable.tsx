@@ -14,7 +14,7 @@ interface LocationsTableProps {
   onUpdateLineItem: (locationId: string, updatedItem: QuoteLineItem) => void;
   onDeleteLineItem: (locationId: string, itemId: string) => void;
   expandAll: boolean;
-  onDeleteLocation: (locationId: string) => Promise<void>;
+  onDeleteLocation: (locationId: string) => void;
 }
 
 const LocationsTable: React.FC<LocationsTableProps> = ({
@@ -29,6 +29,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState<string | null>(null);
+  const [addingProductToLocation, setAddingProductToLocation] = useState<string | null>(null);
 
   useEffect(() => {
     if (expandAll) {
@@ -53,6 +54,10 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
     }
     setDeleteModalVisible(false);
     setLocationToDelete(null);
+  };
+
+  const handleAddProduct = (locationId: string) => {
+    setAddingProductToLocation(locationId);
   };
 
   const columns = [
@@ -95,7 +100,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                 <Tooltip title="Add Product">
                   <Button
                     icon={<PlusOutlined />}
-                    onClick={() => onAddLine(record.foxy_foxyquoterequestlocationid, createNewLineItem())}
+                    onClick={() => handleAddProduct(record.foxy_foxyquoterequestlocationid)}
                     type="text"
                     style={{ color: '#1890ff' }}
                   />
@@ -148,6 +153,8 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
               initialLineItems={lineItems[record.foxy_foxyquoterequestlocationid] || []}
               onUpdateLineItem={(updatedItem) => onUpdateLineItem(record.foxy_foxyquoterequestlocationid, updatedItem)}
               onDeleteLineItem={(itemId) => onDeleteLineItem(record.foxy_foxyquoterequestlocationid, itemId)}
+              triggerNewLine={record.foxy_foxyquoterequestlocationid === addingProductToLocation}
+              onNewLineComplete={() => setAddingProductToLocation(null)}
             />
           ),
           rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
