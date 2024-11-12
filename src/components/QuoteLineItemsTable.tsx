@@ -9,6 +9,7 @@ import { formatCurrency } from 'utils/formatters';
 import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
 import CommentModal from './CommentModal';
+import { revenueTypeMapper } from 'utils/constants/revenueTypeMapper';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
@@ -126,6 +127,49 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setCommentModalVisible(false);
   };
 
+  // Simple columns for the product names table
+  const productNameColumns = [
+    {
+      title: 'Product Name',
+      dataIndex: ['foxy_Product', 'name'],
+      key: 'productName'
+    },
+    {
+      title: 'Revenue Type',
+      dataIndex: 'foxy_revenuetype',
+      key: 'revenueType',
+      render: (value: number) => revenueTypeMapper[value] || value
+    },
+    {
+      title: 'Term',
+      dataIndex: 'foxy_term',
+      key: 'term'
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'foxy_quantity',
+      key: 'quantity'
+    },
+    {
+      title: 'Each',
+      dataIndex: 'foxy_each',
+      key: 'each',
+      render: (value: number) => formatCurrency(value)
+    },
+    {
+      title: 'MRR',
+      dataIndex: 'foxy_mrr',
+      key: 'mrr',
+      render: (value: number) => formatCurrency(value)
+    },
+    {
+      title: 'TCV',
+      dataIndex: 'foxy_linetcv',
+      key: 'tcv',
+      render: (value: number) => formatCurrency(value)
+    }
+  ];
+
   return (
     <>
       <Form 
@@ -152,7 +196,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           dataSource={lineItems}
           rowKey="foxy_foxyquoterequestlineitemid"
           pagination={false}
-          className="custom-table"
+          scroll={{ x: 'max-content' }}
           summary={() => (
             <Table.Summary fixed>
               <Table.Summary.Row>
@@ -175,6 +219,19 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           )}
         />
       </Form>
+
+      {/* New simple table showing only product names */}
+      <div style={{ marginTop: '20px' }}>
+        <Table
+          columns={productNameColumns}
+          dataSource={lineItems}
+          rowKey="foxy_foxyquoterequestlineitemid"
+          pagination={false}
+          scroll={{ x: 'max-content' }}
+          className="rounded-table"
+        />
+      </div>
+
       <DeleteConfirmationModal
         visible={deleteModalVisible}
         onConfirm={confirmDelete}
