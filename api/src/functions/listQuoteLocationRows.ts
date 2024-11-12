@@ -32,7 +32,7 @@ export async function listQuoteLocationRows(request: HttpRequest, context: Invoc
     try {
         // Use the user's token directly
         const accessToken = userToken.replace('Bearer ', '');
-        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_foxyquoterequestlocations?$filter=_foxy_foxyquoterequest_value eq ${id}`;
+        const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_foxyquoterequestlocations?$expand=foxy_Building&$filter=_foxy_foxyquoterequest_value eq ${id}`;
 
         const response = await axios.get(apiUrl, {
             headers: {
