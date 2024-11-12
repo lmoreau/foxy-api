@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Table, Form, message, Button, Tooltip, Space } from 'antd';
 import type { AlignType } from 'rc-table/lib/interface';
-import { EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined } from '@ant-design/icons';
 import { QuoteLineItem } from 'types';
 import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
@@ -12,6 +12,7 @@ import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
 import CommentModal from './CommentModal';
 import { revenueTypeMapper } from 'utils/constants/revenueTypeMapper';
+import { revenueTypeMap } from '../utils/categoryMapper';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
@@ -116,7 +117,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         ...currentRecord, 
         foxy_comment: updatedComment 
       };
-      // Update the line items state to reflect the new comment
       setLineItems(prevItems => 
         prevItems.map(item => 
           item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid 
@@ -129,7 +129,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setCommentModalVisible(false);
   };
 
-  // Simple columns for the product names table
   const productNameColumns = [
     {
       title: 'Product Name',
@@ -140,7 +139,38 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'Revenue Type',
       dataIndex: 'foxy_revenuetype',
       key: 'revenueType',
-      render: (value: number) => revenueTypeMapper[value] || value
+      render: (type: number, record: QuoteLineItem) => {
+        const revenueType = revenueTypeMap[type];
+        const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
+        
+        const isDataComplete = record.foxy_renewaldate && 
+                             record.foxy_renewaltype && 
+                             record.foxy_existingqty !== undefined && 
+                             record.foxy_existingqty !== null &&
+                             record.foxy_existingmrr !== undefined && 
+                             record.foxy_existingmrr !== null;
+        
+        const iconColor = isDataComplete ? '#52c41a' : '#ff4d4f';
+        
+        return (
+          <Space>
+            <span style={{ minWidth: '80px', display: 'inline-block' }}>{revenueType}</span>
+            {showIcon && (
+              <Tooltip title={isDataComplete ? "Configuration Complete" : "Configuration Required"}>
+                <Button
+                  icon={<ToolOutlined />}
+                  onClick={() => {
+                    setCurrentRecord(record);
+                    setRevenueTypeModalVisible(true);
+                  }}
+                  type="text"
+                  style={{ color: iconColor }}
+                />
+              </Tooltip>
+            )}
+          </Space>
+        );
+      }
     },
     {
       title: 'Term',
@@ -210,7 +240,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         form={form} 
         component={false}
         onValuesChange={(_, allValues) => {
-          // Update the lineItems without validation
           const updatedLineItems = lineItems.map(item => {
             if (item.foxy_foxyquoterequestlineitemid === editingKey) {
               return {
@@ -254,7 +283,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         />
       </Form>
 
-      {/* New simple table showing only product names */}
       <div style={{ marginTop: '20px' }}>
         <Table
           columns={productNameColumns}
