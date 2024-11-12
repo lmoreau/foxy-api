@@ -6,9 +6,10 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "build:ci": "npm install && npm run build",
     "watch": "tsc -w",
     "clean": "rimraf dist",
-    "prestart": "npm run clean && npm run build",
+    "prestart": "npm run build",
     "start": "func start",
     "test": "echo \"No tests yet...\""
   },
