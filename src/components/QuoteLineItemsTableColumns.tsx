@@ -85,14 +85,16 @@ const getQuoteLineItemsColumns = (
           ) : (
             text
           )}
-          <Tooltip title="Configuration Required">
-            <Button
-              icon={<ToolOutlined />}
-              onClick={() => setConfigModalVisible(true)}
-              type="text"
-              style={{ color: '#52c41a' }}
-            />
-          </Tooltip>
+          {record.foxy_Product?.crc9f_requiresconfiguration && (
+            <Tooltip title="Configuration Required">
+              <Button
+                icon={<ToolOutlined />}
+                onClick={() => setConfigModalVisible(true)}
+                type="text"
+                style={{ color: '#52c41a' }}
+              />
+            </Tooltip>
+          )}
         </Space>
       );
     },

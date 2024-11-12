@@ -33,6 +33,7 @@ import "./functions/listWonServicesForComp";
 import "./functions/updateIncomingPayment";
 import "./functions/listIncomingWirelinePaymentsByWonService";
 import "./functions/recalculateWonServicePayments";
+import "./functions/createQuoteLineItem";
 
 // Export the initialized app
 export default functionApp;

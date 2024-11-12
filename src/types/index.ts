@@ -12,6 +12,7 @@ export interface QuoteLineItem {
   foxy_existingmrr: number;
   foxy_Product: {
     name: string;
+    crc9f_requiresconfiguration?: boolean;
   };
 }
 
