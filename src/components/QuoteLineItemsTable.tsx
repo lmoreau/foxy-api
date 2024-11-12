@@ -8,6 +8,7 @@ import RevenueTypeModal from 'components/RevenueTypeModal';
 import { formatCurrency } from 'utils/formatters';
 import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
+import CommentModal from './CommentModal';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
@@ -25,6 +26,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   onNewLineComplete,
 }) => {
   const [currentRecord, setCurrentRecord] = useState<QuoteLineItem | undefined>();
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [currentComment, setCurrentComment] = useState('');
 
   const {
     lineItems,
@@ -81,7 +84,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     products,
     loading,
     setProducts,
-    form
+    form,
+    (visible: boolean, comment?: string) => {
+      setCurrentComment(comment || '');
+      setCommentModalVisible(visible);
+    }
   );
 
   const totalMRR = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_mrr, 0), [lineItems]);
@@ -166,6 +173,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         }}
         onCancel={() => setRevenueTypeModalVisible(false)}
         initialValues={currentRecord}
+      />
+      <CommentModal
+        visible={commentModalVisible}
+        comment={currentComment}
+        onCancel={() => setCommentModalVisible(false)}
       />
     </>
   );

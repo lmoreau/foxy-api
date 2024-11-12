@@ -14,6 +14,7 @@ export interface QuoteLineItem {
     name: string;
     crc9f_requiresconfiguration?: boolean;
   };
+  foxy_comment?: string;
 }
 
 export interface Product {

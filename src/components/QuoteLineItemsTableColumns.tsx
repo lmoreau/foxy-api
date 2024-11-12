@@ -1,6 +1,6 @@
 import React from 'react';
 import { InputNumber, Select, Button, Tooltip, Form, Space, FormInstance } from 'antd';
-import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined, FileTextOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { QuoteLineItem, Product } from '../types';
 import { revenueTypeMap } from '../utils/categoryMapper';
@@ -19,7 +19,8 @@ const getQuoteLineItemsColumns = (
   products: Product[],
   loading: boolean,
   setProducts: (products: Product[]) => void,
-  form: FormInstance
+  form: FormInstance,
+  setCommentModalVisible: (visible: boolean, comment?: string) => void
 ): ColumnsType<QuoteLineItem> => [
   {
     title: 'Product',
@@ -253,25 +254,9 @@ const getQuoteLineItemsColumns = (
     key: 'actions',
     render: (_: any, record: QuoteLineItem) => {
       const editable = isEditing(record);
-      return editable ? (
-        <span>
-          <Tooltip title="Save">
-            <Button
-              icon={<SaveOutlined />}
-              onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
-              style={{ marginRight: 8 }}
-              type="link"
-            />
-          </Tooltip>
-          <Tooltip title="Cancel">
-            <Button
-              icon={<CloseOutlined />}
-              onClick={cancel}
-              type="link"
-            />
-          </Tooltip>
-        </span>
-      ) : (
+      const iconColor = record.foxy_comment ? '#1890ff' : '#d9d9d9'; // Blue if comment exists, grey otherwise
+
+      return (
         <span>
           <Tooltip title="Edit">
             <Button
@@ -287,9 +272,35 @@ const getQuoteLineItemsColumns = (
               onClick={() => handleDelete(record.foxy_foxyquoterequestlineitemid)}
               icon={<DeleteOutlined />}
               type="link"
-              style={{ color: '#ff4d4f' }}
+              style={{ color: '#ff4d4f', marginRight: 8 }}
             />
           </Tooltip>
+          <Tooltip title="Notes">
+            <Button
+              icon={<FileTextOutlined style={{ color: iconColor }} />}
+              type="text"
+              onClick={() => setCommentModalVisible(true, record.foxy_comment)}
+            />
+          </Tooltip>
+          {editable && (
+            <>
+              <Tooltip title="Save">
+                <Button
+                  icon={<SaveOutlined />}
+                  onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
+                  style={{ marginRight: 8 }}
+                  type="link"
+                />
+              </Tooltip>
+              <Tooltip title="Cancel">
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={cancel}
+                  type="link"
+                />
+              </Tooltip>
+            </>
+          )}
         </span>
       );
     },
