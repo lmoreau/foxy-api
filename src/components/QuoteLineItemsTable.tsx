@@ -1,8 +1,8 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { Table, Form, message, Button, Tooltip, Space } from 'antd';
+import { Table, Form, message, Button, Tooltip, Space, Select, InputNumber } from 'antd';
 import type { AlignType } from 'rc-table/lib/interface';
-import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined } from '@ant-design/icons';
-import { QuoteLineItem } from 'types';
+import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { QuoteLineItem, Product } from 'types';
 import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
 import ConfigurationModal from 'components/ConfigurationModal';
@@ -11,7 +11,6 @@ import { formatCurrency } from 'utils/formatters';
 import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
 import CommentModal from './CommentModal';
-import { revenueTypeMapper } from 'utils/constants/revenueTypeMapper';
 import { revenueTypeMap } from '../utils/categoryMapper';
 
 interface QuoteLineItemsTableProps {
@@ -129,32 +128,99 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setCommentModalVisible(false);
   };
 
+  const handleCommentClick = (record: QuoteLineItem) => {
+    setCurrentRecord(record);
+    setCurrentComment(record.foxy_comment || '');
+    setCurrentLineItemId(record.foxy_foxyquoterequestlineitemid);
+    setCommentModalVisible(true);
+  };
+
   const productNameColumns = [
     {
       title: 'Product Name',
       dataIndex: ['foxy_Product', 'name'],
       key: 'productName',
-      render: (text: string, record: QuoteLineItem) => (
-        <Space>
-          {text}
-          {record.foxy_Product?.crc9f_requiresconfiguration && (
-            <Tooltip title="Configuration Required">
-              <Button
-                icon={<ToolOutlined />}
-                onClick={() => setConfigModalVisible(true)}
-                type="text"
-                style={{ color: '#52c41a' }}
-              />
-            </Tooltip>
-          )}
-        </Space>
-      )
+      render: (text: string, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return (
+          <Space>
+            {editable ? (
+              <Form.Item
+                name={['foxy_Product', 'name']}
+                style={{ margin: 0 }}
+                rules={[{ required: true, message: 'Product is required' }]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Select a product"
+                  optionFilterProp="label"
+                  filterOption={(input, option) => {
+                    if (!input || !option?.label || typeof option.label !== 'string') {
+                      return false;
+                    }
+                    const productName = option.label.toLowerCase();
+                    const searchTerm = input.toLowerCase().trim();
+                    
+                    const searchWords = searchTerm.split(/\s+/);
+                    return searchWords.every(word => productName.includes(word));
+                  }}
+                  style={{ width: '300px' }}
+                  onFocus={() => {
+                    if (products.length === 0) {
+                      fetchProductsData().then((fetchedProducts) => {
+                        const sortedProducts = fetchedProducts.sort((a, b) => 
+                          a.name.localeCompare(b.name)
+                        );
+                        setProducts(sortedProducts);
+                      });
+                    }
+                  }}
+                  onClear={() => {
+                    form.setFieldsValue({ foxy_Product: { name: '' } });
+                  }}
+                  allowClear
+                  defaultActiveFirstOption={false}
+                  showArrow={true}
+                  notFoundContent={loading ? 'Loading...' : 'No products found'}
+                  listHeight={400}
+                  virtual={false}
+                >
+                  {products.map(product => (
+                    <Select.Option 
+                      key={product.name} 
+                      value={product.name}
+                      label={product.name}
+                    >
+                      {product.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            ) : (
+              <>
+                {text}
+                {record.foxy_Product?.crc9f_requiresconfiguration && (
+                  <Tooltip title="Configuration Required">
+                    <Button
+                      icon={<ToolOutlined />}
+                      onClick={() => setConfigModalVisible(true)}
+                      type="text"
+                      style={{ color: '#52c41a' }}
+                    />
+                  </Tooltip>
+                )}
+              </>
+            )}
+          </Space>
+        );
+      }
     },
     {
       title: 'Revenue Type',
       dataIndex: 'foxy_revenuetype',
       key: 'revenueType',
       render: (type: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
         const revenueType = revenueTypeMap[type];
         const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
         
@@ -169,19 +235,38 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         
         return (
           <Space>
-            <span style={{ minWidth: '80px', display: 'inline-block' }}>{revenueType}</span>
-            {showIcon && (
-              <Tooltip title={isDataComplete ? "Configuration Complete" : "Configuration Required"}>
-                <Button
-                  icon={<ToolOutlined />}
-                  onClick={() => {
-                    setCurrentRecord(record);
-                    setRevenueTypeModalVisible(true);
-                  }}
-                  type="text"
-                  style={{ color: iconColor }}
-                />
-              </Tooltip>
+            {editable ? (
+              <Form.Item
+                name="foxy_revenuetype"
+                style={{ margin: 0, minWidth: '150px' }}
+              >
+                <Select style={{ width: '100%' }}>
+                  {Object.entries(revenueTypeMap)
+                    .filter(([_, label]) => label !== 'Net New')
+                    .map(([value, label]) => (
+                      <Select.Option key={value} value={parseInt(value)}>
+                        {label}
+                      </Select.Option>
+                    ))}
+                </Select>
+              </Form.Item>
+            ) : (
+              <>
+                <span style={{ minWidth: '80px', display: 'inline-block' }}>{revenueType}</span>
+                {showIcon && (
+                  <Tooltip title={isDataComplete ? "Configuration Complete" : "Configuration Required"}>
+                    <Button
+                      icon={<ToolOutlined />}
+                      onClick={() => {
+                        setCurrentRecord(record);
+                        setRevenueTypeModalVisible(true);
+                      }}
+                      type="text"
+                      style={{ color: iconColor }}
+                    />
+                  </Tooltip>
+                )}
+              </>
             )}
           </Space>
         );
@@ -190,59 +275,184 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     {
       title: 'Term',
       dataIndex: 'foxy_term',
-      key: 'term'
+      key: 'term',
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_term"
+            style={{ margin: 0 }}
+            initialValue={36}
+            rules={[{ required: true, message: 'Term is required' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        ) : (
+          record.foxy_term || 36
+        );
+      }
     },
     {
       title: 'Quantity',
       dataIndex: 'foxy_quantity',
-      key: 'quantity'
+      key: 'quantity',
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_quantity"
+            style={{ margin: 0 }}
+            initialValue={1}
+            rules={[{ required: true, message: 'Quantity is required' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        ) : (
+          record.foxy_quantity || 1
+        );
+      }
     },
     {
       title: 'Each',
       dataIndex: 'foxy_each',
       key: 'each',
-      render: (value: number) => formatCurrency(value)
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <Form.Item
+            name="foxy_each"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Each is required' }]}
+          >
+            <InputNumber
+              min={0}
+              formatter={value => `$${value}`}
+              parser={(value: string | undefined) => {
+                const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
+                return isNaN(parsedValue) ? 0 : parsedValue;
+              }}
+              style={{ width: '100%' }}
+              onChange={(value) => {
+                const quantity = form.getFieldValue('foxy_quantity') || 1;
+                const each = value || 0;
+                const term = form.getFieldValue('foxy_term') || 36;
+                const calculatedMRR = quantity * each;
+                const calculatedTCV = calculatedMRR * term;
+                
+                const updatedLineItems = lineItems.map(item => {
+                  if (item.foxy_foxyquoterequestlineitemid === editingKey) {
+                    return {
+                      ...item,
+                      foxy_mrr: calculatedMRR,
+                      foxy_linetcv: calculatedTCV,
+                      foxy_quantity: quantity,
+                      foxy_term: term,
+                      foxy_each: each
+                    };
+                  }
+                  return item;
+                });
+                setLineItems(updatedLineItems);
+              }}
+            />
+          </Form.Item>
+        ) : (
+          formatCurrency(value)
+        );
+      }
     },
     {
       title: 'MRR',
       dataIndex: 'foxy_mrr',
       key: 'mrr',
-      render: (value: number) => formatCurrency(value)
+      render: (mrr: number, record: QuoteLineItem) => {
+        if (isEditing(record)) {
+          const quantity = form.getFieldValue('foxy_quantity') || 1;
+          const each = form.getFieldValue('foxy_each') || 0;
+          const calculatedMRR = quantity * each;
+          return formatCurrency(calculatedMRR);
+        }
+        return formatCurrency(mrr);
+      }
     },
     {
       title: 'TCV',
       dataIndex: 'foxy_linetcv',
       key: 'tcv',
-      render: (value: number) => formatCurrency(value)
+      render: (tcv: number, record: QuoteLineItem) => {
+        if (isEditing(record)) {
+          const quantity = form.getFieldValue('foxy_quantity') || 1;
+          const each = form.getFieldValue('foxy_each') || 0;
+          const term = form.getFieldValue('foxy_term') || 36;
+          const calculatedMRR = quantity * each;
+          const calculatedTCV = calculatedMRR * term;
+          return formatCurrency(calculatedTCV);
+        }
+        return formatCurrency(tcv);
+      }
     },
     {
       title: '',
       key: 'actions',
       align: 'center' as AlignType,
-      render: (_: any, record: QuoteLineItem) => {
+      render: (_: unknown, record: QuoteLineItem) => {
+        const editable = isEditing(record);
         const iconColor = record.foxy_comment ? '#1890ff' : '#d9d9d9';
         return (
           <Space>
-            <Tooltip title="Edit">
-              <Button
-                icon={<EditOutlined />}
-                type="link"
-                style={{ marginRight: 8 }}
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                icon={<DeleteOutlined />}
-                type="link"
-                style={{ color: '#ff4d4f', marginRight: 8 }}
-              />
-            </Tooltip>
-            <Tooltip title="Notes">
-              <Button
-                icon={<FileTextOutlined style={{ color: iconColor }} />}
-                type="text"
-              />
-            </Tooltip>
+            {editable ? (
+              <>
+                <Tooltip title="Save">
+                  <Button
+                    icon={<SaveOutlined />}
+                    onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
+                    style={{ marginRight: 8 }}
+                    type="link"
+                  />
+                </Tooltip>
+                <Tooltip title="Cancel">
+                  <Button
+                    icon={<CloseOutlined />}
+                    onClick={cancel}
+                    type="link"
+                  />
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip title="Edit">
+                  <Button
+                    disabled={editingKey !== ''}
+                    onClick={() => {
+                      form.setFieldsValue({
+                        ...record,
+                        foxy_term: record.foxy_term || 36,
+                        foxy_quantity: record.foxy_quantity || 1
+                      });
+                      edit(record);
+                    }}
+                    icon={<EditOutlined />}
+                    type="link"
+                    style={{ marginRight: 8 }}
+                  />
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <Button
+                    onClick={() => handleDelete(record.foxy_foxyquoterequestlineitemid)}
+                    icon={<DeleteOutlined />}
+                    type="link"
+                    style={{ color: '#ff4d4f', marginRight: 8 }}
+                  />
+                </Tooltip>
+                <Tooltip title="Notes">
+                  <Button
+                    icon={<FileTextOutlined style={{ color: iconColor }} />}
+                    type="text"
+                    onClick={() => handleCommentClick(record)}
+                  />
+                </Tooltip>
+              </>
+            )}
           </Space>
         );
       }
@@ -255,13 +465,19 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         form={form} 
         component={false}
         onValuesChange={(_, allValues) => {
+          const quantity = allValues.foxy_quantity || 1;
+          const each = allValues.foxy_each || 0;
+          const term = allValues.foxy_term || 36;
+          const calculatedMRR = quantity * each;
+          const calculatedTCV = calculatedMRR * term;
+
           const updatedLineItems = lineItems.map(item => {
             if (item.foxy_foxyquoterequestlineitemid === editingKey) {
               return {
                 ...item,
                 ...allValues,
-                foxy_mrr: (allValues.foxy_quantity || 0) * (allValues.foxy_each || 0),
-                foxy_linetcv: (allValues.foxy_quantity || 0) * (allValues.foxy_each || 0) * (allValues.foxy_term || 36)
+                foxy_mrr: calculatedMRR,
+                foxy_linetcv: calculatedTCV
               };
             }
             return item;
@@ -299,30 +515,55 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       </Form>
 
       <div style={{ marginTop: '20px' }}>
-        <Table
-          columns={productNameColumns}
-          dataSource={lineItems}
-          rowKey="foxy_foxyquoterequestlineitemid"
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          className="rounded-table"
-          summary={() => (
-            <Table.Summary fixed>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={5}>
-                  <strong>Total</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={5}>
-                  <strong>{formatCurrency(totalMRR)}</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={6}>
-                  <strong>{formatCurrency(totalTCV)}</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={7} />
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-        />
+        <Form 
+          form={form} 
+          component={false}
+          onValuesChange={(_, allValues) => {
+            const quantity = allValues.foxy_quantity || 1;
+            const each = allValues.foxy_each || 0;
+            const term = allValues.foxy_term || 36;
+            const calculatedMRR = quantity * each;
+            const calculatedTCV = calculatedMRR * term;
+
+            const updatedLineItems = lineItems.map(item => {
+              if (item.foxy_foxyquoterequestlineitemid === editingKey) {
+                return {
+                  ...item,
+                  ...allValues,
+                  foxy_mrr: calculatedMRR,
+                  foxy_linetcv: calculatedTCV
+                };
+              }
+              return item;
+            });
+            setLineItems(updatedLineItems);
+          }}
+        >
+          <Table
+            columns={productNameColumns}
+            dataSource={lineItems}
+            rowKey="foxy_foxyquoterequestlineitemid"
+            pagination={false}
+            scroll={{ x: 'max-content' }}
+            className="rounded-table"
+            summary={() => (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={5}>
+                    <strong>Total</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={5}>
+                    <strong>{formatCurrency(totalMRR)}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={6}>
+                    <strong>{formatCurrency(totalTCV)}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={7} />
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
+          />
+        </Form>
       </div>
 
       <DeleteConfirmationModal
