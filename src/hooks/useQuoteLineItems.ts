@@ -76,7 +76,7 @@ const useQuoteLineItems = (
     if (products.length === 0) {
       setLoading(true);
       try {
-        const fetchedProducts = await fetchProducts();
+        const fetchedProducts = await fetchProducts('foxy_category ne 612100004');
         setProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);

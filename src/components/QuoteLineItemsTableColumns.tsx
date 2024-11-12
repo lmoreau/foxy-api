@@ -39,11 +39,17 @@ const getQuoteLineItemsColumns = (
                 showSearch
                 placeholder="Select a product"
                 optionFilterProp="label"
-                filterOption={(input, option) =>
-                  typeof option?.label === 'string' 
-                    ? option.label.toLowerCase().includes(input.toLowerCase()) 
-                    : false
-                }
+                filterOption={(input, option) => {
+                  if (!input || !option?.label || typeof option.label !== 'string') {
+                    return false;
+                  }
+                  const productName = option.label.toLowerCase();
+                  const searchTerm = input.toLowerCase().trim();
+                  
+                  // Only match if the product name contains all words in the search term
+                  const searchWords = searchTerm.split(/\s+/);
+                  return searchWords.every(word => productName.includes(word));
+                }}
                 style={{ width: '300px' }}
                 onFocus={() => {
                   if (products.length === 0) {

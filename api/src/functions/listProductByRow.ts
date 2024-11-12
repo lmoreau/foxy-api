@@ -20,9 +20,15 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
     }
 
     try {
-        // Use the user's token directly
         const accessToken = userToken.replace('Bearer ', '');
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/products?$select=name&$orderby=name&$top=5000`;
+        
+        // Get filter from query params, default to no filter if none provided
+        const filter = request.query.get('$filter') || '';
+        
+        // Construct the URL with the filter if provided
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/products?$select=name&$orderby=name&$top=5000${
+            filter ? `&$filter=${filter}` : ''
+        }`;
 
         const response = await axios.get(apiUrl, {
             headers: {

@@ -58,9 +58,9 @@ export const listIncomingWirelinePayments = async (
   return response.data.value;
 };
 
-export const fetchProducts = async (): Promise<Product[]> => {
+export const fetchProducts = async (filter?: string): Promise<Product[]> => {
   const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listProductByRow`;
+  const url = `${API_BASE_URL}/listProductByRow${filter ? `?$filter=${encodeURIComponent(filter)}` : ''}`;
   const response = await axios.get(url, { headers });
   return response.data.value || [];
 };
