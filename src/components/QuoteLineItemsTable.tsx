@@ -72,69 +72,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     }
   };
 
-  const columns = getQuoteLineItemsColumns(
-    isEditing,
-    edit,
-    save,
-    cancel,
-    handleDelete,
-    editingKey,
-    setConfigModalVisible,
-    (visible: boolean, record?: QuoteLineItem) => {
-      setCurrentRecord(record);
-      setRevenueTypeModalVisible(visible);
-    },
-    fetchProductsData,
-    products,
-    loading,
-    setProducts,
-    form,
-    (visible: boolean, comment?: string, lineItemId?: string) => {
-      const record = lineItems.find(item => item.foxy_foxyquoterequestlineitemid === lineItemId);
-      setCurrentRecord(record);
-      setCurrentComment(comment || '');
-      setCurrentLineItemId(lineItemId || '');
-      setCommentModalVisible(visible);
-    }
-  );
-
-  const totalMRR = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_mrr, 0), [lineItems]);
-  const totalTCV = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_linetcv, 0), [lineItems]);
-
-  useEffect(() => {
-    if (triggerNewLine) {
-      addNewLine();
-      if (onNewLineComplete) {
-        onNewLineComplete();
-      }
-    }
-  }, [triggerNewLine, addNewLine, onNewLineComplete]);
-
-  const handleCommentConfirm = (updatedComment: string) => {
-    if (currentRecord && currentRecord.foxy_foxyquoterequestlineitemid) {
-      const updatedItem: QuoteLineItem = { 
-        ...currentRecord, 
-        foxy_comment: updatedComment 
-      };
-      setLineItems(prevItems => 
-        prevItems.map(item => 
-          item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid 
-            ? updatedItem 
-            : item
-        )
-      );
-      onUpdateLineItem(updatedItem);
-    }
-    setCommentModalVisible(false);
-  };
-
-  const handleCommentClick = (record: QuoteLineItem) => {
-    setCurrentRecord(record);
-    setCurrentComment(record.foxy_comment || '');
-    setCurrentLineItemId(record.foxy_foxyquoterequestlineitemid);
-    setCommentModalVisible(true);
-  };
-
   const productNameColumns = [
     {
       title: 'Product Name',
@@ -458,6 +395,43 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       }
     }
   ];
+
+  const totalMRR = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_mrr, 0), [lineItems]);
+  const totalTCV = useMemo(() => lineItems.reduce((sum: number, item: QuoteLineItem) => sum + item.foxy_linetcv, 0), [lineItems]);
+
+  useEffect(() => {
+    if (triggerNewLine) {
+      addNewLine();
+      if (onNewLineComplete) {
+        onNewLineComplete();
+      }
+    }
+  }, [triggerNewLine, addNewLine, onNewLineComplete]);
+
+  const handleCommentConfirm = (updatedComment: string) => {
+    if (currentRecord && currentRecord.foxy_foxyquoterequestlineitemid) {
+      const updatedItem: QuoteLineItem = { 
+        ...currentRecord, 
+        foxy_comment: updatedComment 
+      };
+      setLineItems(prevItems => 
+        prevItems.map(item => 
+          item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid 
+            ? updatedItem 
+            : item
+        )
+      );
+      onUpdateLineItem(updatedItem);
+    }
+    setCommentModalVisible(false);
+  };
+
+  const handleCommentClick = (record: QuoteLineItem) => {
+    setCurrentRecord(record);
+    setCurrentComment(record.foxy_comment || '');
+    setCurrentLineItemId(record.foxy_foxyquoterequestlineitemid);
+    setCommentModalVisible(true);
+  };
 
   return (
     <>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, Space, Statistic, Row, Col, Modal, Tooltip, Divider } from 'antd';
+import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip } from 'antd';
 import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
