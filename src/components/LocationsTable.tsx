@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Typography, Space, Statistic, Row, Col, Modal, Tooltip, Divider } from 'antd';
+import { Card, Button, Typography, Space, Statistic, Row, Col, Modal, Tooltip, Divider } from 'antd';
 import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { calculateTotals } from '../utils/quoteUtils';
 import './LocationsTable.css';
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 interface LocationsTableProps {
   data: QuoteLocation[];
@@ -21,7 +21,7 @@ interface LocationsTableProps {
 const LocationsTable: React.FC<LocationsTableProps> = ({
   data,
   lineItems,
-  onAddLine,
+  onAddLine: _onAddLine,
   onUpdateLineItem,
   onDeleteLineItem,
   expandAll,

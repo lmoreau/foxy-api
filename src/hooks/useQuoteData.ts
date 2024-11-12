@@ -10,7 +10,7 @@ interface OwningUser {
   ownerid: string;
 }
 
-interface QuoteData {
+export interface QuoteDataState {
   accountName: string;
   accountId: string;
   quoteId: string;
@@ -18,8 +18,7 @@ interface QuoteData {
   lineItems: { [key: string]: QuoteLineItem[] };
   error: string | null;
   loading: boolean;
-  refetchLocations: () => Promise<void>;
-  owninguser?: OwningUser;
+  owninguser: OwningUser | undefined;
   rawQuoteData: {
     lineItems: { [key: string]: QuoteLineItem[] };
     locations: QuoteLocation[];
@@ -27,8 +26,15 @@ interface QuoteData {
   };
 }
 
-export const useQuoteData = (id: string | undefined): QuoteData => {
-  const [quoteData, setQuoteData] = useState<QuoteData>({
+export interface QuoteDataReturn extends QuoteDataState {
+  refetchLocations: () => Promise<void>;
+  setLineItems: React.Dispatch<React.SetStateAction<{ [key: string]: QuoteLineItem[] }>>;
+}
+
+export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
+  const [lineItems, setLineItems] = useState<{ [key: string]: QuoteLineItem[] }>({});
+
+  const [state, setState] = useState<QuoteDataState>({
     accountName: '',
     accountId: '',
     quoteId: '',
@@ -36,7 +42,7 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
     lineItems: {},
     error: null,
     loading: true,
-    refetchLocations: async () => {},
+    owninguser: undefined,
     rawQuoteData: {
       lineItems: {},
       locations: [],
@@ -46,7 +52,7 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
 
   const fetchData = useCallback(async () => {
     if (!id || !/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i.test(id)) {
-      setQuoteData(prev => ({ ...prev, error: 'Invalid quote ID. Please provide a valid GUID.', loading: false }));
+      setState(prev => ({ ...prev, error: 'Invalid quote ID. Please provide a valid GUID.', loading: false }));
       return;
     }
 
@@ -71,13 +77,13 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
         }
       }
 
-      setQuoteData(prev => ({
+      setLineItems(lineItemsMap);
+      setState(prev => ({
         ...prev,
         accountName: quoteRequestData.foxy_Account.name,
         accountId: quoteRequestData.foxy_Account.accountid,
         quoteId: quoteRequestData.foxy_quoteid,
         locations,
-        lineItems: lineItemsMap,
         error: null,
         loading: false,
         owninguser: quoteRequestData.owninguser,
@@ -93,7 +99,7 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
       if (error instanceof Error) {
         errorMessage = `Error: ${error.message}`;
       }
-      setQuoteData(prev => ({ ...prev, error: errorMessage, loading: false }));
+      setState(prev => ({ ...prev, error: errorMessage, loading: false }));
     }
   }, [id]);
 
@@ -116,10 +122,10 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
         }
       }
 
-      setQuoteData(prev => ({
+      setLineItems(lineItemsMap);
+      setState(prev => ({
         ...prev,
         locations,
-        lineItems: lineItemsMap,
         error: null,
         rawQuoteData: {
           lineItems: lineItemsMap,
@@ -133,14 +139,19 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
       if (error instanceof Error) {
         errorMessage = `Error: ${error.message}`;
       }
-      setQuoteData(prev => ({ ...prev, error: errorMessage }));
+      setState(prev => ({ ...prev, error: errorMessage }));
     }
   }, [id]);
 
   useEffect(() => {
-    setQuoteData(prev => ({ ...prev, loading: true }));
+    setState(prev => ({ ...prev, loading: true }));
     fetchData();
   }, [fetchData]);
 
-  return { ...quoteData, refetchLocations };
+  return {
+    ...state,
+    lineItems,
+    setLineItems,
+    refetchLocations
+  };
 };

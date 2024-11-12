@@ -1,5 +1,5 @@
 import React from 'react';
-import { InputNumber, Select, Button, Tooltip, Form, DatePicker, Space, FormInstance } from 'antd';
+import { InputNumber, Select, Button, Tooltip, Form, Space, FormInstance } from 'antd';
 import { EditOutlined, DeleteOutlined, SaveOutlined, CloseOutlined, ToolOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { QuoteLineItem, Product } from '../types';
@@ -127,7 +127,7 @@ const getQuoteLineItemsColumns = (
             >
               <Select style={{ width: '100%' }}>
                 {Object.entries(revenueTypeMap)
-                  .filter(([value, label]) => label !== 'Net New')
+                  .filter(([_, label]) => label !== 'Net New')
                   .map(([value, label]) => (
                     <Select.Option key={value} value={parseInt(value)}>
                       {label}
@@ -156,7 +156,7 @@ const getQuoteLineItemsColumns = (
     title: 'Term',
     dataIndex: 'foxy_term',
     key: 'foxy_term',
-    render: (value: number, record: QuoteLineItem) => {
+    render: (_, record: QuoteLineItem) => {
       const editable = isEditing(record);
       return editable ? (
         <Form.Item
@@ -168,7 +168,7 @@ const getQuoteLineItemsColumns = (
           <InputNumber min={0} style={{ width: '100%' }} />
         </Form.Item>
       ) : (
-        value
+        record.foxy_term
       );
     },
   },
@@ -176,7 +176,7 @@ const getQuoteLineItemsColumns = (
     title: 'Quantity',
     dataIndex: 'foxy_quantity',
     key: 'foxy_quantity',
-    render: (value: number, record: QuoteLineItem) => {
+    render: (_, record: QuoteLineItem) => {
       const editable = isEditing(record);
       return editable ? (
         <Form.Item
@@ -187,7 +187,7 @@ const getQuoteLineItemsColumns = (
           <InputNumber min={0} style={{ width: '100%' }} />
         </Form.Item>
       ) : (
-        value
+        record.foxy_quantity
       );
     },
   },
@@ -195,7 +195,7 @@ const getQuoteLineItemsColumns = (
     title: 'Each',
     dataIndex: 'foxy_each',
     key: 'foxy_each',
-    render: (value: number, record: QuoteLineItem) => {
+    render: (_, record: QuoteLineItem) => {
       const editable = isEditing(record);
       return editable ? (
         <Form.Item
@@ -214,7 +214,7 @@ const getQuoteLineItemsColumns = (
           />
         </Form.Item>
       ) : (
-        formatCurrency(value)
+        formatCurrency(record.foxy_each)
       );
     },
   },

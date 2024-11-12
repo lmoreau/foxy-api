@@ -27,15 +27,17 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
     }
   }, [initialValues, form]);
 
+  const handleSubmit = async () => {
+    form.validateFields().then(() => {
+      onOk();
+    });
+  };
+
   return (
     <Modal
       title="Revenue Type Configuration"
       open={visible}
-      onOk={() => {
-        form.validateFields().then(values => {
-          onOk();
-        });
-      }}
+      onOk={handleSubmit}
       onCancel={onCancel}
     >
       <Form

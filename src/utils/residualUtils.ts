@@ -240,7 +240,7 @@ export const combineResidualData = (
 
     if (showUnmerged) {
       // If showing unmerged, add all records separately
-      maps.residuals.forEach((residuals, amount) => {
+      maps.residuals.forEach((residuals, _) => {
         residuals.forEach(record => {
           accountGroup.children.push({
             ...record,
@@ -251,7 +251,7 @@ export const combineResidualData = (
         });
       });
 
-      maps.wirelines.forEach((wirelines, amount) => {
+      maps.wirelines.forEach((wirelines, _) => {
         wirelines.forEach(record => {
           accountGroup.children.push({
             ...record,
@@ -304,4 +304,12 @@ export const combineResidualData = (
   });
 
   return Array.from(groupedData.values());
+};
+
+export const calculateMonthlyResidual = (_: number) => {
+  // ...
+};
+
+export const calculateAnnualResidual = (_: number) => {
+  // ...
 };

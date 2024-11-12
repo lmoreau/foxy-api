@@ -1,12 +1,12 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs } from 'antd';
-import { DollarOutlined, UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined } from '@ant-design/icons';
+import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
-import { handleAddLine, calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
+import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
 
 const { Content } = Layout;
@@ -94,7 +94,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     owninguser, 
     accountId, 
     refetchLocations,
-    rawQuoteData 
+    rawQuoteData,
+    setLineItems 
   } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
   const { totalMRR, totalTCV } = calculateTotals(lineItems);
@@ -139,18 +140,26 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   };
 
   const handleUpdateLineItem = (locationId: string, updatedItem: QuoteLineItem) => {
+    const updatedLineItems = lineItems[locationId].map(item => 
+      item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid 
+        ? updatedItem 
+        : item
+    );
+    
+    setLineItems(prev => ({
+      ...prev,
+      [locationId]: updatedLineItems
+    }));
+    
     message.success('Line item updated successfully');
+    refetchLocations();
   };
 
-  const handleDeleteLineItem = (locationId: string, itemId: string) => {
+  const handleDeleteLineItem = async (_locationId: string, _itemId: string) => {
     message.success('Line item deleted successfully');
   };
 
-  const handleAddLine = (locationId: string, newItem: QuoteLineItem) => {
-    const updatedLineItems = {
-      ...lineItems,
-      [locationId]: [...(lineItems[locationId] || []), newItem]
-    };
+  const handleAddLineItem = async (_locationId: string, _newItem: any) => {
     refetchLocations();
   };
 
@@ -190,7 +199,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                     <LocationsTable
                       data={locations}
                       lineItems={lineItems}
-                      onAddLine={handleAddLine}
+                      onAddLine={handleAddLineItem}
                       expandAll={expandAll}
                       onDeleteLocation={handleDeleteLocation}
                       onUpdateLineItem={handleUpdateLineItem}

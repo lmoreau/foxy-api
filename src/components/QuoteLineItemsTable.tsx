@@ -1,7 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { Table, Form, message, Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { QuoteLineItem, Product } from 'types';
+import { Table, Form, message } from 'antd';
+import { QuoteLineItem } from 'types';
 import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
 import ConfigurationModal from 'components/ConfigurationModal';
@@ -91,9 +90,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   useEffect(() => {
     if (triggerNewLine) {
       addNewLine();
-      onNewLineComplete?.();
+      if (onNewLineComplete) {
+        onNewLineComplete();
+      }
     }
-  }, [triggerNewLine]);
+  }, [triggerNewLine, addNewLine, onNewLineComplete]);
 
   return (
     <>

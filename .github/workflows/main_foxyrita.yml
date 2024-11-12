@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './api' # Set to api root
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './api'
   NODE_VERSION: '18.x'
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
         run: |
           pushd './api'
           npm install
-          npm run build
+          npm run build:ci
           npm run test --if-present
           popd
 
