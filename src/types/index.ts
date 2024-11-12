@@ -20,7 +20,10 @@ export interface Product {
 export interface QuoteLocation {
   foxy_foxyquoterequestlocationid: string;
   foxy_locationid: string;
-  fullAddress: string;
+  foxy_Building: {
+    foxy_fulladdress: string;
+    foxy_buildingid: string;
+  };
 }
 
 export interface QuoteRequest {

@@ -74,7 +74,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
           <Row align="middle" justify="space-between" style={{ width: '100%' }}>
             <Col flex="auto">
               <Space direction="vertical" size="small">
-                <Text strong>{text || record.foxy_locationid}</Text>
+                <Text strong>{record.foxy_Building?.foxy_fulladdress || record.foxy_locationid}</Text>
                 {!isExpanded && (
                   <Space size="large">
                     <Statistic 
@@ -96,15 +96,52 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
               </Space>
             </Col>
             <Col>
-              <Button 
-                type="text" 
-                danger 
-                icon={<DeleteOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClick(record.foxy_foxyquoterequestlocationid);
-                }}
-              />
+              <Space size="small">
+                <Tooltip title="Add Product">
+                  <Button
+                    icon={<PlusOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddProduct(record.foxy_foxyquoterequestlocationid);
+                    }}
+                    type="text"
+                    style={{ color: '#1890ff' }}
+                  />
+                </Tooltip>
+                <Tooltip title="Rapid Entry">
+                  <Button
+                    icon={<ThunderboltOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      /* Placeholder for Rapid Entry functionality */
+                    }}
+                    type="text"
+                    style={{ color: '#faad14' }}
+                  />
+                </Tooltip>
+                <Tooltip title="Add Bundle">
+                  <Button
+                    icon={<AppstoreAddOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      /* Placeholder for Add Bundle functionality */
+                    }}
+                    type="text"
+                    style={{ color: '#52c41a' }}
+                  />
+                </Tooltip>
+                <Tooltip title="Delete Location">
+                  <Button
+                    icon={<DeleteOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(record.foxy_foxyquoterequestlocationid);
+                    }}
+                    type="text"
+                    style={{ color: '#ff4d4f' }}
+                  />
+                </Tooltip>
+              </Space>
             </Col>
           </Row>
         );
