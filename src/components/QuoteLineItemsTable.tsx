@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { Table, Form, message, Button, Tooltip, Space, Select, InputNumber } from 'antd';
 import type { AlignType } from 'rc-table/lib/interface';
 import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
-import { QuoteLineItem, Product } from 'types';
+import { QuoteLineItem } from 'types';
 import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
 import ConfigurationModal from 'components/ConfigurationModal';
