@@ -4,6 +4,7 @@ import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined } from '@ant-design/i
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { calculateTotals } from '../utils/quoteUtils';
+import { formatCurrency } from '../utils/formatters';
 import './LocationsTable.css';
 
 const { Title } = Typography;
@@ -77,22 +78,16 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
               <Col>
                 <Space>
                   {!isExpanded && (
-                    <>
-                      <Statistic 
-                        title="MRR" 
-                        value={totalMRR} 
-                        precision={2}
-                        valueStyle={{ fontSize: '14px' }}
-                      />
-                      <Divider type="vertical" />
-                      <Statistic 
-                        title="TCV" 
-                        value={totalTCV} 
-                        precision={2}
-                        valueStyle={{ fontSize: '14px' }}
-                      />
-                      <Divider type="vertical" />
-                    </>
+                    <Space size="large" style={{ marginRight: 16 }}>
+                      <div style={{ width: 120, textAlign: 'right' }}>
+                        <div style={{ color: '#00000073', fontSize: '14px', textAlign: 'right' }}>MRR</div>
+                        <div style={{ fontSize: '14px', textAlign: 'right' }}>{formatCurrency(totalMRR)}</div>
+                      </div>
+                      <div style={{ width: 120, textAlign: 'right' }}>
+                        <div style={{ color: '#00000073', fontSize: '14px', textAlign: 'right' }}>TCV</div>
+                        <div style={{ fontSize: '14px', textAlign: 'right' }}>{formatCurrency(totalTCV)}</div>
+                      </div>
+                    </Space>
                   )}
                   <Space>
                     <Tooltip title="Add Product">
