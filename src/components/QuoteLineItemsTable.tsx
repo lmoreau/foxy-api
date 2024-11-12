@@ -133,7 +133,22 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     {
       title: 'Product Name',
       dataIndex: ['foxy_Product', 'name'],
-      key: 'productName'
+      key: 'productName',
+      render: (text: string, record: QuoteLineItem) => (
+        <Space>
+          {text}
+          {record.foxy_Product?.crc9f_requiresconfiguration && (
+            <Tooltip title="Configuration Required">
+              <Button
+                icon={<ToolOutlined />}
+                onClick={() => setConfigModalVisible(true)}
+                type="text"
+                style={{ color: '#52c41a' }}
+              />
+            </Tooltip>
+          )}
+        </Space>
+      )
     },
     {
       title: 'Revenue Type',
@@ -291,6 +306,22 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           pagination={false}
           scroll={{ x: 'max-content' }}
           className="rounded-table"
+          summary={() => (
+            <Table.Summary fixed>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={5}>
+                  <strong>Total</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={5}>
+                  <strong>{formatCurrency(totalMRR)}</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={6}>
+                  <strong>{formatCurrency(totalTCV)}</strong>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={7} />
+              </Table.Summary.Row>
+            </Table.Summary>
+          )}
         />
       </div>
 
