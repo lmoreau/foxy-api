@@ -20,7 +20,7 @@ const getQuoteLineItemsColumns = (
   loading: boolean,
   setProducts: (products: Product[]) => void,
   form: FormInstance,
-  setCommentModalVisible: (visible: boolean, comment?: string) => void
+  setCommentModalVisible: (visible: boolean, comment?: string, lineItemId?: string) => void
 ): ColumnsType<QuoteLineItem> => [
   {
     title: 'Product',
@@ -279,7 +279,7 @@ const getQuoteLineItemsColumns = (
             <Button
               icon={<FileTextOutlined style={{ color: iconColor }} />}
               type="text"
-              onClick={() => setCommentModalVisible(true, record.foxy_comment)}
+              onClick={() => setCommentModalVisible(true, record.foxy_comment, record.foxy_foxyquoterequestlineitemid)}
             />
           </Tooltip>
           {editable && (

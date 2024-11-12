@@ -28,6 +28,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   const [currentRecord, setCurrentRecord] = useState<QuoteLineItem | undefined>();
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentComment, setCurrentComment] = useState('');
+  const [currentLineItemId, setCurrentLineItemId] = useState('');
 
   const {
     lineItems,
@@ -85,8 +86,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     loading,
     setProducts,
     form,
-    (visible: boolean, comment?: string) => {
+    (visible: boolean, comment?: string, lineItemId?: string) => {
+      const record = lineItems.find(item => item.foxy_foxyquoterequestlineitemid === lineItemId);
+      setCurrentRecord(record);
       setCurrentComment(comment || '');
+      setCurrentLineItemId(lineItemId || '');
       setCommentModalVisible(visible);
     }
   );
@@ -102,6 +106,25 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       }
     }
   }, [triggerNewLine, addNewLine, onNewLineComplete]);
+
+  const handleCommentConfirm = (updatedComment: string) => {
+    if (currentRecord && currentRecord.foxy_foxyquoterequestlineitemid) {
+      const updatedItem: QuoteLineItem = { 
+        ...currentRecord, 
+        foxy_comment: updatedComment 
+      };
+      // Update the line items state to reflect the new comment
+      setLineItems(prevItems => 
+        prevItems.map(item => 
+          item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid 
+            ? updatedItem 
+            : item
+        )
+      );
+      onUpdateLineItem(updatedItem);
+    }
+    setCommentModalVisible(false);
+  };
 
   return (
     <>
@@ -178,6 +201,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         visible={commentModalVisible}
         comment={currentComment}
         onCancel={() => setCommentModalVisible(false)}
+        onConfirm={handleCommentConfirm}
+        lineItemId={currentLineItemId}
       />
     </>
   );

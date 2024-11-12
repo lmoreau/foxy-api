@@ -30,6 +30,21 @@ const getAuthHeaders = async () => {
   }
 };
 
+export const updateQuoteLineItem = async (id: string, foxy_comment: string) => {
+  try {
+    const headers = await getAuthHeaders();
+    const formattedId = id.replace(/[{}]/g, '');
+    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_foxyquoterequestlineitems(${formattedId})`;
+    
+    await axios.patch(url, { foxy_comment }, { headers });
+    return { message: "Successfully updated quote line item" };
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to update quote line item:', err.response?.data);
+    throw error;
+  }
+};
+
 export const listIncomingWirelinePayments = async (
   showAll: boolean = false,
   startDate?: string,
