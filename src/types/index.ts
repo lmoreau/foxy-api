@@ -8,6 +8,8 @@ export interface QuoteLineItem {
   foxy_revenuetype: number;
   foxy_renewaltype: string;
   foxy_renewaldate: string;
+  foxy_existingqty: number;
+  foxy_existingmrr: number;
   foxy_Product: {
     name: string;
   };

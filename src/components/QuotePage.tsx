@@ -55,16 +55,14 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
           <Statistic
             title="Total MRR"
             value={formatCurrency(totalMRR)}
-            prefix={<DollarOutlined />}
-            valueStyle={{ color: '#3f8600', fontSize: '14px' }}
+            valueStyle={{ color: '#000000', fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
         <Col span={6}>
           <Statistic
             title="Total TCV"
             value={formatCurrency(totalTCV)}
-            prefix={<DollarOutlined />}
-            valueStyle={{ color: '#1890ff', fontSize: '14px' }}
+            valueStyle={{ color: '#000000', fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
       </Row>

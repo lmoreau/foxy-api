@@ -1,86 +1,88 @@
 import React from 'react';
-import { Modal, Form, DatePicker, Select, InputNumber, Input } from 'antd';
-import { CalendarOutlined, TagOutlined, NumberOutlined, DollarOutlined } from '@ant-design/icons';
+import { Modal, Form, DatePicker, Select, InputNumber } from 'antd';
+import { QuoteLineItem } from '../types';
+import dayjs from 'dayjs';
 
 interface RevenueTypeModalProps {
   visible: boolean;
   onOk: () => void;
   onCancel: () => void;
+  initialValues?: QuoteLineItem;
 }
 
 const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
   visible,
   onOk,
   onCancel,
+  initialValues
 }) => {
   const [form] = Form.useForm();
+
+  React.useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        foxy_renewaldate: initialValues.foxy_renewaldate ? dayjs(initialValues.foxy_renewaldate) : null
+      });
+    }
+  }, [initialValues, form]);
 
   return (
     <Modal
       title="Revenue Type Configuration"
       open={visible}
       onOk={() => {
-        form.validateFields().then(() => {
+        form.validateFields().then(values => {
           onOk();
         });
       }}
       onCancel={onCancel}
-      width={700}
     >
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+      >
         <Form.Item
-          name="renewalDate"
-          label="Renewal Date"
-          rules={[{ required: true, message: 'Please select a renewal date' }]}
-        >
-          <DatePicker
-            style={{ width: '100%' }}
-            suffixIcon={<CalendarOutlined />}
-          />
-        </Form.Item>
-        <Form.Item
-          name="renewalType"
+          name="foxy_renewaltype"
           label="Renewal Type"
           rules={[{ required: true, message: 'Please select a renewal type' }]}
         >
-          <Select suffixIcon={<TagOutlined />}>
-            <Select.Option value="Renewal Eligible">Renewal Eligible</Select.Option>
+          <Select>
             <Select.Option value="Early Renewal">Early Renewal</Select.Option>
-            <Select.Option value="Mid-Contract Upgrade">Mid-Contract Upgrade</Select.Option>
+            <Select.Option value="Within 20% of Contract End">Within 20% of Contract End</Select.Option>
           </Select>
         </Form.Item>
+
         <Form.Item
-          name="existingQuantity"
+          name="foxy_renewaldate"
+          label="Renewal Date"
+          rules={[{ required: true, message: 'Please select a renewal date' }]}
+        >
+          <DatePicker style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item
+          name="foxy_existingqty"
           label="Existing Quantity"
           rules={[{ required: true, message: 'Please enter the existing quantity' }]}
         >
-          <InputNumber
-            min={0}
-            style={{ width: '100%' }}
-            prefix={<NumberOutlined />}
-          />
+          <InputNumber min={0} style={{ width: '100%' }} />
         </Form.Item>
+
         <Form.Item
-          name="existingMrrEach"
-          label="Existing MRR Each"
-          rules={[{ required: true, message: 'Please enter the existing MRR each' }]}
+          name="foxy_existingmrr"
+          label="Existing MRR"
+          rules={[{ required: true, message: 'Please enter the existing MRR' }]}
         >
-          <InputNumber
-            min={0}
+          <InputNumber 
+            min={0} 
+            style={{ width: '100%' }}
             formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             parser={(value: string | undefined) => {
               const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
-              return isNaN(parsedValue) ? 0 : parsedValue;
+              return parsedValue || 0;  // Ensure we always return a number
             }}
-            style={{ width: '100%' }}
-            prefix={<DollarOutlined />}
           />
-        </Form.Item>
-        <Form.Item
-          name="additionalDetails"
-          label="Additional Details"
-        >
-          <Input.TextArea rows={4} />
         </Form.Item>
       </Form>
     </Modal>

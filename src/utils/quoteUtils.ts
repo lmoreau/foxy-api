@@ -3,14 +3,16 @@ import { deleteQuoteLocation as apiDeleteQuoteLocation } from './api';
 
 export const createNewLineItem = (): QuoteLineItem => ({
   foxy_foxyquoterequestlineitemid: `new-${Date.now()}`,
-  foxy_quantity: 0,
+  foxy_quantity: 1,
   foxy_each: 0,
   foxy_mrr: 0,
   foxy_linetcv: 0,
-  foxy_term: 0,
+  foxy_term: 12,
   foxy_revenuetype: 0,
   foxy_renewaltype: '',
   foxy_renewaldate: '',
+  foxy_existingqty: 0,
+  foxy_existingmrr: 0,
   foxy_Product: {
     name: '',
   },

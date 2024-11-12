@@ -95,6 +95,8 @@ const useQuoteLineItems = (
       foxy_revenuetype: 0,
       foxy_renewaltype: '',
       foxy_renewaldate: '',
+      foxy_existingqty: 0,
+      foxy_existingmrr: 0,
       foxy_Product: {
         name: ''
       }

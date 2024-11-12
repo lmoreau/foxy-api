@@ -80,14 +80,12 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                     <Statistic 
                       title="MRR" 
                       value={totalMRR} 
-                      prefix={<DollarOutlined />} 
                       precision={2}
                       valueStyle={{ color: '#3f8600' }}
                     />
                     <Statistic 
                       title="TCV" 
                       value={totalTCV} 
-                      prefix={<DollarOutlined />} 
                       precision={2}
                       valueStyle={{ color: '#1890ff' }}
                     />
@@ -108,23 +106,12 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                     style={{ color: '#1890ff' }}
                   />
                 </Tooltip>
-                <Tooltip title="Rapid Entry">
-                  <Button
-                    icon={<ThunderboltOutlined />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      /* Placeholder for Rapid Entry functionality */
-                    }}
-                    type="text"
-                    style={{ color: '#faad14' }}
-                  />
-                </Tooltip>
-                <Tooltip title="Add Bundle">
+                <Tooltip title="Product Catalogue">
                   <Button
                     icon={<AppstoreAddOutlined />}
                     onClick={(e) => {
                       e.stopPropagation();
-                      /* Placeholder for Add Bundle functionality */
+                      /* Placeholder for Product Catalogue functionality */
                     }}
                     type="text"
                     style={{ color: '#52c41a' }}
@@ -169,7 +156,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
               onNewLineComplete={() => setAddingProductToLocation(null)}
             />
           ),
-          rowExpandable: (record) => lineItems[record.foxy_foxyquoterequestlocationid]?.length > 0,
+          rowExpandable: () => true,
         }}
         showHeader={false}
         size="small"

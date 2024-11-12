@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Table, Form, message, Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { QuoteLineItem, Product } from 'types';
@@ -9,7 +9,6 @@ import RevenueTypeModal from 'components/RevenueTypeModal';
 import { formatCurrency } from 'utils/formatters';
 import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
-import { FormInstance } from 'antd/es/form';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
@@ -26,6 +25,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   triggerNewLine,
   onNewLineComplete,
 }) => {
+  const [currentRecord, setCurrentRecord] = useState<QuoteLineItem | undefined>();
+
   const {
     lineItems,
     editingKey,
@@ -72,7 +73,10 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     handleDelete,
     editingKey,
     setConfigModalVisible,
-    setRevenueTypeModalVisible,
+    (visible: boolean, record?: QuoteLineItem) => {
+      setCurrentRecord(record);
+      setRevenueTypeModalVisible(visible);
+    },
     fetchProductsData,
     products,
     loading,
@@ -133,8 +137,15 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       />
       <RevenueTypeModal
         visible={revenueTypeModalVisible}
-        onOk={() => setRevenueTypeModalVisible(false)}
+        onOk={() => {
+          form.validateFields().then(values => {
+            const updatedItem = { ...currentRecord, ...values };
+            onUpdateLineItem(updatedItem);
+            setRevenueTypeModalVisible(false);
+          });
+        }}
         onCancel={() => setRevenueTypeModalVisible(false)}
+        initialValues={currentRecord}
       />
     </>
   );

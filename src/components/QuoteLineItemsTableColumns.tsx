@@ -14,7 +14,7 @@ const getQuoteLineItemsColumns = (
   handleDelete: (id: string) => void,
   editingKey: string,
   setConfigModalVisible: (visible: boolean) => void,
-  setRevenueTypeModalVisible: (visible: boolean) => void,
+  setRevenueTypeModalVisible: (visible: boolean, record?: QuoteLineItem) => void,
   fetchProducts: () => Promise<Product[]>,
   products: Product[],
   loading: boolean,
@@ -98,6 +98,76 @@ const getQuoteLineItemsColumns = (
     },
   },
   {
+    title: 'Revenue Type',
+    dataIndex: 'foxy_revenuetype',
+    key: 'foxy_revenuetype',
+    render: (type: number, record: QuoteLineItem) => {
+      const editable = isEditing(record);
+      const revenueType = revenueTypeMap[type];
+      const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
+      
+      const isDataComplete = record.foxy_renewaldate && 
+                            record.foxy_renewaltype && 
+                            record.foxy_existingqty !== undefined && 
+                            record.foxy_existingqty !== null &&
+                            record.foxy_existingmrr !== undefined && 
+                            record.foxy_existingmrr !== null;
+      
+      const iconColor = isDataComplete ? '#52c41a' : '#ff4d4f';
+      
+      return (
+        <Space>
+          {editable ? (
+            <Form.Item
+              name="foxy_revenuetype"
+              style={{ margin: 0 }}
+              rules={[{ required: true, message: 'Revenue Type is required' }]}
+            >
+              <Select style={{ width: '100%' }}>
+                {Object.entries(revenueTypeMap).map(([value, label]) => (
+                  <Select.Option key={value} value={parseInt(value)}>
+                    {label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          ) : (
+            revenueType
+          )}
+          {showIcon && (
+            <Tooltip title={isDataComplete ? "Configuration Complete" : "Configuration Required"}>
+              <Button
+                icon={<ToolOutlined />}
+                onClick={() => setRevenueTypeModalVisible(true, record)}
+                type="text"
+                style={{ color: iconColor }}
+              />
+            </Tooltip>
+          )}
+        </Space>
+      );
+    },
+  },
+  {
+    title: 'Term',
+    dataIndex: 'foxy_term',
+    key: 'foxy_term',
+    render: (value: number, record: QuoteLineItem) => {
+      const editable = isEditing(record);
+      return editable ? (
+        <Form.Item
+          name="foxy_term"
+          style={{ margin: 0 }}
+          rules={[{ required: true, message: 'Term is required' }]}
+        >
+          <InputNumber min={0} style={{ width: '100%' }} />
+        </Form.Item>
+      ) : (
+        value
+      );
+    },
+  },
+  {
     title: 'Quantity',
     dataIndex: 'foxy_quantity',
     key: 'foxy_quantity',
@@ -154,115 +224,6 @@ const getQuoteLineItemsColumns = (
     dataIndex: 'foxy_linetcv',
     key: 'foxy_linetcv',
     render: (tcv: number) => formatCurrency(tcv),
-  },
-  {
-    title: 'Term',
-    dataIndex: 'foxy_term',
-    key: 'foxy_term',
-    render: (value: number, record: QuoteLineItem) => {
-      const editable = isEditing(record);
-      return editable ? (
-        <Form.Item
-          name="foxy_term"
-          style={{ margin: 0 }}
-          rules={[{ required: true, message: 'Term is required' }]}
-        >
-          <InputNumber min={0} style={{ width: '100%' }} />
-        </Form.Item>
-      ) : (
-        value
-      );
-    },
-  },
-  {
-    title: 'Revenue Type',
-    dataIndex: 'foxy_revenuetype',
-    key: 'foxy_revenuetype',
-    render: (type: number, record: QuoteLineItem) => {
-      const editable = isEditing(record);
-      const revenueType = revenueTypeMap[type];
-      const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
-      
-      const isDataComplete = record.foxy_mrr && 
-                             record.foxy_quantity && 
-                             record.foxy_renewaldate && 
-                             record.foxy_renewaltype;
-      
-      const iconColor = isDataComplete ? '#52c41a' : '#ff4d4f';
-      
-      return (
-        <Space>
-          {editable ? (
-            <Form.Item
-              name="foxy_revenuetype"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Revenue Type is required' }]}
-            >
-              <Select style={{ width: '100%' }}>
-                {Object.entries(revenueTypeMap).map(([value, label]) => (
-                  <Select.Option key={value} value={parseInt(value)}>
-                    {label}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          ) : (
-            revenueType
-          )}
-          {showIcon && (
-            <Tooltip title="Configuration Required">
-              <Button
-                icon={<ToolOutlined />}
-                onClick={() => setRevenueTypeModalVisible(true)}
-                type="text"
-                style={{ color: iconColor }}
-              />
-            </Tooltip>
-          )}
-        </Space>
-      );
-    },
-  },
-  {
-    title: 'Renewal Type',
-    dataIndex: 'foxy_renewaltype',
-    key: 'foxy_renewaltype',
-    render: (text: string, record: QuoteLineItem) => {
-      const editable = isEditing(record);
-      return editable ? (
-        <Form.Item
-          name="foxy_renewaltype"
-          style={{ margin: 0 }}
-          rules={[{ required: true, message: 'Renewal Type is required' }]}
-        >
-          <Select style={{ width: '100%' }}>
-            <Select.Option value="Early Renewal">Early Renewal</Select.Option>
-            <Select.Option value="Within 20% of Contract End">Within 20% of Contract End</Select.Option>
-          </Select>
-        </Form.Item>
-      ) : (
-        text
-      );
-    },
-  },
-  {
-    title: 'Renewal Date',
-    dataIndex: 'foxy_renewaldate',
-    key: 'foxy_renewaldate',
-    render: (date: string, record: QuoteLineItem) => {
-      const editable = isEditing(record);
-      return editable ? (
-        <Form.Item
-          name="foxy_renewaldate"
-          style={{ margin: 0 }}
-          rules={[{ required: true, message: 'Renewal Date is required' }]}
-        >
-          <DatePicker style={{ width: '100%' }} />
-        </Form.Item>
-      ) : (
-        date
-      );
-    },
   },
   {
     title: 'Actions',
