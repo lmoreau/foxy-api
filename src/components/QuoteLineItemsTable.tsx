@@ -461,59 +461,6 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
 
   return (
     <>
-      <Form 
-        form={form} 
-        component={false}
-        onValuesChange={(_, allValues) => {
-          const quantity = allValues.foxy_quantity || 1;
-          const each = allValues.foxy_each || 0;
-          const term = allValues.foxy_term || 36;
-          const calculatedMRR = quantity * each;
-          const calculatedTCV = calculatedMRR * term;
-
-          const updatedLineItems = lineItems.map(item => {
-            if (item.foxy_foxyquoterequestlineitemid === editingKey) {
-              return {
-                ...item,
-                ...allValues,
-                foxy_mrr: calculatedMRR,
-                foxy_linetcv: calculatedTCV
-              };
-            }
-            return item;
-          });
-          setLineItems(updatedLineItems);
-        }}
-      >
-        <Table
-          columns={columns}
-          dataSource={lineItems}
-          rowKey="foxy_foxyquoterequestlineitemid"
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          summary={() => (
-            <Table.Summary fixed>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={3}>
-                  <strong>Total</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={3}>
-                  <strong>{formatCurrency(totalMRR)}</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={4}>
-                  <strong>{formatCurrency(totalTCV)}</strong>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={5} />
-                <Table.Summary.Cell index={6} />
-                <Table.Summary.Cell index={7} />
-                <Table.Summary.Cell index={8} />
-                <Table.Summary.Cell index={9} />
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-        />
-      </Form>
-
       <div style={{ marginTop: '20px' }}>
         <Form 
           form={form} 
