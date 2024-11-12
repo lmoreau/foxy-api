@@ -1,5 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { Table, Form, message } from 'antd';
+import { Table, Form, message, Button, Tooltip, Space } from 'antd';
+import type { AlignType } from 'rc-table/lib/interface';
+import { EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
 import { QuoteLineItem } from 'types';
 import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
@@ -167,6 +169,38 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       dataIndex: 'foxy_linetcv',
       key: 'tcv',
       render: (value: number) => formatCurrency(value)
+    },
+    {
+      title: '',
+      key: 'actions',
+      align: 'center' as AlignType,
+      render: (_: any, record: QuoteLineItem) => {
+        const iconColor = record.foxy_comment ? '#1890ff' : '#d9d9d9';
+        return (
+          <Space>
+            <Tooltip title="Edit">
+              <Button
+                icon={<EditOutlined />}
+                type="link"
+                style={{ marginRight: 8 }}
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                icon={<DeleteOutlined />}
+                type="link"
+                style={{ color: '#ff4d4f', marginRight: 8 }}
+              />
+            </Tooltip>
+            <Tooltip title="Notes">
+              <Button
+                icon={<FileTextOutlined style={{ color: iconColor }} />}
+                type="text"
+              />
+            </Tooltip>
+          </Space>
+        );
+      }
     }
   ];
 
