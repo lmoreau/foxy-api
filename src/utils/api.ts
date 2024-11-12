@@ -30,6 +30,29 @@ const getAuthHeaders = async () => {
   }
 };
 
+export const createQuoteRequest = async (data: any) => {
+  try {
+    const headers = await getAuthHeaders();
+    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_foxyquoterequests`;
+    
+    const requestBody = {
+      ...(data._foxy_account_value && {
+        "foxy_Account@odata.bind": `/accounts(${data._foxy_account_value})`
+      }),
+      ...(data._foxy_opportunity_value && {
+        "foxy_Opportunity@odata.bind": `/opportunities(${data._foxy_opportunity_value})`
+      })
+    };
+
+    const response = await axios.post(url, requestBody, { headers });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to create quote request:', err.response?.data);
+    throw error;
+  }
+};
+
 export const updateQuoteLineItem = async (id: string, foxy_comment: string) => {
   try {
     const headers = await getAuthHeaders();
@@ -340,7 +363,6 @@ export const recalculateWonServicePayments = async (wonServiceId: string) => {
     const headers = await getAuthHeaders();
     const formattedId = wonServiceId.replace(/[{}]/g, '');
     
-    // Construct URL following the example pattern
     const url = `${DATAVERSE_URL}/api/data/v9.2/CalculateRollupField(Target=@p1,FieldName=@p2)?` +
       `@p1={'@odata.id':'foxy_wonservices(${formattedId})'}&` +
       `@p2='foxy_totalinpayments'`;

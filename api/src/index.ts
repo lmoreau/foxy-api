@@ -35,6 +35,7 @@ import "./functions/listIncomingWirelinePaymentsByWonService";
 import "./functions/recalculateWonServicePayments";
 import "./functions/createQuoteLineItem";
 import "./functions/updateQuoteLineItem";
+import "./functions/createQuoteRequest";
 
 // Export the initialized app
 export default functionApp;

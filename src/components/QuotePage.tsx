@@ -1,13 +1,14 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs } from 'antd';
-import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal } from 'antd';
+import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
 import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
+import { createQuoteRequest } from '../utils/api';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -70,9 +71,12 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
   );
 };
 
-const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean }> = 
-  ({ onAddLocation, onToggleExpand, expandAll }) => (
+const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean; onCloneQuote: () => void }> = 
+  ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote }) => (
   <Space style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end' }}>
+    <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
+      Clone Quote
+    </Button>
     <Button icon={<PlusOutlined />} onClick={onAddLocation}>
       Add Location
     </Button>
@@ -84,6 +88,7 @@ const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => 
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { 
     accountName, 
     quoteId, 
@@ -119,6 +124,29 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       setRawData(rawQuoteData);
     }
   }, [rawQuoteData]);
+
+  const handleCloneQuote = () => {
+    Modal.confirm({
+      title: 'Clone Quote',
+      content: 'Are you sure you want to clone this quote?',
+      onOk: async () => {
+        try {
+          const result = await createQuoteRequest({
+            _foxy_account_value: "9a0a2a91-19b1-ec11-983e-002248ade72c",
+            _foxy_opportunity_value: "faabce5c-de3f-49f7-afcb-96692a592397"
+          });
+          message.success('Quote cloned successfully');
+          // Navigate to the new quote
+          if (result.foxy_foxyquoterequestid) {
+            navigate(`/quote/${result.foxy_foxyquoterequestid}`);
+          }
+        } catch (error) {
+          message.error('Failed to clone quote');
+          console.error('Clone error:', error);
+        }
+      }
+    });
+  };
 
   const toggleExpandAll = () => {
     setExpandAll(!expandAll);
@@ -188,7 +216,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                     <QuoteSummary owner={owninguser?.fullname || ''} totalMRR={totalMRR} totalTCV={totalTCV} />
                   </Col>
                   <Col span={24}>
-                    <TableActions onAddLocation={show} onToggleExpand={toggleExpandAll} expandAll={expandAll} />
+                    <TableActions 
+                      onAddLocation={show} 
+                      onToggleExpand={toggleExpandAll} 
+                      expandAll={expandAll}
+                      onCloneQuote={handleCloneQuote}
+                    />
                   </Col>
                   {error && (
                     <Col span={24}>
