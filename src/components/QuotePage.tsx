@@ -1,13 +1,13 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message } from 'antd';
+import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs } from 'antd';
 import { DollarOutlined, UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
 import { handleAddLine, calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
-import { QuoteLineItem } from '../types';
+import { QuoteLineItem, QuoteLocation } from '../types';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -86,14 +86,40 @@ const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => 
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
-  const { accountName, quoteId, locations, lineItems, error, loading, owninguser, accountId, refetchLocations } = useQuoteData(id);
+  const { 
+    accountName, 
+    quoteId, 
+    locations, 
+    lineItems, 
+    error, 
+    loading, 
+    owninguser, 
+    accountId, 
+    refetchLocations,
+    rawQuoteData 
+  } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
   const { totalMRR, totalTCV } = calculateTotals(lineItems);
   const [expandAll, setExpandAll] = useState(true);
+  const [rawData, setRawData] = useState<{
+    lineItems: { [key: string]: QuoteLineItem[] };
+    locations: QuoteLocation[];
+    quoteRequest: any;
+  }>({
+    lineItems: {},
+    locations: [],
+    quoteRequest: {}
+  });
 
   React.useEffect(() => {
     setQuoteRequestId(quoteId);
   }, [quoteId, setQuoteRequestId]);
+
+  React.useEffect(() => {
+    if (rawQuoteData) {
+      setRawData(rawQuoteData);
+    }
+  }, [rawQuoteData]);
 
   const toggleExpandAll = () => {
     setExpandAll(!expandAll);
@@ -141,33 +167,70 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   return (
     <Layout style={{ minHeight: '100vh', padding: '12px' }}>
       <Content>
-        <Row gutter={[0, 4]}>
-          <Col span={24}>
-            <Text strong style={{ fontSize: '16px' }}>{accountName}</Text>
-          </Col>
-          <Col span={24}>
-            <QuoteSummary owner={owninguser?.fullname || ''} totalMRR={totalMRR} totalTCV={totalTCV} />
-          </Col>
-          <Col span={24}>
-            <TableActions onAddLocation={show} onToggleExpand={toggleExpandAll} expandAll={expandAll} />
-          </Col>
-          {error && (
-            <Col span={24}>
-              <Alert message="Error" description={error} type="error" showIcon />
-            </Col>
-          )}
-          <Col span={24}>
-            <LocationsTable
-              data={locations}
-              lineItems={lineItems}
-              onAddLine={handleAddLine}
-              expandAll={expandAll}
-              onDeleteLocation={handleDeleteLocation}
-              onUpdateLineItem={handleUpdateLineItem}
-              onDeleteLineItem={handleDeleteLineItem}
-            />
-          </Col>
-        </Row>
+        <Tabs
+          items={[
+            {
+              key: '1',
+              label: 'Quote',
+              children: (
+                <Row gutter={[0, 4]}>
+                  <Col span={24}>
+                    <Text strong style={{ fontSize: '16px' }}>{accountName}</Text>
+                  </Col>
+                  <Col span={24}>
+                    <QuoteSummary owner={owninguser?.fullname || ''} totalMRR={totalMRR} totalTCV={totalTCV} />
+                  </Col>
+                  <Col span={24}>
+                    <TableActions onAddLocation={show} onToggleExpand={toggleExpandAll} expandAll={expandAll} />
+                  </Col>
+                  {error && (
+                    <Col span={24}>
+                      <Alert message="Error" description={error} type="error" showIcon />
+                    </Col>
+                  )}
+                  <Col span={24}>
+                    <LocationsTable
+                      data={locations}
+                      lineItems={lineItems}
+                      onAddLine={handleAddLine}
+                      expandAll={expandAll}
+                      onDeleteLocation={handleDeleteLocation}
+                      onUpdateLineItem={handleUpdateLineItem}
+                      onDeleteLineItem={handleDeleteLineItem}
+                    />
+                  </Col>
+                </Row>
+              ),
+            },
+            {
+              key: '2',
+              label: 'Line Items',
+              children: (
+                <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                  {JSON.stringify(rawData.lineItems, null, 2)}
+                </pre>
+              ),
+            },
+            {
+              key: '3',
+              label: 'Locations',
+              children: (
+                <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                  {JSON.stringify(rawData.locations, null, 2)}
+                </pre>
+              ),
+            },
+            {
+              key: '4',
+              label: 'Quote Request',
+              children: (
+                <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                  {JSON.stringify(rawData.quoteRequest, null, 2)}
+                </pre>
+              ),
+            },
+          ]}
+        />
       </Content>
       <AddLocationModal
         isVisible={isVisible}

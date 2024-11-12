@@ -20,6 +20,11 @@ interface QuoteData {
   loading: boolean;
   refetchLocations: () => Promise<void>;
   owninguser?: OwningUser;
+  rawQuoteData: {
+    lineItems: { [key: string]: QuoteLineItem[] };
+    locations: QuoteLocation[];
+    quoteRequest: any;
+  };
 }
 
 export const useQuoteData = (id: string | undefined): QuoteData => {
@@ -32,6 +37,11 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
     error: null,
     loading: true,
     refetchLocations: async () => {},
+    rawQuoteData: {
+      lineItems: {},
+      locations: [],
+      quoteRequest: {}
+    }
   });
 
   const fetchData = useCallback(async () => {
@@ -71,6 +81,11 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
         error: null,
         loading: false,
         owninguser: quoteRequestData.owninguser,
+        rawQuoteData: {
+          lineItems: lineItemsMap,
+          locations,
+          quoteRequest: quoteRequestData
+        }
       }));
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -106,6 +121,11 @@ export const useQuoteData = (id: string | undefined): QuoteData => {
         locations,
         lineItems: lineItemsMap,
         error: null,
+        rawQuoteData: {
+          lineItems: lineItemsMap,
+          locations,
+          quoteRequest: prev.rawQuoteData.quoteRequest
+        }
       }));
     } catch (error) {
       console.error('Error refetching locations:', error);
