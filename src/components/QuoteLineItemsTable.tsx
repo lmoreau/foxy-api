@@ -3,7 +3,6 @@ import { Table, Form, message, Button, Tooltip, Space, Select, InputNumber } fro
 import type { AlignType } from 'rc-table/lib/interface';
 import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import { QuoteLineItem } from 'types';
-import getQuoteLineItemsColumns from 'components/QuoteLineItemsTableColumns';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
 import ConfigurationModal from 'components/ConfigurationModal';
 import RevenueTypeModal from 'components/RevenueTypeModal';
