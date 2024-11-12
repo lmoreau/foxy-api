@@ -90,22 +90,26 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                     </Space>
                   )}
                   <Space>
-                    <Tooltip title="Add Product">
-                      <Button
-                        icon={<PlusOutlined />}
-                        onClick={() => handleAddProduct(location.foxy_foxyquoterequestlocationid)}
-                        type="text"
-                        style={{ color: '#1890ff' }}
-                      />
-                    </Tooltip>
-                    <Tooltip title="Product Catalogue">
-                      <Button
-                        icon={<AppstoreAddOutlined />}
-                        onClick={() => {/* Product Catalogue functionality */}}
-                        type="text"
-                        style={{ color: '#52c41a' }}
-                      />
-                    </Tooltip>
+                    {isExpanded && (
+                      <>
+                        <Tooltip title="Add Product">
+                          <Button
+                            icon={<PlusOutlined />}
+                            onClick={() => handleAddProduct(location.foxy_foxyquoterequestlocationid)}
+                            type="text"
+                            style={{ color: '#1890ff' }}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Product Catalogue">
+                          <Button
+                            icon={<AppstoreAddOutlined />}
+                            onClick={() => {/* Product Catalogue functionality */}}
+                            type="text"
+                            style={{ color: '#52c41a' }}
+                          />
+                        </Tooltip>
+                      </>
+                    )}
                     <Tooltip title="Delete Location">
                       <Button
                         icon={<DeleteOutlined />}
