@@ -101,6 +101,7 @@ const getQuoteLineItemsColumns = (
     title: 'Revenue Type',
     dataIndex: 'foxy_revenuetype',
     key: 'foxy_revenuetype',
+    width: '200px',
     render: (type: number, record: QuoteLineItem) => {
       const editable = isEditing(record);
       const revenueType = revenueTypeMap[type];
@@ -120,19 +121,20 @@ const getQuoteLineItemsColumns = (
           {editable ? (
             <Form.Item
               name="foxy_revenuetype"
-              style={{ margin: 0 }}
-              rules={[{ required: true, message: 'Revenue Type is required' }]}
+              style={{ margin: 0, minWidth: '150px' }}
             >
               <Select style={{ width: '100%' }}>
-                {Object.entries(revenueTypeMap).map(([value, label]) => (
-                  <Select.Option key={value} value={parseInt(value)}>
-                    {label}
-                  </Select.Option>
-                ))}
+                {Object.entries(revenueTypeMap)
+                  .filter(([value, label]) => label !== 'Net New')
+                  .map(([value, label]) => (
+                    <Select.Option key={value} value={parseInt(value)}>
+                      {label}
+                    </Select.Option>
+                  ))}
               </Select>
             </Form.Item>
           ) : (
-            revenueType
+            <span style={{ minWidth: '80px', display: 'inline-block' }}>{revenueType}</span>
           )}
           {showIcon && (
             <Tooltip title={isDataComplete ? "Configuration Complete" : "Configuration Required"}>
@@ -158,6 +160,7 @@ const getQuoteLineItemsColumns = (
         <Form.Item
           name="foxy_term"
           style={{ margin: 0 }}
+          initialValue={36}
           rules={[{ required: true, message: 'Term is required' }]}
         >
           <InputNumber min={0} style={{ width: '100%' }} />
@@ -217,13 +220,31 @@ const getQuoteLineItemsColumns = (
     title: 'MRR',
     dataIndex: 'foxy_mrr',
     key: 'foxy_mrr',
-    render: (mrr: number) => formatCurrency(mrr),
+    render: (mrr: number, record: QuoteLineItem) => {
+      if (isEditing(record)) {
+        const quantity = form.getFieldValue('foxy_quantity') || 0;
+        const each = form.getFieldValue('foxy_each') || 0;
+        const calculatedMRR = quantity * each;
+        return formatCurrency(calculatedMRR);
+      }
+      return formatCurrency(mrr);
+    },
   },
   {
     title: 'TCV',
     dataIndex: 'foxy_linetcv',
     key: 'foxy_linetcv',
-    render: (tcv: number) => formatCurrency(tcv),
+    render: (tcv: number, record: QuoteLineItem) => {
+      if (isEditing(record)) {
+        const quantity = form.getFieldValue('foxy_quantity') || 0;
+        const each = form.getFieldValue('foxy_each') || 0;
+        const term = form.getFieldValue('foxy_term') || 36;
+        const calculatedMRR = quantity * each;
+        const calculatedTCV = calculatedMRR * term;
+        return formatCurrency(calculatedTCV);
+      }
+      return formatCurrency(tcv);
+    },
   },
   {
     title: 'Actions',

@@ -1,0 +1,36 @@
+/* src/components/QuoteLineItemsTable.css */
+
+.custom-table .ant-table-thead > tr > th:last-child,
+.custom-table .ant-table-tbody > tr > td:last-child {
+  text-align: right; /* Right-align header and cells */
+  padding-right: 8px; /* Reduced padding */
+}
+
+/* Optional: Reduce padding for a more compact Actions column */
+.custom-table .ant-table-thead > tr > th,
+.custom-table .ant-table-tbody > tr > td {
+  padding: 8px;
+} 
+
+.custom-table .ant-table-thead > tr > th.actions-header,
+.custom-table .ant-table-tbody > tr > td.actions-cell {
+  text-align: right; /* Right-align header and cells */
+  padding-right: 8px; /* Reduced padding */
+  padding-left: 8px; /* Optional: Consistent left padding */
+}
+
+.custom-table .ant-table-tbody > tr > td.actions-cell {
+  white-space: nowrap; /* Prevents content from wrapping */
+}
+
+.custom-table .ant-table-thead > tr > th.actions-header {
+  white-space: nowrap; /* Prevents header text from wrapping */
+}
+
+.custom-table .ant-table-tbody > tr > td.actions-cell > span > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* Remove default button padding */
+  margin: 0 2px; /* Minimal horizontal margin between buttons */
+} 

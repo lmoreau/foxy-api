@@ -5,7 +5,7 @@ export interface QuoteLineItem {
   foxy_mrr: number;
   foxy_linetcv: number;
   foxy_term: number;
-  foxy_revenuetype: number;
+  foxy_revenuetype: number | null;
   foxy_renewaltype: string;
   foxy_renewaldate: string;
   foxy_existingqty: number;

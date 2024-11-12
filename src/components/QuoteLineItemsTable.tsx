@@ -29,6 +29,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
 
   const {
     lineItems,
+    setLineItems,
     editingKey,
     deleteModalVisible,
     configModalVisible,
@@ -96,7 +97,25 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
 
   return (
     <>
-      <Form form={form} component={false}>
+      <Form 
+        form={form} 
+        component={false}
+        onValuesChange={(_, allValues) => {
+          // Update the lineItems without validation
+          const updatedLineItems = lineItems.map(item => {
+            if (item.foxy_foxyquoterequestlineitemid === editingKey) {
+              return {
+                ...item,
+                ...allValues,
+                foxy_mrr: (allValues.foxy_quantity || 0) * (allValues.foxy_each || 0),
+                foxy_linetcv: (allValues.foxy_quantity || 0) * (allValues.foxy_each || 0) * (allValues.foxy_term || 36)
+              };
+            }
+            return item;
+          });
+          setLineItems(updatedLineItems);
+        }}
+      >
         <Table
           columns={columns}
           dataSource={lineItems}

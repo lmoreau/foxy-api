@@ -91,8 +91,8 @@ const useQuoteLineItems = (
       foxy_each: 0,
       foxy_mrr: 0,
       foxy_linetcv: 0,
-      foxy_term: 12,
-      foxy_revenuetype: 0,
+      foxy_term: 36,
+      foxy_revenuetype: null,
       foxy_renewaltype: '',
       foxy_renewaldate: '',
       foxy_existingqty: 0,
@@ -109,6 +109,7 @@ const useQuoteLineItems = (
 
   return {
     lineItems,
+    setLineItems,
     editingKey,
     deleteModalVisible,
     configModalVisible,
