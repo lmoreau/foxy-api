@@ -219,7 +219,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
               children: (
                 <Row gutter={[0, 4]}>
                   <Col span={24}>
-                    <Text strong style={{ fontSize: '16px' }}>{accountName}</Text>
+                    <div style={{ marginBottom: '8px' }}>
+                      <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
+                      <Text type="secondary" style={{ fontSize: '14px' }}>
+                        {rawQuoteData.quoteRequest?.foxy_subject}
+                      </Text>
+                    </div>
                   </Col>
                   <Col span={24}>
                     <QuoteSummary owner={owninguser?.fullname || ''} totalMRR={totalMRR} totalTCV={totalTCV} />
