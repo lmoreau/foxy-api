@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, Input } from 'antd';
+import { Modal, Input, Button, message } from 'antd';
 import { WonService } from '../../types/wonServices';
 import dayjs from 'dayjs';
+import { updateWonService } from '../../utils/api';
 
 const { TextArea } = Input;
 
@@ -20,12 +21,35 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
         return date ? dayjs(date).format('MM/DD/YY') : '-';
     };
 
+    const handleSaveAndCreate = async () => {
+        if (!service) return;
+
+        try {
+            await updateWonService({
+                id: service.foxy_wonserviceid,
+                paymentStatus: 612100004 // Status code for "Disputed"
+            });
+            message.success('Successfully updated to Disputed');
+            onClose();
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            message.error('Failed to update payment status');
+        }
+    };
+
     return (
         <Modal
             title="View Service Dispute"
             open={visible}
             onCancel={onClose}
-            footer={null}
+            footer={[
+                <Button key="cancel" onClick={onClose}>
+                    Close
+                </Button>,
+                <Button key="submit" type="primary" onClick={handleSaveAndCreate}>
+                    Save & Create
+                </Button>
+            ]}
             width={800}
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -83,4 +107,4 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
     );
 };
 
-export default ViewServiceDisputeModal; 
+export default ViewServiceDisputeModal;
