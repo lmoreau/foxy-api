@@ -103,22 +103,40 @@ const PageActions: React.FC<{
   expandAll: boolean; 
   onCloneQuote: () => void;
   quoteStage: number;
-}> = ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote, quoteStage }) => {
+  quoteId?: string;
+  onRefresh: () => Promise<void>;
+}> = ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote, quoteStage, quoteId, onRefresh }) => {
   const showQuoteActionButton = [612100000, 612100001, 612100002].includes(quoteStage);
   
   const handleQuoteAction = () => {
     const isSubmit = quoteStage === 612100000;
+    const isResubmit = quoteStage === 612100002;
     const isRecall = quoteStage === 612100001;
     
     Modal.confirm({
-      title: isSubmit ? 'Submit Quote' : isRecall ? 'Recall Quote' : 'Submit Quote',
+      title: isSubmit ? 'Submit Quote' : isResubmit ? 'Resubmit Quote' : 'Recall Quote',
       content: isSubmit ? 
         'Are you sure you want to submit this quote?' : 
-        isRecall ?
-        'Are you sure you want to recall this quote?' :
-        'Are you sure you want to submit this quote?',
-      onOk: () => {
-        // No functionality needed at this time
+        isResubmit ?
+        'Are you sure you want to resubmit this quote?' :
+        'Are you sure you want to recall this quote?',
+      onOk: async () => {
+        try {
+          if (!quoteId) {
+            message.error('Quote ID is missing');
+            return;
+          }
+
+          await updateQuoteRequest(quoteId, {
+            foxy_quotestage: isRecall ? 612100000 : 612100001
+          });
+
+          message.success(`Quote ${isSubmit ? 'submitted' : isResubmit ? 'resubmitted' : 'recalled'} successfully`);
+          await onRefresh();
+        } catch (error) {
+          console.error('Error updating quote stage:', error);
+          message.error(`Failed to ${isSubmit ? 'submit' : isResubmit ? 'resubmit' : 'recall'} quote`);
+        }
       }
     });
   };
@@ -127,7 +145,9 @@ const PageActions: React.FC<{
     <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
       {showQuoteActionButton && (
         <Button onClick={handleQuoteAction}>
-          {quoteStage === 612100000 || quoteStage === 612100002 ? 'Submit Quote' : 'Recall Quote'}
+          {quoteStage === 612100000 ? 'Submit Quote' : 
+           quoteStage === 612100002 ? 'Resubmit Quote' : 
+           'Recall Quote'}
         </Button>
       )}
       <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
@@ -310,6 +330,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                       expandAll={expandAll}
                       onCloneQuote={handleCloneQuote}
                       quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
+                      quoteId={id}
+                      onRefresh={refetch}
                     />
                   </Col>
                   <Col span={24}>
