@@ -221,7 +221,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   };
 
   const handleDeleteLineItem = async (_locationId: string, _itemId: string) => {
-    message.success('Line item deleted successfully');
+    refetchLocations();
   };
 
   const handleAddLineItem = async (_locationId: string, _newItem: any) => {

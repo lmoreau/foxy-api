@@ -416,3 +416,15 @@ export const updateQuoteRequest = async (id: string, data: any) => {
     throw error;
   }
 };
+
+export const deleteQuoteLineItem = async (id: string): Promise<void> => {
+  try {
+    const headers = await getAuthHeaders();
+    const url = `${API_BASE_URL}/deleteQuoteLineItem?id=${id}`;
+    await axios.delete(url, { headers });
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to delete quote line item:', err.response?.data);
+    throw error;
+  }
+};

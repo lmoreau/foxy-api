@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Form, message } from 'antd';
 import { QuoteLineItem, Product } from '../types';
 import dayjs from 'dayjs';
-import { fetchProducts, createQuoteLineItem } from '../utils/api';
+import { fetchProducts, createQuoteLineItem, deleteQuoteLineItem } from '../utils/api';
 
 const useQuoteLineItems = (
   initialLineItems: QuoteLineItem[],
@@ -125,13 +125,21 @@ const useQuoteLineItems = (
     setDeleteModalVisible(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (itemToDelete) {
-      const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
-      setLineItems(newData);
-      onDeleteLineItem(itemToDelete);
-      setDeleteModalVisible(false);
-      setItemToDelete(null);
+      try {
+        await deleteQuoteLineItem(itemToDelete);
+        const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
+        setLineItems(newData);
+        onDeleteLineItem(itemToDelete);
+        message.success('Line item deleted successfully');
+      } catch (error) {
+        message.error('Failed to delete line item');
+        console.error('Delete error:', error);
+      } finally {
+        setDeleteModalVisible(false);
+        setItemToDelete(null);
+      }
     }
   };
 
