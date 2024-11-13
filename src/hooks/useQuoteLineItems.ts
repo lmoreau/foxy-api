@@ -85,13 +85,10 @@ const useQuoteLineItems = (
           try {
             // Create new line item
             const createdItem = await createQuoteLineItem(lineItemData);
-            newData[index] = {
-              ...item,
-              ...createdItem,
-              foxy_Product: { name: row.foxy_Product.name },
-              foxy_FoxyQuoteLocation: { foxy_foxyquoterequestlocationid: locationId }
-            };
             message.success('Line item created successfully');
+            // Instead of updating local state, trigger the parent's callback
+            // which will cause a refetch
+            onUpdateLineItem(createdItem);
           } catch (error) {
             message.error('Failed to create line item');
             console.error('Create line item error:', error);
@@ -106,11 +103,9 @@ const useQuoteLineItems = (
             foxy_linetcv: calculatedTCV,
             foxy_renewaldate: row.foxy_renewaldate?.format('YYYY-MM-DD') || ''
           };
-          newData[index] = updatedItem;
           onUpdateLineItem(updatedItem);
         }
 
-        setLineItems(newData);
         setEditingKey('');
       }
     } catch (errInfo) {

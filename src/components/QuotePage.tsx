@@ -244,7 +244,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     refetch 
   } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
-  const { totalMRR, totalTCV } = calculateTotals(lineItems);
   const [expandAll, setExpandAll] = useState(true);
   const [rawData, setRawData] = useState<{
     lineItems: { [key: string]: QuoteLineItem[] };
@@ -318,28 +317,23 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     }
   };
 
-  const handleUpdateLineItem = (locationId: string, updatedItem: QuoteLineItem) => {
-    const updatedLineItems = lineItems[locationId].map(item => 
-      item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid 
-        ? updatedItem 
-        : item
-    );
-    
-    setLineItems(prev => ({
-      ...prev,
-      [locationId]: updatedLineItems
-    }));
-    
-    message.success('Line item updated successfully');
-    refetchLocations();
+  const handleUpdateLineItem = async (locationId: string, updatedItem: QuoteLineItem) => {
+    try {
+      // Instead of manually managing state, just refetch everything
+      await refetchLocations();
+      message.success('Line item updated successfully');
+    } catch (error) {
+      console.error('Error updating line item:', error);
+      message.error('Failed to update line item');
+    }
   };
 
   const handleDeleteLineItem = async (_locationId: string, _itemId: string) => {
-    refetchLocations();
+    await refetchLocations();
   };
 
   const handleAddLineItem = async (_locationId: string, _newItem: any) => {
-    refetchLocations();
+    await refetchLocations();
   };
 
   const handleSubjectUpdate = async (newSubject: string) => {
@@ -402,8 +396,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                   <Col span={24}>
                     <QuoteSummary 
                       owner={owninguser?.fullname || ''} 
-                      totalMRR={totalMRR} 
-                      totalTCV={totalTCV}
+                      totalMRR={calculateTotals(lineItems).totalMRR} 
+                      totalTCV={calculateTotals(lineItems).totalTCV}
                       quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
                       quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
                       quoteId={rawQuoteData.quoteRequest?.foxy_quoteid || ''}
