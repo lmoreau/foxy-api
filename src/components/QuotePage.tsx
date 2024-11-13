@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal } from 'antd';
-import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons';
+import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal, Tooltip } from 'antd';
+import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
@@ -97,6 +97,44 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
   );
 };
 
+const validateQuoteReadyForSubmit = (locations: QuoteLocation[], lineItems: { [key: string]: QuoteLineItem[] }): boolean => {
+  // Check if there's at least one location
+  if (!locations || locations.length === 0) return false;
+
+  // Check each location
+  for (const location of locations) {
+    const locationId = location.foxy_foxyquoterequestlocationid;
+    const locationLineItems = lineItems[locationId];
+
+    // Check if location has at least one line item
+    if (!locationLineItems || locationLineItems.length === 0) return false;
+
+    // Check each line item in this location
+    for (const item of locationLineItems) {
+      // Basic required fields for all items
+      if (!item.foxy_Product?.name || 
+          item.foxy_revenuetype === undefined || 
+          !item.foxy_term || 
+          !item.foxy_quantity || 
+          item.foxy_each === undefined) {
+        return false;
+      }
+
+      // Additional fields required for Upsell (612100002) and Renewal (612100003)
+      if (item.foxy_revenuetype === 612100002 || item.foxy_revenuetype === 612100003) {
+        if (!item.foxy_renewaltype || 
+            !item.foxy_renewaldate || 
+            item.foxy_existingqty === undefined || 
+            item.foxy_existingmrr === undefined) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+};
+
 const PageActions: React.FC<{ 
   onAddLocation: () => void; 
   onToggleExpand: () => void; 
@@ -105,8 +143,22 @@ const PageActions: React.FC<{
   quoteStage: number;
   quoteId?: string;
   onRefresh: () => Promise<void>;
-}> = ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote, quoteStage, quoteId, onRefresh }) => {
+  locations: QuoteLocation[];
+  lineItems: { [key: string]: QuoteLineItem[] };
+}> = ({ 
+  onAddLocation, 
+  onToggleExpand, 
+  expandAll, 
+  onCloneQuote, 
+  quoteStage, 
+  quoteId, 
+  onRefresh,
+  locations,
+  lineItems 
+}) => {
   const showQuoteActionButton = [612100000, 612100001, 612100002].includes(quoteStage);
+  const isSubmitStage = quoteStage === 612100000 || quoteStage === 612100002;
+  const isQuoteValid = !isSubmitStage || validateQuoteReadyForSubmit(locations, lineItems);
   
   const handleQuoteAction = () => {
     const isSubmit = quoteStage === 612100000;
@@ -144,11 +196,22 @@ const PageActions: React.FC<{
   return (
     <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
       {showQuoteActionButton && (
-        <Button onClick={handleQuoteAction}>
-          {quoteStage === 612100000 ? 'Submit Quote' : 
-           quoteStage === 612100002 ? 'Resubmit Quote' : 
-           'Recall Quote'}
-        </Button>
+        <Tooltip title={
+          !isQuoteValid && isSubmitStage ? 
+          "Quote cannot be submitted. Please ensure: \n• At least one location is added\n• Each location has at least one product\n• All required fields are filled in for each product" 
+          : ""
+        }>
+          <Button 
+            type="primary"
+            icon={<CheckOutlined />}
+            onClick={handleQuoteAction}
+            disabled={!isQuoteValid}
+          >
+            {quoteStage === 612100000 ? 'Submit Quote' : 
+             quoteStage === 612100002 ? 'Resubmit Quote' : 
+             'Recall Quote'}
+          </Button>
+        </Tooltip>
       )}
       <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
         Clone Quote
@@ -332,6 +395,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                       quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
                       quoteId={id}
                       onRefresh={refetch}
+                      locations={locations}
+                      lineItems={lineItems}
                     />
                   </Col>
                   <Col span={24}>
