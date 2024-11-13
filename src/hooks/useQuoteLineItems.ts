@@ -85,7 +85,6 @@ const useQuoteLineItems = (
           try {
             // Create new line item
             const createdItem = await createQuoteLineItem(lineItemData);
-            message.success('Line item created successfully');
             // Instead of updating local state, trigger the parent's callback
             // which will cause a refetch
             onUpdateLineItem(createdItem);
@@ -123,11 +122,19 @@ const useQuoteLineItems = (
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
-        await deleteQuoteLineItem(itemToDelete);
-        const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
-        setLineItems(newData);
-        onDeleteLineItem(itemToDelete);
-        message.success('Line item deleted successfully');
+        // If it's a temporary item, just remove it from local state
+        if (itemToDelete.startsWith('temp-')) {
+          const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
+          setLineItems(newData);
+          message.success('Line item removed');
+        } else {
+          // Only call API for real items
+          await deleteQuoteLineItem(itemToDelete);
+          const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
+          setLineItems(newData);
+          onDeleteLineItem(itemToDelete);
+          message.success('Line item deleted successfully');
+        }
       } catch (error) {
         message.error('Failed to delete line item');
         console.error('Delete error:', error);
