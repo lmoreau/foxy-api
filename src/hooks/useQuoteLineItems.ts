@@ -8,7 +8,7 @@ const useQuoteLineItems = (
   initialLineItems: QuoteLineItem[],
   onUpdateLineItem: (updatedItem: QuoteLineItem) => void,
   onDeleteLineItem: (itemId: string) => void,
-  locationId?: string // Add locationId parameter
+  locationId?: string
 ) => {
   const [lineItems, setLineItems] = useState<QuoteLineItem[]>(initialLineItems);
   const [editingKey, setEditingKey] = useState<string>('');
@@ -18,10 +18,12 @@ const useQuoteLineItems = (
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const [form] = Form.useForm();
 
   const isEditing = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === editingKey;
+  const isSaving = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === savingId;
 
   const edit = (record: QuoteLineItem) => {
     const formValues = {
@@ -40,6 +42,7 @@ const useQuoteLineItems = (
 
   const save = async (key: string) => {
     try {
+      setSavingId(key);
       const row = await form.validateFields();
       const newData = [...lineItems];
       const index = newData.findIndex(item => key === item.foxy_foxyquoterequestlineitemid);
@@ -112,6 +115,8 @@ const useQuoteLineItems = (
       }
     } catch (errInfo) {
       console.log('Validate Failed:', errInfo);
+    } finally {
+      setSavingId(null);
     }
   };
 
@@ -145,29 +150,23 @@ const useQuoteLineItems = (
       }
     }
 
-    const newItem: QuoteLineItem = {
+    const newLineItem: QuoteLineItem = {
       foxy_foxyquoterequestlineitemid: `temp-${Date.now()}`,
-      foxy_quantity: 1,
-      foxy_each: 0,
       foxy_mrr: 0,
       foxy_linetcv: 0,
       foxy_term: 36,
-      foxy_revenuetype: null,
+      foxy_revenuetype: 0,
       foxy_renewaltype: '',
       foxy_renewaldate: '',
       foxy_existingqty: 0,
       foxy_existingmrr: 0,
-      foxy_Product: {
-        name: ''
-      },
-      foxy_FoxyQuoteLocation: locationId ? {
-        foxy_foxyquoterequestlocationid: locationId
-      } : undefined
+      foxy_quantity: 1,
+      foxy_each: 0
     };
 
-    setLineItems(prev => [...prev, newItem]);
-    setEditingKey(newItem.foxy_foxyquoterequestlineitemid);
-    form.setFieldsValue(newItem);
+    setLineItems(prev => [...prev, newLineItem]);
+    setEditingKey(newLineItem.foxy_foxyquoterequestlineitemid);
+    form.setFieldsValue(newLineItem);
   };
 
   return {
@@ -181,6 +180,7 @@ const useQuoteLineItems = (
     loading,
     form,
     isEditing,
+    isSaving,
     edit,
     cancel,
     save,

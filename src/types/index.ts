@@ -1,23 +1,21 @@
 export interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
+  foxy_Product?: {
+    name: string;
+    crc9f_requiresconfiguration?: boolean;
+  };
+  foxy_revenuetype: number;
+  foxy_term: number;
   foxy_quantity: number;
   foxy_each: number;
   foxy_mrr: number;
   foxy_linetcv: number;
-  foxy_term: number;
-  foxy_revenuetype: number | null;
-  foxy_renewaltype: string;
-  foxy_renewaldate: string;
-  foxy_existingqty: number;
-  foxy_existingmrr: number;
-  foxy_Product: {
-    name: string;
-    crc9f_requiresconfiguration?: boolean;
-  };
   foxy_comment?: string;
-  foxy_FoxyQuoteLocation?: {
-    foxy_foxyquoterequestlocationid: string;
-  };
+  foxy_renewaldate?: string;
+  foxy_renewaltype?: string;
+  foxy_existingqty?: number;
+  foxy_existingmrr?: number;
+  createdon?: string;
 }
 
 export interface Product {

@@ -11,6 +11,9 @@ import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
 import CommentModal from './CommentModal';
 import { revenueTypeMap } from '../utils/categoryMapper';
+import { SorterResult } from 'antd/es/table/interface';
+import { TablePaginationConfig } from 'antd/es/table';
+import { FilterValue } from 'antd/es/table/interface';
 
 interface QuoteLineItemsTableProps {
   initialLineItems: QuoteLineItem[];
@@ -33,6 +36,10 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentComment, setCurrentComment] = useState('');
   const [currentLineItemId, setCurrentLineItemId] = useState('');
+  const [sortedInfo, setSortedInfo] = useState<SorterResult<QuoteLineItem>>({
+    columnKey: 'createdon',
+    order: 'ascend'
+  });
 
   const {
     lineItems,
@@ -45,6 +52,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     loading,
     form,
     isEditing,
+    isSaving,
     edit,
     cancel,
     save,
@@ -73,11 +81,27 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     }
   };
 
+  const handleTableChange = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue | null>,
+    sorter: SorterResult<QuoteLineItem> | SorterResult<QuoteLineItem>[],
+    _: any
+  ) => {
+    const currentSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+    setSortedInfo(currentSorter);
+  };
+
   const productNameColumns = [
     {
       title: 'Product Name',
       dataIndex: ['foxy_Product', 'name'],
       key: 'productName',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => {
+        const nameA = a.foxy_Product?.name || '';
+        const nameB = b.foxy_Product?.name || '';
+        return nameA.localeCompare(nameB);
+      },
+      sortOrder: sortedInfo.columnKey === 'productName' ? sortedInfo.order : null,
       render: (text: string, record: QuoteLineItem) => {
         const editable = isEditing(record);
         return (
@@ -157,6 +181,12 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'Revenue Type',
       dataIndex: 'foxy_revenuetype',
       key: 'revenueType',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => {
+        const typeA = revenueTypeMap[a.foxy_revenuetype] || '';
+        const typeB = revenueTypeMap[b.foxy_revenuetype] || '';
+        return typeA.localeCompare(typeB);
+      },
+      sortOrder: sortedInfo.columnKey === 'revenueType' ? sortedInfo.order : null,
       render: (type: number, record: QuoteLineItem) => {
         const editable = isEditing(record);
         const revenueType = revenueTypeMap[type];
@@ -214,6 +244,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'Term',
       dataIndex: 'foxy_term',
       key: 'term',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => (a.foxy_term || 0) - (b.foxy_term || 0),
+      sortOrder: sortedInfo.columnKey === 'term' ? sortedInfo.order : null,
       render: (value: number, record: QuoteLineItem) => {
         const editable = isEditing(record);
         return editable ? (
@@ -234,6 +266,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'Quantity',
       dataIndex: 'foxy_quantity',
       key: 'quantity',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
+      sortOrder: sortedInfo.columnKey === 'quantity' ? sortedInfo.order : null,
       render: (value: number, record: QuoteLineItem) => {
         const editable = isEditing(record);
         return editable ? (
@@ -254,6 +288,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'Each',
       dataIndex: 'foxy_each',
       key: 'each',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => (a.foxy_each || 0) - (b.foxy_each || 0),
+      sortOrder: sortedInfo.columnKey === 'each' ? sortedInfo.order : null,
       render: (value: number, record: QuoteLineItem) => {
         const editable = isEditing(record);
         return editable ? (
@@ -295,7 +331,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             />
           </Form.Item>
         ) : (
-          formatCurrency(value)
+          formatCurrency(record.foxy_each || 0)
         );
       }
     },
@@ -303,6 +339,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'MRR',
       dataIndex: 'foxy_mrr',
       key: 'mrr',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => (a.foxy_mrr || 0) - (b.foxy_mrr || 0),
+      sortOrder: sortedInfo.columnKey === 'mrr' ? sortedInfo.order : null,
       render: (mrr: number, record: QuoteLineItem) => {
         if (isEditing(record)) {
           const quantity = form.getFieldValue('foxy_quantity') || 1;
@@ -317,6 +355,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       title: 'TCV',
       dataIndex: 'foxy_linetcv',
       key: 'tcv',
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => (a.foxy_linetcv || 0) - (b.foxy_linetcv || 0),
+      sortOrder: sortedInfo.columnKey === 'tcv' ? sortedInfo.order : null,
       render: (tcv: number, record: QuoteLineItem) => {
         if (isEditing(record)) {
           const quantity = form.getFieldValue('foxy_quantity') || 1;
@@ -335,6 +375,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       align: 'center' as AlignType,
       render: (_: unknown, record: QuoteLineItem) => {
         const editable = isEditing(record);
+        const saving = isSaving(record);
         const iconColor = record.foxy_comment ? '#1890ff' : '#d9d9d9';
         return (
           <Space>
@@ -346,6 +387,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                     onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
                     style={{ marginRight: 8 }}
                     type="link"
+                    loading={saving}
+                    disabled={saving}
                   />
                 </Tooltip>
                 <Tooltip title="Cancel">
@@ -353,6 +396,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                     icon={<CloseOutlined />}
                     onClick={cancel}
                     type="link"
+                    disabled={saving}
                   />
                 </Tooltip>
               </>
@@ -434,6 +478,12 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setCommentModalVisible(true);
   };
 
+  const sortedLineItems = [...lineItems].sort((a, b) => {
+    const dateA = new Date(a.createdon || 0).getTime();
+    const dateB = new Date(b.createdon || 0).getTime();
+    return dateA - dateB;
+  });
+
   return (
     <>
       <div style={{ marginTop: '20px' }}>
@@ -463,11 +513,12 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         >
           <Table
             columns={productNameColumns}
-            dataSource={lineItems}
+            dataSource={sortedLineItems}
             rowKey="foxy_foxyquoterequestlineitemid"
             pagination={false}
             scroll={{ x: 'max-content' }}
             className="rounded-table"
+            onChange={handleTableChange}
             summary={() => (
               <Table.Summary fixed>
                 <Table.Summary.Row>
