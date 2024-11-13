@@ -15,10 +15,15 @@ export interface QuoteLineItem {
     crc9f_requiresconfiguration?: boolean;
   };
   foxy_comment?: string;
+  foxy_FoxyQuoteLocation?: {
+    foxy_foxyquoterequestlocationid: string;
+  };
 }
 
 export interface Product {
   name: string;
+  productid: string;
+  crc9f_requiresconfiguration?: boolean;
 }
 
 export interface QuoteLocation {

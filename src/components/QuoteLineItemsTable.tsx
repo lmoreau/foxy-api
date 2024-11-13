@@ -18,6 +18,7 @@ interface QuoteLineItemsTableProps {
   onDeleteLineItem: (itemId: string) => void;
   triggerNewLine?: boolean;
   onNewLineComplete?: () => void;
+  locationId?: string;
 }
 
 const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
@@ -26,6 +27,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   onDeleteLineItem,
   triggerNewLine,
   onNewLineComplete,
+  locationId
 }) => {
   const [currentRecord, setCurrentRecord] = useState<QuoteLineItem | undefined>();
   const [commentModalVisible, setCommentModalVisible] = useState(false);
@@ -54,7 +56,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setProducts,
     setLoading,
     addNewLine,
-  } = useQuoteLineItems(initialLineItems, onUpdateLineItem, onDeleteLineItem);
+  } = useQuoteLineItems(initialLineItems, onUpdateLineItem, onDeleteLineItem, locationId);
 
   const fetchProductsData = async () => {
     setLoading(true);

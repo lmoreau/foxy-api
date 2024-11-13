@@ -144,6 +144,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   onDeleteLineItem={(itemId) => onDeleteLineItem(location.foxy_foxyquoterequestlocationid, itemId)}
                   triggerNewLine={location.foxy_foxyquoterequestlocationid === addingProductToLocation}
                   onNewLineComplete={() => setAddingProductToLocation(null)}
+                  locationId={location.foxy_foxyquoterequestlocationid}
                 />
               </div>
             )}

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Form } from 'antd';
+import { Form, message } from 'antd';
 import { QuoteLineItem, Product } from '../types';
 import dayjs from 'dayjs';
-import { fetchProducts } from '../utils/api';
+import { fetchProducts, createQuoteLineItem } from '../utils/api';
 
 const useQuoteLineItems = (
   initialLineItems: QuoteLineItem[],
   onUpdateLineItem: (updatedItem: QuoteLineItem) => void,
-  onDeleteLineItem: (itemId: string) => void
+  onDeleteLineItem: (itemId: string) => void,
+  locationId?: string // Add locationId parameter
 ) => {
   const [lineItems, setLineItems] = useState<QuoteLineItem[]>(initialLineItems);
   const [editingKey, setEditingKey] = useState<string>('');
@@ -23,7 +24,11 @@ const useQuoteLineItems = (
   const isEditing = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === editingKey;
 
   const edit = (record: QuoteLineItem) => {
-    form.setFieldsValue({ ...record, foxy_renewaldate: dayjs(record.foxy_renewaldate) });
+    const formValues = {
+      ...record,
+      foxy_renewaldate: record.foxy_renewaldate ? dayjs(record.foxy_renewaldate) : undefined
+    };
+    form.setFieldsValue(formValues);
     setEditingKey(record.foxy_foxyquoterequestlineitemid);
   };
 
@@ -38,17 +43,72 @@ const useQuoteLineItems = (
       const row = await form.validateFields();
       const newData = [...lineItems];
       const index = newData.findIndex(item => key === item.foxy_foxyquoterequestlineitemid);
+      
       if (index > -1) {
         const item = newData[index];
-        const updatedItem = {
-          ...item,
-          ...row,
-          foxy_renewaldate: row.foxy_renewaldate.format('YYYY-MM-DD'),
-        };
-        newData.splice(index, 1, updatedItem);
+        const isNewItem = item.foxy_foxyquoterequestlineitemid.startsWith('temp-');
+        
+        // Calculate MRR and TCV
+        const quantity = row.foxy_quantity || 1;
+        const each = row.foxy_each || 0;
+        const term = row.foxy_term || 36;
+        const calculatedMRR = quantity * each;
+        const calculatedTCV = calculatedMRR * term;
+
+        const selectedProduct = products.find(p => p.name === row.foxy_Product.name);
+
+        if (isNewItem) {
+          if (!locationId || !selectedProduct?.productid) {
+            message.error('Missing required location or product information');
+            return;
+          }
+
+          // Prepare the data for API
+          const lineItemData = {
+            _foxy_foxyquoterequestlocation_value: locationId,
+            _foxy_product_value: selectedProduct.productid,
+            foxy_quantity: quantity,
+            foxy_each: each,
+            foxy_mrr: calculatedMRR,
+            foxy_linetcv: calculatedTCV,
+            foxy_term: term,
+            foxy_revenuetype: row.foxy_revenuetype,
+            foxy_renewaltype: row.foxy_renewaltype || '',
+            foxy_renewaldate: row.foxy_renewaldate?.format('YYYY-MM-DD') || '',
+            foxy_existingqty: row.foxy_existingqty || 0,
+            foxy_existingmrr: row.foxy_existingmrr || 0
+          };
+
+          try {
+            // Create new line item
+            const createdItem = await createQuoteLineItem(lineItemData);
+            newData[index] = {
+              ...item,
+              ...createdItem,
+              foxy_Product: { name: row.foxy_Product.name },
+              foxy_FoxyQuoteLocation: { foxy_foxyquoterequestlocationid: locationId }
+            };
+            message.success('Line item created successfully');
+          } catch (error) {
+            message.error('Failed to create line item');
+            console.error('Create line item error:', error);
+            return;
+          }
+        } else {
+          // Update existing line item
+          const updatedItem = {
+            ...item,
+            ...row,
+            foxy_mrr: calculatedMRR,
+            foxy_linetcv: calculatedTCV,
+            foxy_renewaldate: row.foxy_renewaldate?.format('YYYY-MM-DD') || ''
+          };
+          newData[index] = updatedItem;
+          onUpdateLineItem(updatedItem);
+        }
+
         setLineItems(newData);
         setEditingKey('');
-        onUpdateLineItem(updatedItem);
       }
     } catch (errInfo) {
       console.log('Validate Failed:', errInfo);
@@ -99,7 +159,10 @@ const useQuoteLineItems = (
       foxy_existingmrr: 0,
       foxy_Product: {
         name: ''
-      }
+      },
+      foxy_FoxyQuoteLocation: locationId ? {
+        foxy_foxyquoterequestlocationid: locationId
+      } : undefined
     };
 
     setLineItems(prev => [...prev, newItem]);

@@ -53,6 +53,32 @@ export const createQuoteRequest = async (data: any) => {
   }
 };
 
+export const createQuoteLineItem = async (data: {
+  _foxy_foxyquoterequestlocation_value: string;
+  _foxy_product_value: string;
+  foxy_quantity?: number;
+  foxy_each?: number;
+  foxy_mrr?: number;
+  foxy_linetcv?: number;
+  foxy_term?: number;
+  foxy_revenuetype?: number;
+  foxy_renewaltype?: string;
+  foxy_renewaldate?: string;
+  foxy_existingqty?: number;
+  foxy_existingmrr?: number;
+}) => {
+  try {
+    const headers = await getAuthHeaders();
+    const url = `${API_BASE_URL}/createQuoteLineItem`;
+    const response = await axios.post(url, data, { headers });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to create quote line item:', err.response?.data);
+    throw error;
+  }
+};
+
 export const updateQuoteLineItem = async (id: string, foxy_comment: string) => {
   try {
     const headers = await getAuthHeaders();
