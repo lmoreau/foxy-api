@@ -4,8 +4,8 @@ import { dataverseUrl } from "../shared/dataverseAuth";
 import { corsHandler } from "../shared/cors";
 
 interface QuoteRequestBody {
-    _foxy_account_value?: string;
-    _foxy_opportunity_value?: string;
+    _foxy_account_value: string;
+    _foxy_opportunity_value: string;
     [key: string]: any;
 }
 
@@ -15,37 +15,36 @@ export async function createQuoteRequest(request: HttpRequest, context: Invocati
         return corsResponse;
     }
 
-    // Get authorization header from request
-    const userToken = request.headers.get('authorization');
-    if (!userToken) {
-        return { 
-            ...corsResponse,
-            status: 401, 
-            body: "Authorization header is required"
-        };
-    }
-
     try {
-        const requestBody = await request.json() as QuoteRequestBody;
-        if (!requestBody) {
-            return { 
+        const requestBody = await request.json();
+        const body = requestBody as QuoteRequestBody;
+        
+        // Validate required fields
+        if (!body._foxy_account_value || !body._foxy_opportunity_value) {
+            return {
                 ...corsResponse,
-                status: 400, 
-                body: "Please provide request body" 
+                status: 400,
+                body: JSON.stringify({
+                    error: "Account and Opportunity IDs are required"
+                }),
+                headers: { 
+                    "Content-Type": "application/json",
+                    ...corsResponse?.headers
+                }
             };
         }
 
         // Log the request body
-        context.log('Request body:', JSON.stringify(requestBody));
+        context.log('Request body:', JSON.stringify(body));
 
         // Transform the request body to use OData binding format
         const modifiedRequestBody = {
-            ...requestBody,
-            ...(requestBody._foxy_account_value && {
-                "foxy_Account@odata.bind": `/accounts(${requestBody._foxy_account_value})`
+            ...body,
+            ...(body._foxy_account_value && {
+                "foxy_Account@odata.bind": `/accounts(${body._foxy_account_value})`
             }),
-            ...(requestBody._foxy_opportunity_value && {
-                "foxy_Opportunity@odata.bind": `/opportunities(${requestBody._foxy_opportunity_value})`
+            ...(body._foxy_opportunity_value && {
+                "foxy_Opportunity@odata.bind": `/opportunities(${body._foxy_opportunity_value})`
             })
         };
 
@@ -61,6 +60,14 @@ export async function createQuoteRequest(request: HttpRequest, context: Invocati
         context.log('Modified request body:', JSON.stringify(modifiedRequestBody));
 
         // Use the user's token directly
+        const userToken = request.headers.get('authorization');
+        if (!userToken) {
+            return { 
+                ...corsResponse,
+                status: 401, 
+                body: "Authorization header is required"
+            };
+        }
         const accessToken = userToken.replace('Bearer ', '');
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequests`;
 

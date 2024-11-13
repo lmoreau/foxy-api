@@ -132,8 +132,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       onOk: async () => {
         try {
           const result = await createQuoteRequest({
-            _foxy_account_value: "9a0a2a91-19b1-ec11-983e-002248ade72c",
-            _foxy_opportunity_value: "faabce5c-de3f-49f7-afcb-96692a592397"
+            _foxy_account_value: accountId,
+            _foxy_opportunity_value: rawQuoteData.quoteRequest._foxy_opportunity_value
           });
           message.success('Quote cloned successfully');
           // Navigate to the new quote
