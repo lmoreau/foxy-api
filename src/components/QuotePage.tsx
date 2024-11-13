@@ -73,7 +73,7 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
 
 const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean; onCloneQuote: () => void }> = 
   ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote }) => (
-  <Space style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end' }}>
+  <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
     <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
       Clone Quote
     </Button>
@@ -217,24 +217,26 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
               key: '1',
               label: 'Quote',
               children: (
-                <Row gutter={[0, 4]}>
-                  <Col span={24}>
+                <Row gutter={[0, 16]}>
+                  <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ marginBottom: '8px' }}>
                       <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
                       <Text type="secondary" style={{ fontSize: '14px' }}>
                         {rawQuoteData.quoteRequest?.foxy_subject}
                       </Text>
                     </div>
-                  </Col>
-                  <Col span={24}>
-                    <QuoteSummary owner={owninguser?.fullname || ''} totalMRR={totalMRR} totalTCV={totalTCV} />
-                  </Col>
-                  <Col span={24}>
                     <TableActions 
-                      onAddLocation={show} 
-                      onToggleExpand={toggleExpandAll} 
+                      onAddLocation={show}
+                      onToggleExpand={toggleExpandAll}
                       expandAll={expandAll}
                       onCloneQuote={handleCloneQuote}
+                    />
+                  </Col>
+                  <Col span={24}>
+                    <QuoteSummary 
+                      owner={owninguser?.fullname || ''} 
+                      totalMRR={totalMRR} 
+                      totalTCV={totalTCV}
                     />
                   </Col>
                   {error && (
