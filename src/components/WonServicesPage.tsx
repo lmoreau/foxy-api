@@ -203,7 +203,7 @@ const WonServicesPage: React.FC = () => {
                     id: id as string,
                     foxyflow_internalnotes: internalNotes,
                     foxyflow_claimnotes: disputeNotes,
-                    paymentStatus: 612100008 // Status code for "Dispute Needed"
+                    foxy_inpaymentstatus: 612100008 // Status code for "Dispute Needed"
                 };
                 console.log('Update data:', updateData);
                 await updateWonService(updateData);

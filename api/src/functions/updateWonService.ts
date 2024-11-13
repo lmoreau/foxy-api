@@ -57,6 +57,16 @@ export async function updateWonService(request: HttpRequest, context: Invocation
             updateData.foxy_inpaymentstatus = requestBody.foxy_inpaymentstatus;
         }
 
+        if (requestBody.foxyflow_internalnotes !== undefined) {
+            context.log(`🟦 Adding internal notes to update: ${requestBody.foxyflow_internalnotes}`);
+            updateData.foxyflow_internalnotes = requestBody.foxyflow_internalnotes;
+        }
+
+        if (requestBody.foxyflow_claimnotes !== undefined) {
+            context.log(`🟦 Adding claim notes to update: ${requestBody.foxyflow_claimnotes}`);
+            updateData.foxyflow_claimnotes = requestBody.foxyflow_claimnotes;
+        }
+
         context.log(`🟦 Making Dataverse request to: ${apiUrl}`);
         context.log(`🟦 Update data: ${JSON.stringify(updateData, null, 2)}`);
         
@@ -69,7 +79,7 @@ export async function updateWonService(request: HttpRequest, context: Invocation
             context.log(`🟦 Dataverse response status: ${response.status}`);
             context.log(`🟦 Dataverse response data: ${JSON.stringify(response.data, null, 2)}`);
 
-            if (response.status !== 204) { // Dataverse returns 204 on successful PATCH
+            if (response.status !== 200 && response.status !== 204) {
                 throw new Error(`Dataverse returned unexpected status: ${response.status}`);
             }
 

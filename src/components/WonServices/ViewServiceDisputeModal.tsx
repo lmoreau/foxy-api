@@ -88,6 +88,10 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
 
                 <div style={{ display: 'flex', gap: '16px' }}>
                     <div style={{ flex: 1 }}>
+                        <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>TCV</div>
+                        <Input value={service?.foxy_tcv?.toFixed(2) || '-'} readOnly />
+                    </div>
+                    <div style={{ flex: 1 }}>
                         <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>Claim ID</div>
                         <Input 
                             value={claimId}
@@ -95,15 +99,6 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
                             placeholder="Enter Claim ID"
                         />
                     </div>
-                    <div style={{ flex: 1 }}></div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '16px' }}>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>TCV</div>
-                        <Input value={service?.foxy_tcv?.toFixed(2) || '-'} readOnly />
-                    </div>
-                    <div style={{ flex: 1 }}></div>
                 </div>
 
                 <div>

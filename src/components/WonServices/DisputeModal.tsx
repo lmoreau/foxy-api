@@ -20,33 +20,25 @@ const DisputeModal: React.FC<DisputeModalProps> = ({
 
     const handleOk = async () => {
         try {
+            // Validate all fields
             const values = await form.validateFields();
             
-            // Validate dispute notes
-            if (!values.disputeNotes || !values.disputeNotes.trim()) {
+            // Get the values after validation
+            const internalNotes = values.internalNotes?.trim();
+            const disputeNotes = values.disputeNotes?.trim();
+
+            // Additional validation for dispute notes
+            if (!disputeNotes) {
                 message.error('Dispute notes cannot be empty');
                 return;
             }
 
-            // Trim whitespace from both fields
-            const internalNotes = values.internalNotes?.trim() || undefined;
-            const disputeNotes = values.disputeNotes.trim();
-
-            // Log the values being sent
-            console.log('Sending dispute data:', {
-                internalNotes,
-                disputeNotes
-            });
-
-            onConfirm(internalNotes, disputeNotes);
+            // Call onConfirm with the values
+            onConfirm(internalNotes || undefined, disputeNotes);
             form.resetFields();
         } catch (error) {
-            console.error('Validation failed:', error);
-            if (error instanceof Error) {
-                message.error(`Validation failed: ${error.message}`);
-            } else {
-                message.error('Validation failed');
-            }
+            // Don't show validation error message - the form will show field-level errors
+            console.error('Form validation failed:', error);
         }
     };
 
@@ -70,12 +62,10 @@ const DisputeModal: React.FC<DisputeModalProps> = ({
                 form={form} 
                 layout="vertical" 
                 requiredMark="optional"
-                validateTrigger={['onChange', 'onBlur']}
             >
                 <Form.Item
                     name="internalNotes"
                     label="Internal Notes"
-                    required={false}
                 >
                     <TextArea 
                         rows={4} 
@@ -89,8 +79,7 @@ const DisputeModal: React.FC<DisputeModalProps> = ({
                     label="Dispute Notes"
                     rules={[
                         { required: true, message: 'Please enter dispute notes' },
-                        { whitespace: true, message: 'Dispute notes cannot be empty' },
-                        { max: 2000, message: 'Dispute notes cannot exceed 2000 characters' }
+                        { whitespace: true, message: 'Dispute notes cannot be empty' }
                     ]}
                 >
                     <TextArea 
