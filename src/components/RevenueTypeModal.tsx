@@ -4,14 +4,14 @@ import { QuoteLineItem } from '../types';
 import dayjs from 'dayjs';
 
 interface RevenueTypeModalProps {
-  visible: boolean;
+  open: boolean;
   onOk: () => void;
   onCancel: () => void;
   initialValues?: QuoteLineItem;
 }
 
 const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
-  visible,
+  open,
   onOk,
   onCancel,
   initialValues
@@ -37,7 +37,7 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
   return (
     <Modal
       title="Revenue Type Configuration"
-      open={visible}
+      open={open}
       onOk={handleSubmit}
       onCancel={onCancel}
     >

@@ -349,7 +349,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         onRefresh={refetchLocations}
       />
       <SubjectEditModal
-        visible={subjectModalVisible}
+        open={subjectModalVisible}
         onCancel={() => setSubjectModalVisible(false)}
         onConfirm={handleSubjectUpdate}
         initialValue={rawQuoteData.quoteRequest?.foxy_subject || ''}

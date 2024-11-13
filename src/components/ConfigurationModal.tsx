@@ -2,19 +2,19 @@ import React from 'react';
 import { Modal } from 'antd';
 
 interface ConfigurationModalProps {
-  visible: boolean;
+  open: boolean;
   onOk: () => void;
   onCancel: () => void;
 }
 
 const ConfigurationModal: React.FC<ConfigurationModalProps> = ({
-  visible,
+  open,
   onOk,
   onCancel,
 }) => (
   <Modal
-    title="Configuration Required"
-    open={visible}
+    title="Configuration"
+    open={open}
     onOk={onOk}
     onCancel={onCancel}
   >

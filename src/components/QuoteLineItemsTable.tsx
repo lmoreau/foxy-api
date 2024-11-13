@@ -573,17 +573,17 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       </div>
 
       <DeleteConfirmationModal
-        visible={deleteModalVisible}
+        open={deleteModalVisible}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalVisible(false)}
       />
       <ConfigurationModal
-        visible={configModalVisible}
+        open={configModalVisible}
         onOk={() => setConfigModalVisible(false)}
         onCancel={() => setConfigModalVisible(false)}
       />
       <RevenueTypeModal
-        visible={revenueTypeModalVisible}
+        open={revenueTypeModalVisible}
         onOk={() => {
           form.validateFields().then(values => {
             const updatedItem = { ...currentRecord, ...values };
@@ -595,7 +595,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
         initialValues={currentRecord}
       />
       <CommentModal
-        visible={commentModalVisible}
+        open={commentModalVisible}
         comment={currentComment}
         onCancel={() => setCommentModalVisible(false)}
         onConfirm={handleCommentConfirm}

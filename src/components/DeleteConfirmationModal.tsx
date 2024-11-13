@@ -2,19 +2,19 @@ import React from 'react';
 import { Modal } from 'antd';
 
 interface DeleteConfirmationModalProps {
-  visible: boolean;
+  open: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
-  visible,
+  open,
   onConfirm,
   onCancel,
 }) => (
   <Modal
     title="Confirm Deletion"
-    open={visible}
+    open={open}
     onOk={onConfirm}
     onCancel={onCancel}
   >

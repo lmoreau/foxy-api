@@ -5,14 +5,14 @@ import { updateQuoteLineItem } from '../utils/api';
 const { TextArea } = Input;
 
 interface CommentModalProps {
-  visible: boolean;
+  open: boolean;
   comment: string;
   onCancel: () => void;
   onConfirm: (updatedComment: string) => void;
   lineItemId: string;
 }
 
-const CommentModal: React.FC<CommentModalProps> = ({ visible, comment, onCancel, onConfirm, lineItemId }) => {
+const CommentModal: React.FC<CommentModalProps> = ({ open, comment, onCancel, onConfirm, lineItemId }) => {
   const [currentComment, setCurrentComment] = useState(comment);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const CommentModal: React.FC<CommentModalProps> = ({ visible, comment, onCancel,
   return (
     <Modal
       title="Comment"
-      visible={visible}
+      open={open}
       onCancel={onCancel}
       footer={[
         <Button key="cancel" onClick={onCancel}>

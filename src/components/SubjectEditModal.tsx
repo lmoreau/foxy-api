@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Modal, Input, Form } from 'antd';
 
 interface SubjectEditModalProps {
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
   onConfirm: (subject: string) => void;
   initialValue: string;
 }
 
 const SubjectEditModal: React.FC<SubjectEditModalProps> = ({
-  visible,
+  open,
   onCancel,
   onConfirm,
   initialValue
@@ -19,7 +19,7 @@ const SubjectEditModal: React.FC<SubjectEditModalProps> = ({
   return (
     <Modal
       title="Edit Subject"
-      open={visible}
+      open={open}
       onCancel={onCancel}
       onOk={() => {
         form.validateFields().then(values => {
