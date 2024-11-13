@@ -54,28 +54,28 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
             title="Owner"
             value={owner}
             prefix={<UserOutlined />}
-            valueStyle={{ fontSize: '14px' }}
+            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
         <Col span={4}>
           <Statistic
             title="Quote"
             value={quoteId}
-            valueStyle={{ fontSize: '14px' }}
+            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
         <Col span={4}>
           <Statistic
             title="Quote Type"
             value={getQuoteTypeLabel(quoteType)}
-            valueStyle={{ fontSize: '14px' }}
+            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
         <Col span={4}>
           <Statistic
             title="Quote Stage"
             value={getQuoteStageLabel(quoteStage)}
-            valueStyle={{ fontSize: '14px' }}
+            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
         <Col span={4}>
