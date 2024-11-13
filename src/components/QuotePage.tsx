@@ -26,9 +26,17 @@ interface QuoteSummaryProps {
   totalTCV: number;
   quoteStage: number;
   quoteType: number;
+  quoteId: string;
 }
 
-const QuoteSummary: React.FC<QuoteSummaryProps> = ({ owner, totalMRR, totalTCV, quoteStage, quoteType }) => {
+const QuoteSummary: React.FC<QuoteSummaryProps> = ({ 
+  owner, 
+  totalMRR, 
+  totalTCV, 
+  quoteStage, 
+  quoteType,
+  quoteId 
+}) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -41,11 +49,18 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({ owner, totalMRR, totalTCV, 
   return (
     <Card size="small">
       <Row gutter={[8, 8]} align="middle">
-        <Col span={4}>
+        <Col span={3}>
           <Statistic
             title="Owner"
             value={owner}
             prefix={<UserOutlined />}
+            valueStyle={{ fontSize: '14px' }}
+          />
+        </Col>
+        <Col span={4}>
+          <Statistic
+            title="Quote"
+            value={quoteId}
             valueStyle={{ fontSize: '14px' }}
           />
         </Col>
@@ -63,14 +78,14 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({ owner, totalMRR, totalTCV, 
             valueStyle={{ fontSize: '14px' }}
           />
         </Col>
-        <Col span={6}>
+        <Col span={4}>
           <Statistic
             title="Total MRR"
             value={formatCurrency(totalMRR)}
             valueStyle={{ color: '#000000', fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
-        <Col span={6}>
+        <Col span={5}>
           <Statistic
             title="Total TCV"
             value={formatCurrency(totalTCV)}
@@ -272,6 +287,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                       totalTCV={totalTCV}
                       quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
                       quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
+                      quoteId={rawQuoteData.quoteRequest?.foxy_quoteid || ''}
                     />
                   </Col>
                   {error && (
