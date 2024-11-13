@@ -8,7 +8,7 @@ import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
 import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
-import { createQuoteRequest } from '../utils/api';
+import { createQuoteRequest, createFoxyQuoteRequestLocation } from '../utils/api';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -131,14 +131,23 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       content: 'Are you sure you want to clone this quote?',
       onOk: async () => {
         try {
-          const result = await createQuoteRequest({
+          const newQuote = await createQuoteRequest({
             _foxy_account_value: accountId,
             _foxy_opportunity_value: rawQuoteData.quoteRequest._foxy_opportunity_value
           });
-          message.success('Quote cloned successfully');
-          // Navigate to the new quote
-          if (result.foxy_foxyquoterequestid) {
-            navigate(`/quote/${result.foxy_foxyquoterequestid}`);
+
+          if (newQuote.foxy_foxyquoterequestid) {
+            const locationPromises = rawQuoteData.locations.map(location => 
+              createFoxyQuoteRequestLocation(
+                location._foxy_building_value,
+                newQuote.foxy_foxyquoterequestid,
+                location._foxy_companylocation_value
+              )
+            );
+
+            await Promise.all(locationPromises);
+            message.success('Quote and locations cloned successfully');
+            navigate(`/quote/${newQuote.foxy_foxyquoterequestid}`);
           }
         } catch (error) {
           message.error('Failed to clone quote');
