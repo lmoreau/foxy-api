@@ -12,6 +12,7 @@ interface WonServicesTableProps {
     selectedRowKeys: React.Key[];
     onExpandedRowsChange: (keys: string[]) => void;
     onSelectionChange: (keys: React.Key[]) => void;
+    onViewDispute?: (record: WonService) => void;
 }
 
 const WonServicesTable: React.FC<WonServicesTableProps> = ({
@@ -21,6 +22,7 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
     selectedRowKeys,
     onExpandedRowsChange,
     onSelectionChange,
+    onViewDispute,
 }) => {
     const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
 
@@ -48,7 +50,7 @@ const WonServicesTable: React.FC<WonServicesTableProps> = ({
     return (
         <Table
             rowSelection={rowSelection}
-            columns={getWonServicesColumns(userAccess)}
+            columns={getWonServicesColumns(userAccess, onViewDispute)}
             dataSource={data}
             loading={loading}
             rowKey={(record: GroupedData | WonService) => 

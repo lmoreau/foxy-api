@@ -257,9 +257,11 @@ export const updateWonService = async ({ id, expectedComp, paymentStatus, foxyfl
   try {
     const headers = await getAuthHeaders();
     const formattedId = id.replace(/[{}]/g, '');
-    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_wonservices(${formattedId})`;
+    const url = `${API_BASE_URL}/updateWonService`;
     
-    const updateData: any = {};
+    const updateData: any = {
+      id: formattedId
+    };
     
     if (expectedComp !== undefined) {
       updateData.foxy_expectedcomp = expectedComp;
@@ -280,12 +282,19 @@ export const updateWonService = async ({ id, expectedComp, paymentStatus, foxyfl
     
     console.log('Making PATCH request to:', url);
     console.log('Update data:', updateData);
+    console.log('Request headers:', {
+      ...headers,
+      Authorization: headers.Authorization ? 'Bearer [redacted]' : 'undefined'
+    });
     
-    await axios.patch(url, updateData, { headers });
+    const response = await axios.patch(url, updateData, { headers });
+    console.log('Update successful:', response.status);
     return { message: "Successfully updated won service" };
   } catch (error) {
-    const err = error as AxiosError;
-    console.error('Failed to update won service:', err.response?.data);
+    console.error('Failed to update won service. Error:', error);
+    if (error instanceof AxiosError) {
+      console.error('API Error details:', error.response?.data);
+    }
     throw error;
   }
 };

@@ -12,6 +12,7 @@ import WonServicesTable from './WonServices/WonServicesTable';
 import OverrideCompModal from './WonServices/OverrideCompModal';
 import PaymentStatusModal from './WonServices/PaymentStatusModal';
 import DisputeModal from './WonServices/DisputeModal';
+import ViewServiceDisputeModal from './WonServices/ViewServiceDisputeModal';
 import { AxiosError } from 'axios';
 import { getInPaymentStatus } from '../utils/constants/inPaymentStatusMapper';
 import { getRevenueType } from '../utils/constants/revenueTypeMapper';
@@ -32,6 +33,8 @@ const WonServicesPage: React.FC = () => {
     const [overrideModalVisible, setOverrideModalVisible] = useState(false);
     const [paymentStatusModalVisible, setPaymentStatusModalVisible] = useState(false);
     const [disputeModalVisible, setDisputeModalVisible] = useState(false);
+    const [viewDisputeModalVisible, setViewDisputeModalVisible] = useState(false);
+    const [selectedDispute, setSelectedDispute] = useState<WonService>();
 
     const filterData = useCallback((sourceData: GroupedData[], search: string, statuses: number[], strict: boolean) => {
         let filtered = sourceData;
@@ -192,8 +195,9 @@ const WonServicesPage: React.FC = () => {
                 console.log('Creating dispute for service:', id);
                 const updateData = {
                     id: id as string,
-                    foxyflow_internalnotes: internalNotes || null,
-                    foxyflow_claimnotes: disputeNotes
+                    foxyflow_internalnotes: internalNotes,
+                    foxyflow_claimnotes: disputeNotes,
+                    paymentStatus: 612100008 // Status code for "Dispute Needed"
                 };
                 console.log('Update data:', updateData);
                 await updateWonService(updateData);
@@ -273,6 +277,11 @@ const WonServicesPage: React.FC = () => {
             console.error('Error exporting to Excel:', error);
             message.error('Failed to export to Excel');
         }
+    };
+
+    const handleViewDispute = (service: WonService) => {
+        setSelectedDispute(service);
+        setViewDisputeModalVisible(true);
     };
 
     const items: MenuProps['items'] = [
@@ -373,6 +382,7 @@ const WonServicesPage: React.FC = () => {
                 selectedRowKeys={selectedRowKeys}
                 onExpandedRowsChange={setExpandedKeys}
                 onSelectionChange={setSelectedRowKeys}
+                onViewDispute={handleViewDispute}
             />
             <OverrideCompModal
                 visible={overrideModalVisible}
@@ -391,6 +401,11 @@ const WonServicesPage: React.FC = () => {
                 onCancel={() => setDisputeModalVisible(false)}
                 onConfirm={handleCreateDispute}
                 selectedCount={selectedRowKeys.length}
+            />
+            <ViewServiceDisputeModal
+                visible={viewDisputeModalVisible}
+                onClose={() => setViewDisputeModalVisible(false)}
+                service={selectedDispute}
             />
         </>
     );

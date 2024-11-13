@@ -8,6 +8,8 @@ interface UpdateWonServiceRequest {
     foxy_expectedcomp?: number;
     crc9f_expectedcompbreakdown?: string;
     foxy_inpaymentstatus?: number;
+    foxyflow_internalnotes?: string | null;
+    foxyflow_claimnotes?: string;
 }
 
 export async function updateWonService(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -28,6 +30,7 @@ export async function updateWonService(request: HttpRequest, context: Invocation
 
     try {
         const requestBody = await request.json() as UpdateWonServiceRequest;
+        context.log('Received request body:', requestBody);
         if (!requestBody.id) {
             return { 
                 ...corsResponse,
@@ -54,7 +57,17 @@ export async function updateWonService(request: HttpRequest, context: Invocation
             updateData.foxy_inpaymentstatus = requestBody.foxy_inpaymentstatus;
         }
 
+        if (requestBody.foxyflow_internalnotes !== undefined) {
+            updateData.foxyflow_internalnotes = requestBody.foxyflow_internalnotes;
+        }
+
+        if (requestBody.foxyflow_claimnotes !== undefined) {
+            updateData.foxyflow_claimnotes = requestBody.foxyflow_claimnotes;
+        }
+
+        context.log('Sending update data to Dataverse:', updateData);
         await axios.patch(apiUrl, updateData, { headers });
+        context.log('Dataverse response received');
 
         return { 
             ...corsResponse,
@@ -66,9 +79,9 @@ export async function updateWonService(request: HttpRequest, context: Invocation
             }
         };
     } catch (error) {
-        context.error('Error in updateWonService:', error);
+        context.error('Full error details:', error);
         if (axios.isAxiosError(error)) {
-            context.log('Axios error response:', error.response?.data);
+            context.log('Full Axios error response:', error.response);
             return {
                 ...corsResponse,
                 status: error.response?.status || 500,

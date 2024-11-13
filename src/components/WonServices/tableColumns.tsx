@@ -7,7 +7,10 @@ import { getRevenueType } from '../../utils/constants/revenueTypeMapper';
 import { GroupedData, WonService, isGroupData } from '../../types/wonServices';
 import { UserAccessLevel } from '../../auth/authService';
 
-export const getWonServicesColumns = (userAccess: UserAccessLevel = 'none'): TableProps<GroupedData | WonService>['columns'] => {
+export const getWonServicesColumns = (
+    userAccess: UserAccessLevel = 'none',
+    onViewDispute?: (record: WonService) => void
+): TableProps<GroupedData | WonService>['columns'] => {
     const columns: TableProps<GroupedData | WonService>['columns'] = [
         {
             title: 'Product',
@@ -97,7 +100,19 @@ export const getWonServicesColumns = (userAccess: UserAccessLevel = 'none'): Tab
                             <div>
                                 <Tag color={tagColor}>{tagText}</Tag>
                                 {userAccess === 'admin' && (
-                                    <Tag color={paymentStatusColor}>{paymentStatus}</Tag>
+                                    <Tag 
+                                        color={paymentStatusColor}
+                                        onClick={() => {
+                                            if (!isGroupData(record) && ['Disputed', 'Dispute Needed'].includes(paymentStatus)) {
+                                                onViewDispute?.(record as WonService);
+                                            }
+                                        }}
+                                        style={{ 
+                                            cursor: ['Disputed', 'Dispute Needed'].includes(paymentStatus) ? 'pointer' : 'default' 
+                                        }}
+                                    >
+                                        {paymentStatus}
+                                    </Tag>
                                 )}
                             </div>
                         </div>
