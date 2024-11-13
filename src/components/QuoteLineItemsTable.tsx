@@ -22,6 +22,7 @@ interface QuoteLineItemsTableProps {
   triggerNewLine?: boolean;
   onNewLineComplete?: () => void;
   locationId?: string;
+  quoteStage?: number;
 }
 
 const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
@@ -30,7 +31,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   onDeleteLineItem,
   triggerNewLine,
   onNewLineComplete,
-  locationId
+  locationId,
+  quoteStage
 }) => {
   const [currentRecord, setCurrentRecord] = useState<QuoteLineItem | undefined>();
   const [commentModalVisible, setCommentModalVisible] = useState(false);
@@ -370,6 +372,37 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       }
     },
     {
+      title: 'Margin',
+      dataIndex: 'foxy_margin',
+      key: 'margin',
+      hidden: quoteStage !== 612100009,
+      sorter: (a: QuoteLineItem, b: QuoteLineItem) => (a.foxy_margin || 0) - (b.foxy_margin || 0),
+      sortOrder: sortedInfo.columnKey === 'margin' ? sortedInfo.order : null,
+      render: (value: number, record: QuoteLineItem) => {
+        const editable = isEditing(record) && quoteStage === 612100009;
+        return editable ? (
+          <Form.Item
+            name="foxy_margin"
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: 'Margin is required' }]}
+          >
+            <InputNumber
+              min={0}
+              max={100}
+              formatter={value => `${value}%`}
+              parser={(value: string | undefined): number => {
+                const parsed = value ? parseFloat(value.replace('%', '')) : 0;
+                return isNaN(parsed) ? 0 : parsed;
+              }}
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+        ) : (
+          quoteStage === 612100009 ? `${record.foxy_margin || 0}%` : null
+        );
+      }
+    },
+    {
       title: '',
       key: 'actions',
       align: 'center' as AlignType,
@@ -512,7 +545,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           }}
         >
           <Table
-            columns={productNameColumns}
+            columns={productNameColumns.filter(col => !col.hidden)}
             dataSource={sortedLineItems}
             rowKey="foxy_foxyquoterequestlineitemid"
             pagination={false}

@@ -17,6 +17,7 @@ interface LocationsTableProps {
   onDeleteLineItem: (locationId: string, itemId: string) => void;
   expandAll: boolean;
   onDeleteLocation: (locationId: string) => void;
+  quoteStage?: number;
 }
 
 const LocationsTable: React.FC<LocationsTableProps> = ({
@@ -27,6 +28,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   onDeleteLineItem,
   expandAll,
   onDeleteLocation,
+  quoteStage,
 }) => {
   const [expandedLocations, setExpandedLocations] = useState<string[]>([]);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -145,6 +147,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   triggerNewLine={location.foxy_foxyquoterequestlocationid === addingProductToLocation}
                   onNewLineComplete={() => setAddingProductToLocation(null)}
                   locationId={location.foxy_foxyquoterequestlocationid}
+                  quoteStage={quoteStage}
                 />
               </div>
             )}

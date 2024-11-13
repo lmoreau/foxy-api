@@ -401,3 +401,18 @@ export const recalculateWonServicePayments = async (wonServiceId: string) => {
     throw error;
   }
 };
+
+export const updateQuoteRequest = async (id: string, data: any) => {
+  try {
+    const headers = await getAuthHeaders();
+    const formattedId = id.replace(/[{}]/g, '');
+    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_foxyquoterequests(${formattedId})`;
+    
+    const response = await axios.patch(url, data, { headers });
+    return response.data;
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error('Failed to update quote request:', err.response?.data);
+    throw error;
+  }
+};

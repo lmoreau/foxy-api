@@ -10,6 +10,7 @@ export interface QuoteLineItem {
   foxy_each: number;
   foxy_mrr: number;
   foxy_linetcv: number;
+  foxy_margin?: number;
   foxy_comment?: string;
   foxy_renewaldate?: string;
   foxy_renewaltype?: string;
@@ -42,6 +43,7 @@ export interface QuoteRequest {
     accountid: string;
   };
   foxy_quoteid: string;
+  foxy_quotestage: number;
   owninguser: {
     fullname: string;
     internalemailaddress: string;

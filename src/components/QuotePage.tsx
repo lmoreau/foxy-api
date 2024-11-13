@@ -1,14 +1,15 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal } from 'antd';
-import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined } from '@ant-design/icons';
+import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, EditOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
 import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
 import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
-import { createQuoteRequest, createFoxyQuoteRequestLocation } from '../utils/api';
+import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../utils/api';
+import SubjectEditModal from './SubjectEditModal';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -100,7 +101,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     accountId, 
     refetchLocations,
     rawQuoteData,
-    setLineItems 
+    setLineItems,
+    refetch 
   } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
   const { totalMRR, totalTCV } = calculateTotals(lineItems);
@@ -114,6 +116,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     locations: [],
     quoteRequest: {}
   });
+  const [subjectModalVisible, setSubjectModalVisible] = useState(false);
 
   React.useEffect(() => {
     setQuoteRequestId(quoteId);
@@ -200,6 +203,19 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     refetchLocations();
   };
 
+  const handleSubjectUpdate = async (newSubject: string) => {
+    try {
+      await updateQuoteRequest(id!, { foxy_subject: newSubject });
+      await refetch();
+      message.success('Subject updated successfully');
+    } catch (error) {
+      message.error('Failed to update subject');
+      console.error('Update subject error:', error);
+    } finally {
+      setSubjectModalVisible(false);
+    }
+  };
+
   if (loading) {
     return (
       <Layout style={{ minHeight: '100vh', padding: '12px' }}>
@@ -221,9 +237,16 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                   <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ marginBottom: '8px' }}>
                       <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
-                      <Text type="secondary" style={{ fontSize: '14px' }}>
-                        {rawQuoteData.quoteRequest?.foxy_subject}
-                      </Text>
+                      <Space>
+                        <Text type="secondary" style={{ fontSize: '14px' }}>
+                          {rawQuoteData.quoteRequest?.foxy_subject}
+                        </Text>
+                        <Button
+                          type="text"
+                          icon={<EditOutlined />}
+                          onClick={() => setSubjectModalVisible(true)}
+                        />
+                      </Space>
                     </div>
                     <TableActions 
                       onAddLocation={show}
@@ -253,6 +276,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                       onDeleteLocation={handleDeleteLocation}
                       onUpdateLineItem={handleUpdateLineItem}
                       onDeleteLineItem={handleDeleteLineItem}
+                      quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
                     />
                   </Col>
                 </Row>
@@ -295,6 +319,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         quoteRequestId={id || ''}
         accountId={accountId}
         onRefresh={refetchLocations}
+      />
+      <SubjectEditModal
+        visible={subjectModalVisible}
+        onCancel={() => setSubjectModalVisible(false)}
+        onConfirm={handleSubjectUpdate}
+        initialValue={rawQuoteData.quoteRequest?.foxy_subject || ''}
       />
     </Layout>
   );

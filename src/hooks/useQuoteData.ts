@@ -29,6 +29,7 @@ export interface QuoteDataState {
 export interface QuoteDataReturn extends QuoteDataState {
   refetchLocations: () => Promise<void>;
   setLineItems: React.Dispatch<React.SetStateAction<{ [key: string]: QuoteLineItem[] }>>;
+  refetch: () => Promise<void>;
 }
 
 export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
@@ -143,6 +144,34 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
     }
   }, [id]);
 
+  const refetch = async () => {
+    if (!id) return;
+    
+    setState(prev => ({ ...prev, loading: true }));
+    try {
+      const quoteData = await getQuoteRequestById(id);
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        accountName: quoteData.foxy_Account.name,
+        accountId: quoteData.foxy_Account.accountid,
+        quoteId: quoteData.foxy_quoteid,
+        owninguser: quoteData.owninguser,
+        rawQuoteData: {
+          ...prev.rawQuoteData,
+          quoteRequest: quoteData
+        }
+      }));
+    } catch (error) {
+      console.error('Error refetching data:', error);
+      let errorMessage = 'An unknown error occurred';
+      if (error instanceof Error) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      setState(prev => ({ ...prev, error: errorMessage, loading: false }));
+    }
+  };
+
   useEffect(() => {
     setState(prev => ({ ...prev, loading: true }));
     fetchData();
@@ -152,6 +181,7 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
     ...state,
     lineItems,
     setLineItems,
-    refetchLocations
+    refetchLocations,
+    refetch
   };
 };
