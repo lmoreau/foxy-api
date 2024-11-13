@@ -85,8 +85,13 @@ const useQuoteLineItems = (
           try {
             // Create new line item
             const createdItem = await createQuoteLineItem(lineItemData);
-            // Instead of updating local state, trigger the parent's callback
-            // which will cause a refetch
+            // Update the local state with the real ID
+            newData[index] = {
+              ...item,
+              ...createdItem,
+              foxy_Product: { name: row.foxy_Product.name }
+            };
+            setLineItems(newData);
             onUpdateLineItem(createdItem);
           } catch (error) {
             message.error('Failed to create line item');
@@ -122,22 +127,23 @@ const useQuoteLineItems = (
   const confirmDelete = async () => {
     if (itemToDelete) {
       try {
-        // If it's a temporary item, just remove it from local state
+        await deleteQuoteLineItem(itemToDelete);
+        // Update local state first
+        const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
+        setLineItems(newData);
+        // Then notify parent
+        onDeleteLineItem(itemToDelete);
+        message.success('Line item deleted successfully');
+      } catch (error) {
+        // If the delete fails because it's a temporary ID, just remove it from local state
         if (itemToDelete.startsWith('temp-')) {
           const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
           setLineItems(newData);
           message.success('Line item removed');
         } else {
-          // Only call API for real items
-          await deleteQuoteLineItem(itemToDelete);
-          const newData = lineItems.filter(item => item.foxy_foxyquoterequestlineitemid !== itemToDelete);
-          setLineItems(newData);
-          onDeleteLineItem(itemToDelete);
-          message.success('Line item deleted successfully');
+          message.error('Failed to delete line item');
+          console.error('Delete error:', error);
         }
-      } catch (error) {
-        message.error('Failed to delete line item');
-        console.error('Delete error:', error);
       } finally {
         setDeleteModalVisible(false);
         setItemToDelete(null);
