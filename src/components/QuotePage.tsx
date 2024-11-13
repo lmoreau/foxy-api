@@ -97,20 +97,51 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
   );
 };
 
-const TableActions: React.FC<{ onAddLocation: () => void; onToggleExpand: () => void; expandAll: boolean; onCloneQuote: () => void }> = 
-  ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote }) => (
-  <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
-    <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
-      Clone Quote
-    </Button>
-    <Button icon={<PlusOutlined />} onClick={onAddLocation}>
-      Add Location
-    </Button>
-    <Button icon={expandAll ? <ShrinkOutlined /> : <ExpandAltOutlined />} onClick={onToggleExpand}>
-      {expandAll ? 'Collapse All' : 'Expand All'}
-    </Button>
-  </Space>
-);
+const PageActions: React.FC<{ 
+  onAddLocation: () => void; 
+  onToggleExpand: () => void; 
+  expandAll: boolean; 
+  onCloneQuote: () => void;
+  quoteStage: number;
+}> = ({ onAddLocation, onToggleExpand, expandAll, onCloneQuote, quoteStage }) => {
+  const showQuoteActionButton = [612100000, 612100001, 612100002].includes(quoteStage);
+  
+  const handleQuoteAction = () => {
+    const isSubmit = quoteStage === 612100000;
+    const isRecall = quoteStage === 612100001;
+    
+    Modal.confirm({
+      title: isSubmit ? 'Submit Quote' : isRecall ? 'Recall Quote' : 'Submit Quote',
+      content: isSubmit ? 
+        'Are you sure you want to submit this quote?' : 
+        isRecall ?
+        'Are you sure you want to recall this quote?' :
+        'Are you sure you want to submit this quote?',
+      onOk: () => {
+        // No functionality needed at this time
+      }
+    });
+  };
+
+  return (
+    <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      {showQuoteActionButton && (
+        <Button onClick={handleQuoteAction}>
+          {quoteStage === 612100000 || quoteStage === 612100002 ? 'Submit Quote' : 'Recall Quote'}
+        </Button>
+      )}
+      <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
+        Clone Quote
+      </Button>
+      <Button icon={<PlusOutlined />} onClick={onAddLocation}>
+        Add Location
+      </Button>
+      <Button icon={expandAll ? <ShrinkOutlined /> : <ExpandAltOutlined />} onClick={onToggleExpand}>
+        {expandAll ? 'Collapse All' : 'Expand All'}
+      </Button>
+    </Space>
+  );
+};
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
@@ -273,11 +304,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                         />
                       </Space>
                     </div>
-                    <TableActions 
+                    <PageActions 
                       onAddLocation={show}
                       onToggleExpand={toggleExpandAll}
                       expandAll={expandAll}
                       onCloneQuote={handleCloneQuote}
+                      quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
                     />
                   </Col>
                   <Col span={24}>
