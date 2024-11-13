@@ -155,7 +155,7 @@ const useQuoteLineItems = (
       foxy_mrr: 0,
       foxy_linetcv: 0,
       foxy_term: 36,
-      foxy_revenuetype: 0,
+      foxy_revenuetype: undefined as unknown as number,
       foxy_renewaltype: '',
       foxy_renewaldate: '',
       foxy_existingqty: 0,

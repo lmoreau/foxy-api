@@ -22,7 +22,8 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
     if (initialValues) {
       form.setFieldsValue({
         ...initialValues,
-        foxy_renewaldate: initialValues.foxy_renewaldate ? dayjs(initialValues.foxy_renewaldate) : null
+        foxy_renewaldate: initialValues.foxy_renewaldate ? dayjs(initialValues.foxy_renewaldate) : null,
+        foxy_existingqty: initialValues.foxy_existingqty || 1  // Default to 1
       });
     }
   }, [initialValues, form]);
@@ -43,6 +44,7 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
       <Form
         form={form}
         layout="vertical"
+        initialValues={{ foxy_existingqty: 1 }}  // Set default here too
       >
         <Form.Item
           name="foxy_renewaltype"
@@ -68,7 +70,7 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
           label="Existing Quantity"
           rules={[{ required: true, message: 'Please enter the existing quantity' }]}
         >
-          <InputNumber min={0} style={{ width: '100%' }} />
+          <InputNumber min={1} defaultValue={1} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item
@@ -77,13 +79,10 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
           rules={[{ required: true, message: 'Please enter the existing MRR' }]}
         >
           <InputNumber 
-            min={0} 
+            min={0}
+            step={0.01}
+            precision={2}
             style={{ width: '100%' }}
-            formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value: string | undefined) => {
-              const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
-              return parsedValue || 0;  // Ensure we always return a number
-            }}
           />
         </Form.Item>
       </Form>

@@ -191,15 +191,15 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       sortOrder: sortedInfo.columnKey === 'revenueType' ? sortedInfo.order : null,
       render: (type: number, record: QuoteLineItem) => {
         const editable = isEditing(record);
-        const revenueType = revenueTypeMap[type];
+        const revenueType = type ? revenueTypeMap[type] : '';
         const showIcon = revenueType === 'Renewal' || revenueType === 'Upsell';
         
         const isDataComplete = record.foxy_renewaldate && 
                              record.foxy_renewaltype && 
-                             record.foxy_existingqty !== undefined && 
-                             record.foxy_existingqty !== null &&
+                             record.foxy_existingqty && 
+                             record.foxy_existingqty > 0 && 
                              record.foxy_existingmrr !== undefined && 
-                             record.foxy_existingmrr !== null;
+                             record.foxy_existingmrr > 0;
         
         const iconColor = isDataComplete ? '#52c41a' : '#ff4d4f';
         
@@ -212,7 +212,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
               >
                 <Select style={{ width: '100%' }}>
                   {Object.entries(revenueTypeMap)
-                    .filter(([_, label]) => label !== 'Net New')
+                    .filter(([value, _]) => value !== '0')
                     .map(([value, label]) => (
                       <Select.Option key={value} value={parseInt(value)}>
                         {label}
@@ -302,11 +302,8 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           >
             <InputNumber
               min={0}
-              formatter={value => `$${value}`}
-              parser={(value: string | undefined) => {
-                const parsedValue = value ? parseFloat(value.replace(/\$\s?|(,*)/g, '')) : 0;
-                return isNaN(parsedValue) ? 0 : parsedValue;
-              }}
+              step={0.01}
+              precision={2}
               style={{ width: '100%' }}
               onChange={(value) => {
                 const quantity = form.getFieldValue('foxy_quantity') || 1;
