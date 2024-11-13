@@ -512,6 +512,9 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
   };
 
   const sortedLineItems = [...lineItems].sort((a, b) => {
+    if (a.foxy_foxyquoterequestlineitemid.startsWith('temp-')) return 1;
+    if (b.foxy_foxyquoterequestlineitemid.startsWith('temp-')) return -1;
+
     const dateA = new Date(a.createdon || 0).getTime();
     const dateB = new Date(b.createdon || 0).getTime();
     return dateA - dateB;
