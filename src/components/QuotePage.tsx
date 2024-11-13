@@ -10,6 +10,8 @@ import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
 import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../utils/api';
 import SubjectEditModal from './SubjectEditModal';
+import { getQuoteStageLabel } from '../utils/quoteStageMapper';
+import { getQuoteTypeLabel } from '../utils/quoteTypeMapper';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -18,7 +20,15 @@ interface QuotePageProps {
   setQuoteRequestId: Dispatch<SetStateAction<string | undefined>>;
 }
 
-const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number }> = ({ owner, totalMRR, totalTCV }) => {
+interface QuoteSummaryProps {
+  owner: string;
+  totalMRR: number;
+  totalTCV: number;
+  quoteStage: number;
+  quoteType: number;
+}
+
+const QuoteSummary: React.FC<QuoteSummaryProps> = ({ owner, totalMRR, totalTCV, quoteStage, quoteType }) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -42,14 +52,14 @@ const QuoteSummary: React.FC<{ owner: string; totalMRR: number; totalTCV: number
         <Col span={4}>
           <Statistic
             title="Quote Type"
-            value="Wireline"
+            value={getQuoteTypeLabel(quoteType)}
             valueStyle={{ fontSize: '14px' }}
           />
         </Col>
         <Col span={4}>
           <Statistic
             title="Quote Stage"
-            value="Draft"
+            value={getQuoteStageLabel(quoteStage)}
             valueStyle={{ fontSize: '14px' }}
           />
         </Col>
@@ -260,6 +270,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                       owner={owninguser?.fullname || ''} 
                       totalMRR={totalMRR} 
                       totalTCV={totalTCV}
+                      quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
+                      quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
                     />
                   </Col>
                   {error && (
