@@ -247,38 +247,34 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
 
 interface UpdateWonServiceParams {
   id: string;
-  expectedComp?: number;
-  paymentStatus?: number;
+  foxy_expectedcomp?: number;
+  foxy_inpaymentstatus?: number;
   foxyflow_internalnotes?: string | null;
   foxyflow_claimnotes?: string;
+  crc9f_claimid?: string;
 }
 
-export const updateWonService = async ({ id, expectedComp, paymentStatus, foxyflow_internalnotes, foxyflow_claimnotes }: UpdateWonServiceParams) => {
+export const updateWonService = async ({ 
+  id, 
+  foxy_expectedcomp, 
+  foxy_inpaymentstatus, 
+  foxyflow_internalnotes, 
+  foxyflow_claimnotes, 
+  crc9f_claimid 
+}: UpdateWonServiceParams) => {
   try {
     const headers = await getAuthHeaders();
     const formattedId = id.replace(/[{}]/g, '');
     const url = `${API_BASE_URL}/updateWonService`;
     
     const updateData: any = {
-      id: formattedId
+      id: formattedId,
+      ...(foxy_expectedcomp !== undefined && { foxy_expectedcomp }),
+      ...(foxy_inpaymentstatus !== undefined && { foxy_inpaymentstatus }),
+      ...(foxyflow_internalnotes !== undefined && { foxyflow_internalnotes }),
+      ...(foxyflow_claimnotes !== undefined && { foxyflow_claimnotes }),
+      ...(crc9f_claimid !== undefined && { crc9f_claimid })
     };
-    
-    if (expectedComp !== undefined) {
-      updateData.foxy_expectedcomp = expectedComp;
-      updateData.crc9f_expectedcompbreakdown = `Manually overridden to ${expectedComp}`;
-    }
-    
-    if (paymentStatus !== undefined) {
-      updateData.foxy_inpaymentstatus = paymentStatus;
-    }
-
-    if (foxyflow_internalnotes !== undefined) {
-      updateData.foxyflow_internalnotes = foxyflow_internalnotes;
-    }
-
-    if (foxyflow_claimnotes !== undefined) {
-      updateData.foxyflow_claimnotes = foxyflow_claimnotes;
-    }
     
     console.log('Making PATCH request to:', url);
     console.log('Update data:', updateData);

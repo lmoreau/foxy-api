@@ -62,7 +62,8 @@ export async function listWonServices(request: HttpRequest, context: InvocationC
             'foxy_mrruptick',
             'foxy_totalinpayments',
             'foxy_expectedcomp',
-            'foxyflow_claimnotes'
+            'foxyflow_claimnotes',
+            'crc9f_claimid'
         ];
 
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices?$select=${selectFields.join(',')}&$expand=foxy_Product($select=name),foxy_Account($select=name),foxy_Opportunity($select=name,foxy_sfdcoppid,actualclosedate,actualvalue),foxy_AccountLocation($expand=foxy_Building($select=foxy_fulladdress))&$filter=foxy_Opportunity/actualclosedate ge ${startDate} and foxy_Opportunity/actualclosedate le ${endDate}`;

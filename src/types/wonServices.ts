@@ -43,6 +43,7 @@ export interface WonService {
             foxy_buildingid: string;
         };
     };
+    crc9f_claimid?: string;
 }
 
 export interface GroupedData {

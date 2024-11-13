@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, message } from 'antd';
 import { WonService } from '../../types/wonServices';
 import dayjs from 'dayjs';
@@ -17,6 +17,12 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
     onClose,
     service
 }) => {
+    const [claimId, setClaimId] = useState(service?.crc9f_claimid || '');
+
+    useEffect(() => {
+        setClaimId(service?.crc9f_claimid || '');
+    }, [service]);
+
     const formatDate = (date?: string) => {
         return date ? dayjs(date).format('MM/DD/YY') : '-';
     };
@@ -24,11 +30,16 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
     const handleSaveAndCreate = async () => {
         if (!service) return;
 
+        const updateData = {
+            id: service.foxy_wonserviceid,
+            foxy_inpaymentstatus: 612100004,
+            crc9f_claimid: claimId
+        };
+        
+        console.log('Sending update data:', updateData);
+        
         try {
-            await updateWonService({
-                id: service.foxy_wonserviceid,
-                paymentStatus: 612100004 // Status code for "Disputed"
-            });
+            await updateWonService(updateData);
             message.success('Successfully updated to Disputed');
             onClose();
         } catch (error) {
@@ -73,6 +84,18 @@ const ViewServiceDisputeModal: React.FC<ViewServiceDisputeModalProps> = ({
                         <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>Opportunity</div>
                         <Input value={service?.foxy_Opportunity?.foxy_sfdcoppid || '-'} readOnly />
                     </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ marginBottom: '4px', fontWeight: 'bold' }}>Claim ID</div>
+                        <Input 
+                            value={claimId}
+                            onChange={(e) => setClaimId(e.target.value)}
+                            placeholder="Enter Claim ID"
+                        />
+                    </div>
+                    <div style={{ flex: 1 }}></div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '16px' }}>

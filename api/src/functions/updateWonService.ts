@@ -10,6 +10,7 @@ interface UpdateWonServiceRequest {
     foxy_inpaymentstatus?: number;
     foxyflow_internalnotes?: string | null;
     foxyflow_claimnotes?: string;
+    crc9f_claimid?: string;
 }
 
 export async function updateWonService(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -30,7 +31,8 @@ export async function updateWonService(request: HttpRequest, context: Invocation
 
     try {
         const requestBody = await request.json() as UpdateWonServiceRequest;
-        context.log('Received request body:', requestBody);
+        context.log(`🟦 Received request body: ${JSON.stringify(requestBody, null, 2)}`);
+        
         if (!requestBody.id) {
             return { 
                 ...corsResponse,
@@ -45,43 +47,52 @@ export async function updateWonService(request: HttpRequest, context: Invocation
 
         const updateData: any = {};
 
-        if (requestBody.foxy_expectedcomp !== undefined) {
-            updateData.foxy_expectedcomp = requestBody.foxy_expectedcomp;
-        }
-
-        if (requestBody.crc9f_expectedcompbreakdown !== undefined) {
-            updateData.crc9f_expectedcompbreakdown = requestBody.crc9f_expectedcompbreakdown;
+        if (requestBody.crc9f_claimid !== undefined) {
+            context.log(`🟦 Adding claim ID to update: ${requestBody.crc9f_claimid}`);
+            updateData.crc9f_claimid = requestBody.crc9f_claimid;
         }
 
         if (requestBody.foxy_inpaymentstatus !== undefined) {
+            context.log(`🟦 Adding payment status to update: ${requestBody.foxy_inpaymentstatus}`);
             updateData.foxy_inpaymentstatus = requestBody.foxy_inpaymentstatus;
         }
 
-        if (requestBody.foxyflow_internalnotes !== undefined) {
-            updateData.foxyflow_internalnotes = requestBody.foxyflow_internalnotes;
-        }
+        context.log(`🟦 Making Dataverse request to: ${apiUrl}`);
+        context.log(`🟦 Update data: ${JSON.stringify(updateData, null, 2)}`);
+        
+        try {
+            const response = await axios.patch(apiUrl, updateData, { 
+                headers,
+                validateStatus: null // This will prevent axios from throwing on any status code
+            });
+            
+            context.log(`🟦 Dataverse response status: ${response.status}`);
+            context.log(`🟦 Dataverse response data: ${JSON.stringify(response.data, null, 2)}`);
 
-        if (requestBody.foxyflow_claimnotes !== undefined) {
-            updateData.foxyflow_claimnotes = requestBody.foxyflow_claimnotes;
-        }
-
-        context.log('Sending update data to Dataverse:', updateData);
-        await axios.patch(apiUrl, updateData, { headers });
-        context.log('Dataverse response received');
-
-        return { 
-            ...corsResponse,
-            status: 200,
-            body: JSON.stringify({ message: "Successfully updated won service" }),
-            headers: { 
-                "Content-Type": "application/json",
-                ...corsResponse?.headers
+            if (response.status !== 204) { // Dataverse returns 204 on successful PATCH
+                throw new Error(`Dataverse returned unexpected status: ${response.status}`);
             }
-        };
+
+            return { 
+                ...corsResponse,
+                status: 200,
+                body: JSON.stringify({ message: "Successfully updated won service" }),
+                headers: { 
+                    "Content-Type": "application/json",
+                    ...corsResponse?.headers
+                }
+            };
+        } catch (dataverseError) {
+            context.log(`🔴 Dataverse request failed: ${dataverseError}`);
+            if (axios.isAxiosError(dataverseError)) {
+                context.log(`🔴 Dataverse error response: ${JSON.stringify(dataverseError.response?.data, null, 2)}`);
+            }
+            throw dataverseError;
+        }
     } catch (error) {
-        context.error('Full error details:', error);
+        context.log(`🔴 Function error: ${error}`);
         if (axios.isAxiosError(error)) {
-            context.log('Full Axios error response:', error.response);
+            context.log(`🔴 Full error response: ${JSON.stringify(error.response?.data, null, 2)}`);
             return {
                 ...corsResponse,
                 status: error.response?.status || 500,

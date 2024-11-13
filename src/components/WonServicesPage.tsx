@@ -152,7 +152,10 @@ const WonServicesPage: React.FC = () => {
         try {
             // Update each selected service
             for (const id of selectedRowKeys) {
-                await updateWonService({ id: id as string, expectedComp: amount });
+                await updateWonService({ 
+                    id: id as string, 
+                    foxy_expectedcomp: amount 
+                });
             }
             message.success('Successfully updated compensation');
             setOverrideModalVisible(false);
@@ -172,7 +175,10 @@ const WonServicesPage: React.FC = () => {
         try {
             // Update each selected service
             for (const id of selectedRowKeys) {
-                await updateWonService({ id: id as string, paymentStatus: status });
+                await updateWonService({ 
+                    id: id as string, 
+                    foxy_inpaymentstatus: status 
+                });
             }
             message.success('Successfully updated payment status');
             setPaymentStatusModalVisible(false);
@@ -282,6 +288,11 @@ const WonServicesPage: React.FC = () => {
     const handleViewDispute = (service: WonService) => {
         setSelectedDispute(service);
         setViewDisputeModalVisible(true);
+    };
+
+    const handleDisputeModalClose = async () => {
+        setViewDisputeModalVisible(false);
+        await fetchData(); // Refresh data after modal closes
     };
 
     const items: MenuProps['items'] = [
@@ -404,7 +415,7 @@ const WonServicesPage: React.FC = () => {
             />
             <ViewServiceDisputeModal
                 visible={viewDisputeModalVisible}
-                onClose={() => setViewDisputeModalVisible(false)}
+                onClose={handleDisputeModalClose}
                 service={selectedDispute}
             />
         </>
