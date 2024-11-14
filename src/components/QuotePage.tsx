@@ -401,7 +401,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <QuoteCPQHeader />
-      <Content style={{ padding: '12px' }}>
+      <Content style={{ padding: '20px 50px' }}>
         <Tabs
           items={[
             {

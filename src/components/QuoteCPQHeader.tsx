@@ -11,7 +11,6 @@ const QuoteCPQHeader: React.FC = () => {
       {
         key: 'all-quotes',
         label: 'All Quote Requests',
-        // No onClick for now as specified
       }
     ];
   };
@@ -20,7 +19,7 @@ const QuoteCPQHeader: React.FC = () => {
     <Header style={{ 
       display: 'flex', 
       alignItems: 'center', 
-      padding: '0 16px', 
+      padding: 0, 
       height: '48px', 
       lineHeight: '48px',
       justifyContent: 'space-between'
@@ -29,7 +28,8 @@ const QuoteCPQHeader: React.FC = () => {
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
-        minWidth: '200px'
+        minWidth: '200px',
+        paddingLeft: '16px'
       }}>
         <Dropdown 
           menu={{ items: getMenuItems() }}
@@ -62,7 +62,8 @@ const QuoteCPQHeader: React.FC = () => {
       <div style={{ 
         minWidth: '200px',
         display: 'flex',
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        paddingRight: '16px'
       }}>
         <UserOutlined style={{ color: 'white', fontSize: '18px' }} />
       </div>
