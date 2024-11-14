@@ -34,8 +34,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  const [quoteRequestId, setQuoteRequestId] = useState<string | undefined>(undefined);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [_quoteRequestId, setQuoteRequestId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     initializeMsal().then(() => {

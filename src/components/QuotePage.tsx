@@ -293,7 +293,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     accountId, 
     refetchLocations,
     rawQuoteData,
-    setLineItems,
     refetch 
   } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
