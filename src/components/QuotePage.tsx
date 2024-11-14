@@ -43,11 +43,26 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
 
   const handleSave = async () => {
     try {
-      await onOpticQuoteEdit(editValue);
-      setIsEditing(false);
+      const valueToSave = editValue === 'Q-' ? '' : editValue;
+      
+      if (!valueToSave || valueToSave.startsWith('Q-')) {
+        await onOpticQuoteEdit(valueToSave);
+        setIsEditing(false);
+      } else {
+        message.error('OptiC Quote must be empty or start with Q-');
+      }
     } catch (error) {
       // Error handling is done in the parent component
     }
+  };
+
+  const handleEditStart = () => {
+    setEditValue(opticQuote || 'Q-');
+    setIsEditing(true);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditValue(e.target.value);
   };
 
   const formatCurrency = (value: number) => {
@@ -78,7 +93,7 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
                 <Space>
                   <Input
                     value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
+                    onChange={handleChange}
                     onPressEnter={handleSave}
                     onBlur={handleSave}
                     autoFocus
@@ -90,7 +105,7 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
                   <Button
                     type="text"
                     icon={<EditOutlined />}
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleEditStart}
                     style={{ marginLeft: 8 }}
                   />
                 </Space>
