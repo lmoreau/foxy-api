@@ -5,8 +5,7 @@ import { corsHandler } from "../shared/cors";
 
 interface UpdateQuoteLineItemRequest {
     id: string;
-    foxy_comment?: string;
-    // Add other fields as needed
+    [key: string]: any;
 }
 
 export async function updateQuoteLineItem(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {

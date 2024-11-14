@@ -79,14 +79,13 @@ export const createQuoteLineItem = async (data: {
   }
 };
 
-export const updateQuoteLineItem = async (id: string, foxy_comment: string) => {
+export const updateQuoteLineItem = async (data: { id: string; [key: string]: any }) => {
   try {
     const headers = await getAuthHeaders();
-    const formattedId = id.replace(/[{}]/g, '');
-    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_foxyquoterequestlineitems(${formattedId})`;
+    const url = `${API_BASE_URL}/updateQuoteLineItem`;
     
-    await axios.patch(url, { foxy_comment }, { headers });
-    return { message: "Successfully updated quote line item" };
+    const response = await axios.patch(url, data, { headers });
+    return response.data;
   } catch (error) {
     const err = error as AxiosError;
     console.error('Failed to update quote line item:', err.response?.data);

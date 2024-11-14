@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, Form, DatePicker, Select, InputNumber } from 'antd';
+import { Modal, Form, DatePicker, Select, InputNumber, message } from 'antd';
 import { QuoteLineItem } from '../types';
 import dayjs from 'dayjs';
+import { updateQuoteLineItem } from '../utils/api';
 
 interface RevenueTypeModalProps {
   open: boolean;
@@ -29,9 +30,27 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
   }, [initialValues, form]);
 
   const handleSubmit = async () => {
-    form.validateFields().then(() => {
+    try {
+      const values = await form.validateFields();
+      
+      // Format the date properly for the API
+      const formattedValues = {
+        ...values,
+        foxy_renewaldate: values.foxy_renewaldate?.toISOString(),
+      };
+
+      // Send the update to the API
+      await updateQuoteLineItem({
+        id: initialValues?.foxy_foxyquoterequestlineitemid!,
+        ...formattedValues
+      });
+
+      message.success('Revenue type updated successfully');
       onOk();
-    });
+    } catch (error) {
+      message.error('Failed to update revenue type');
+      console.error('Error updating revenue type:', error);
+    }
   };
 
   return (

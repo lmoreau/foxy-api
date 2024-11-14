@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button } from 'antd';
+import { Modal, Input, Button, message } from 'antd';
 import { updateQuoteLineItem } from '../utils/api';
 
 const { TextArea } = Input;
@@ -21,10 +21,14 @@ const CommentModal: React.FC<CommentModalProps> = ({ open, comment, onCancel, on
 
   const handleConfirm = async () => {
     try {
-      await updateQuoteLineItem(lineItemId, currentComment);
+      await updateQuoteLineItem({
+        id: lineItemId,
+        foxy_comment: currentComment
+      });
       onConfirm(currentComment);
     } catch (error) {
       console.error('Error updating comment:', error);
+      message.error('Failed to update comment');
     }
   };
 
