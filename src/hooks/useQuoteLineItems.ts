@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Form, message } from 'antd';
 import { QuoteLineItem, Product } from '../types';
 import dayjs from 'dayjs';
-import { fetchProducts, createQuoteLineItem, deleteQuoteLineItem } from '../utils/api';
+import { fetchProducts, createQuoteLineItem, deleteQuoteLineItem, updateQuoteLineItem } from '../utils/api';
 
 const useQuoteLineItems = (
   initialLineItems: QuoteLineItem[],
@@ -58,7 +58,8 @@ const useQuoteLineItems = (
         const calculatedMRR = quantity * each;
         const calculatedTCV = calculatedMRR * term;
 
-        const selectedProduct = products.find(p => p.name === row.foxy_Product.name);
+        // Get the selected product
+        const selectedProduct = products.find(p => p.name === row.foxy_Product?.name);
 
         if (isNewItem) {
           if (!locationId || !selectedProduct?.productid) {
@@ -66,7 +67,6 @@ const useQuoteLineItems = (
             return;
           }
 
-          // Prepare the data for API
           const lineItemData = {
             _foxy_foxyquoterequestlocation_value: locationId,
             _foxy_product_value: selectedProduct.productid,
@@ -75,7 +75,7 @@ const useQuoteLineItems = (
             foxy_mrr: calculatedMRR,
             foxy_linetcv: calculatedTCV,
             foxy_term: term,
-            foxy_revenuetype: row.foxy_revenuetype,
+            foxy_revenuetype: row.foxy_revenuetype || 0,
             foxy_renewaltype: row.foxy_renewaltype || '',
             foxy_renewaldate: row.foxy_renewaldate?.format('YYYY-MM-DD') || '',
             foxy_existingqty: row.foxy_existingqty || 0,
@@ -83,13 +83,10 @@ const useQuoteLineItems = (
           };
 
           try {
-            // Create new line item
             const createdItem = await createQuoteLineItem(lineItemData);
-            // Update the local state with the real ID
             newData[index] = {
-              ...item,
               ...createdItem,
-              foxy_Product: { name: row.foxy_Product.name }
+              foxy_Product: selectedProduct
             };
             setLineItems(newData);
             onUpdateLineItem(createdItem);
@@ -99,14 +96,17 @@ const useQuoteLineItems = (
             return;
           }
         } else {
-          // Update existing line item
+          // Remove foxy_Product from row data to avoid deep update error
+          const { foxy_Product, ...rowWithoutProduct } = row;
+          
           const updatedItem = {
-            ...item,
-            ...row,
+            id: item.foxy_foxyquoterequestlineitemid,
+            ...rowWithoutProduct,
             foxy_mrr: calculatedMRR,
             foxy_linetcv: calculatedTCV,
             foxy_renewaldate: row.foxy_renewaldate?.format('YYYY-MM-DD') || ''
           };
+          await updateQuoteLineItem(updatedItem);
           onUpdateLineItem(updatedItem);
         }
 
