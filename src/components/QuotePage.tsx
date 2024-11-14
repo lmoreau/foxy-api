@@ -219,8 +219,11 @@ const PageActions: React.FC<{
       <Button icon={<PlusOutlined />} onClick={onAddLocation}>
         Add Location
       </Button>
-      <Button icon={expandAll ? <ShrinkOutlined /> : <ExpandAltOutlined />} onClick={onToggleExpand}>
-        {expandAll ? 'Collapse All' : 'Expand All'}
+      <Button 
+        icon={expandAll ? <ShrinkOutlined /> : <ExpandAltOutlined />} 
+        onClick={onToggleExpand}
+        style={{ padding: '4px 8px' }}
+      >
       </Button>
     </Space>
   );
@@ -319,9 +322,9 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   const handleUpdateLineItem = async (locationId: string, updatedItem: QuoteLineItem) => {
     try {
-      // Instead of manually managing state, just refetch everything
       await refetchLocations();
-      message.success('Line item updated successfully');
+      const isNewItem = updatedItem.foxy_foxyquoterequestlineitemid.startsWith('temp-');
+      message.success(`Line item ${isNewItem ? 'created' : 'updated'} successfully`);
     } catch (error) {
       console.error('Error updating line item:', error);
       message.error('Failed to update line item');
