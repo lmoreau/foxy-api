@@ -9,7 +9,6 @@ import { useModal } from '../hooks/useModal';
 import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
 import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../utils/api';
-import SubjectEditModal from './SubjectEditModal';
 import { getQuoteStageLabel } from '../utils/quoteStageMapper';
 import { getQuoteTypeLabel } from '../utils/quoteTypeMapper';
 
@@ -292,7 +291,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     locations: [],
     quoteRequest: {}
   });
-  const [subjectModalVisible, setSubjectModalVisible] = useState(false);
+  const [isEditingSubject, setIsEditingSubject] = useState(false);
+  const [editSubjectValue, setEditSubjectValue] = useState('');
 
   React.useEffect(() => {
     setQuoteRequestId(quoteId);
@@ -374,19 +374,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     await refetchLocations();
   };
 
-  const handleSubjectUpdate = async (newSubject: string) => {
-    try {
-      await updateQuoteRequest(id!, { foxy_subject: newSubject });
-      await refetch();
-      message.success('Subject updated successfully');
-    } catch (error) {
-      message.error('Failed to update subject');
-      console.error('Update subject error:', error);
-    } finally {
-      setSubjectModalVisible(false);
-    }
-  };
-
   if (loading) {
     return (
       <Layout style={{ minHeight: '100vh', padding: '12px' }}>
@@ -409,14 +396,61 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                     <div style={{ marginBottom: '8px' }}>
                       <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
                       <Space>
-                        <Text type="secondary" style={{ fontSize: '14px' }}>
-                          {rawQuoteData.quoteRequest?.foxy_subject}
-                        </Text>
-                        <Button
-                          type="text"
-                          icon={<EditOutlined />}
-                          onClick={() => setSubjectModalVisible(true)}
-                        />
+                        {isEditingSubject ? (
+                          <Input
+                            value={editSubjectValue}
+                            onChange={(e) => setEditSubjectValue(e.target.value)}
+                            onPressEnter={async () => {
+                              try {
+                                await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
+                                await refetch();
+                                message.success('Subject updated successfully');
+                                setIsEditingSubject(false);
+                              } catch (error) {
+                                message.error('Failed to update subject');
+                                console.error('Update subject error:', error);
+                              }
+                            }}
+                            onBlur={async () => {
+                              try {
+                                await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
+                                await refetch();
+                                message.success('Subject updated successfully');
+                                setIsEditingSubject(false);
+                              } catch (error) {
+                                message.error('Failed to update subject');
+                                console.error('Update subject error:', error);
+                              }
+                            }}
+                            autoFocus
+                            style={{ minWidth: '500px' }}
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => {
+                              setEditSubjectValue(rawQuoteData.quoteRequest?.foxy_subject || '');
+                              setIsEditingSubject(true);
+                            }}
+                            style={{ 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              maxWidth: '500px'
+                            }}
+                          >
+                            <Text 
+                              type="secondary" 
+                              style={{ 
+                                fontSize: '14px',
+                                display: 'inline-block'
+                              }}
+                            >
+                              {rawQuoteData.quoteRequest?.foxy_subject || '-'}
+                            </Text>
+                            <EditOutlined style={{ color: '#00000073', flexShrink: 0 }} />
+                          </div>
+                        )}
                       </Space>
                     </div>
                     <PageActions 
@@ -508,12 +542,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         quoteRequestId={id || ''}
         accountId={accountId}
         onRefresh={refetchLocations}
-      />
-      <SubjectEditModal
-        open={subjectModalVisible}
-        onCancel={() => setSubjectModalVisible(false)}
-        onConfirm={handleSubjectUpdate}
-        initialValue={rawQuoteData.quoteRequest?.foxy_subject || ''}
       />
     </Layout>
   );
