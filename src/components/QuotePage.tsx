@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal, Tooltip } from 'antd';
+import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal, Tooltip, Input } from 'antd';
 import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
 import LocationsTable from './LocationsTable';
 import AddLocationModal from './AddLocationModal';
@@ -26,7 +26,8 @@ interface QuoteSummaryProps {
   totalTCV: number;
   quoteStage: number;
   quoteType: number;
-  quoteId: string;
+  opticQuote: string;
+  onOpticQuoteEdit: (value: string) => Promise<void>;
 }
 
 const QuoteSummary: React.FC<QuoteSummaryProps> = ({ 
@@ -35,8 +36,21 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
   totalTCV, 
   quoteStage, 
   quoteType,
-  quoteId 
+  opticQuote,
+  onOpticQuoteEdit
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(opticQuote);
+
+  const handleSave = async () => {
+    try {
+      await onOpticQuoteEdit(editValue);
+      setIsEditing(false);
+    } catch (error) {
+      // Error handling is done in the parent component
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -58,11 +72,32 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
           />
         </Col>
         <Col span={4}>
-          <Statistic
-            title="Quote"
-            value={quoteId}
-            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
-          />
+          <div>
+            <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: '14px' }}>OptiC Quote</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
+              {isEditing ? (
+                <Space>
+                  <Input
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onPressEnter={handleSave}
+                    onBlur={handleSave}
+                    autoFocus
+                  />
+                </Space>
+              ) : (
+                <Space>
+                  {opticQuote || '-'}
+                  <Button
+                    type="text"
+                    icon={<EditOutlined />}
+                    onClick={() => setIsEditing(true)}
+                    style={{ marginLeft: 8 }}
+                  />
+                </Space>
+              )}
+            </div>
+          </div>
         </Col>
         <Col span={4}>
           <Statistic
@@ -367,7 +402,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
           items={[
             {
               key: '1',
-              label: 'Quote',
+              label: rawQuoteData.quoteRequest?.foxy_quoteid || 'New Quote',
               children: (
                 <Row gutter={[0, 16]}>
                   <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -403,7 +438,17 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                       totalTCV={calculateTotals(lineItems).totalTCV}
                       quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
                       quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
-                      quoteId={rawQuoteData.quoteRequest?.foxy_quoteid || ''}
+                      opticQuote={rawQuoteData.quoteRequest?.foxy_opticquote || ''}
+                      onOpticQuoteEdit={async (value) => {
+                        try {
+                          await updateQuoteRequest(id!, { foxy_opticquote: value });
+                          await refetch();
+                          message.success('OptiC Quote updated successfully');
+                        } catch (error) {
+                          message.error('Failed to update OptiC Quote');
+                          console.error('Update OptiC Quote error:', error);
+                        }
+                      }}
                     />
                   </Col>
                   {error && (
