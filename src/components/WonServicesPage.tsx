@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import dayjs from 'dayjs';
-import { Button, message, Dropdown, Tabs } from 'antd';
+import { Button, message, Dropdown, Tabs, Space } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import * as XLSX from 'xlsx';
@@ -361,6 +361,21 @@ const WonServicesPage: React.FC = () => {
         }
     };
 
+    const getVisibleSelectedCount = useCallback(() => {
+        const visibleIds = new Set<string>();
+        filteredData.forEach(group => {
+            group.children?.forEach(service => {
+                visibleIds.add(service.foxy_wonserviceid);
+            });
+        });
+        
+        return selectedRowKeys.filter(key => visibleIds.has(key as string)).length;
+    }, [filteredData, selectedRowKeys]);
+
+    const handleClearSelection = () => {
+        setSelectedRowKeys([]);
+    };
+
     const mainContent = (
         <>
             <div style={{ marginBottom: '16px' }}>
@@ -378,11 +393,16 @@ const WonServicesPage: React.FC = () => {
                     onStrictModeChange={handleStrictModeChange}
                     data={filteredData}
                     actionButton={selectedRowKeys.length > 0 ? (
-                        <Dropdown menu={{ items }} trigger={['click']}>
-                            <Button type="primary" loading={calculating}>
-                                Actions ({selectedRowKeys.length} selected) <DownOutlined />
+                        <Space>
+                            <Button onClick={handleClearSelection}>
+                                Clear Selection ({selectedRowKeys.length} total, {getVisibleSelectedCount()} visible)
                             </Button>
-                        </Dropdown>
+                            <Dropdown menu={{ items }} trigger={['click']}>
+                                <Button type="primary" loading={calculating}>
+                                    Actions ({selectedRowKeys.length} selected) <DownOutlined />
+                                </Button>
+                            </Dropdown>
+                        </Space>
                     ) : undefined}
                 />
             </div>
