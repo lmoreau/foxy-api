@@ -1,98 +1,96 @@
 # Product Handling in Quote Line Items
 
 ## Overview
-This document explains the critical differences between creating and updating quote line items in the Dataverse/Dynamics integration, specifically regarding product handling. Getting this wrong will break either the NEW or EDIT functionality.
+This document explains how product data must be handled differently when creating new quote line items versus updating existing ones in Dataverse/Dynamics CRM.
 
-## Core Concepts
+## Key Differences
 
-### Product References in Dataverse
-- Products are separate entities in Dataverse
-- Line items reference products through relationships
-- These relationships must be handled differently for creation vs updates
-
-## Create vs Update Operations
-
-### Creating New Line Items (NEW)
+### NEW (Creating Line Items)
 When creating a new line item, we must:
 
-1. Use OData binding syntax to establish the product relationship:
-   ```typescript
-   const lineItemData = {
-     _foxy_product_value: selectedProduct.productid,  // Required OData binding
-     // other fields...
-   };
-   ```
+1. Send the product ID using Dataverse's OData binding format:
+```typescript
+const lineItemData = {
+  _foxy_product_value: selectedProduct.productid,  // This specific field name is required
+  // other fields...
+};
+```
 
-2. Include the full location binding:
-   ```typescript
-   const lineItemData = {
-     _foxy_foxyquoterequestlocation_value: locationId,  // Required location binding
-     _foxy_product_value: selectedProduct.productid,
-     // other fields...
-   };
-   ```
+2. Get the correct product ID from our products array:
+```typescript
+const selectedProduct = products.find(p => p.name === row.foxy_Product?.name);
+if (!selectedProduct?.productid) {
+  message.error('Missing required product information');
+  return;
+}
+```
 
-3. Handle product selection properly:
-   ```typescript
-   // Get product ID from the products array using selected name
-   const selectedProduct = products.find(p => p.name === row.foxy_Product?.name);
-   if (!selectedProduct?.productid) {
-     message.error('Missing required product information');
-     return;
-   }
-   ```
+### EDIT (Updating Line Items)
+When updating an existing line item:
 
-### Updating Existing Line Items (EDIT)
-When updating, we must:
+1. Must remove the product object before sending update:
+```typescript
+const { foxy_Product, ...rowWithoutProduct } = row;
 
-1. Remove the product object before sending the update:
-   ```typescript
-   // Must remove foxy_Product to avoid deep update error
-   const { foxy_Product, ...rowWithoutProduct } = row;
-   
-   const updatedItem = {
-     id: item.foxy_foxyquoterequestlineitemid,
-     ...rowWithoutProduct,
-     // other fields...
-   };
-   ```
+const updatedItem = {
+  id: item.foxy_foxyquoterequestlineitemid,
+  ...rowWithoutProduct,
+  // other fields...
+};
+```
 
-2. Never include product relationship data in updates:
-   - Cannot modify product relationship through direct update
-   - Must use separate operations if product relationship needs to change
-   - Including product data will cause "Deep update" errors
+2. Including product data in update will cause error:
+```typescript
+// This will fail with "Deep update of navigation properties not allowed"
+const updatedItem = {
+  id: itemId,
+  ...row  // row contains foxy_Product - causes error
+};
+```
 
-## Common Errors & Solutions
+## Working Example
+From useQuoteLineItems.ts:
 
-### "Deep update of navigation properties not allowed"
-- **Cause**: Included product data in update operation
-- **Solution**: Remove foxy_Product from update payload
-- **Example Fix**:
-  ```typescript
-  // WRONG
-  const updateData = { ...row };  // Contains foxy_Product
-  
-  // CORRECT
-  const { foxy_Product, ...updateData } = row;  // Removes foxy_Product
-  ```
+```typescript
+// NEW item creation
+if (isNewItem) {
+  const lineItemData = {
+    _foxy_foxyquoterequestlocation_value: locationId,
+    _foxy_product_value: selectedProduct.productid,  // Correct product binding
+    // other fields...
+  };
+  const createdItem = await createQuoteLineItem(lineItemData);
+}
 
-### "Missing required product information"
-- **Cause**: Product selection/ID not properly handled in creation
-- **Solution**: Ensure product ID is available before create
-- **Example Fix**:
-  ```typescript
-  // WRONG
-  const productId = row.foxy_Product?.productid;  // May not exist
-  
-  // CORRECT
-  const selectedProduct = products.find(p => p.name === row.foxy_Product?.name);
-  if (!selectedProduct?.productid) {
-    message.error('Missing required product information');
-    return;
-  }
-  ```
+// EDIT item update
+else {
+  const { foxy_Product, ...rowWithoutProduct } = row;  // Remove product data
+  const updatedItem = {
+    id: item.foxy_foxyquoterequestlineitemid,
+    ...rowWithoutProduct,
+    // other fields...
+  };
+  await updateQuoteLineItem(updatedItem);
+}
+```
 
-## Implementation Details
+## Common Errors
 
-### Required Fields for Creation
-</file>
+1. "Deep update of navigation properties not allowed"
+   - Cause: Included product data in update
+   - Fix: Remove foxy_Product before update
+
+2. "Missing required product information"
+   - Cause: Product ID not found for creation
+   - Fix: Ensure product selection maps to valid product ID
+
+## Why This Matters
+- NEW requires explicit product binding via _foxy_product_value
+- EDIT must exclude product data entirely
+- Getting this wrong breaks either creation or updates
+- These requirements come from Dataverse's entity relationship handling
+
+## Testing
+Always test both operations when modifying product handling:
+1. NEW: Add line item, verify product relationship created
+2. EDIT: Modify existing item, verify update succeeds without product errors

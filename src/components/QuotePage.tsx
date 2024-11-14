@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Spin, Alert, Row, Col, Card, Statistic, Button, Space, Typography, message, Tabs, Modal, Tooltip, Input } from 'antd';
 import { UserOutlined, PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, EditOutlined, CheckOutlined } from '@ant-design/icons';
@@ -12,6 +12,7 @@ import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest 
 import { getQuoteStageLabel } from '../utils/quoteStageMapper';
 import { getQuoteTypeLabel } from '../utils/quoteTypeMapper';
 import QuoteCPQHeader from './QuoteCPQHeader';
+import { checkUserAccess } from '../auth/authService';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -308,6 +309,15 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   });
   const [isEditingSubject, setIsEditingSubject] = useState(false);
   const [editSubjectValue, setEditSubjectValue] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      const access = await checkUserAccess();
+      setIsAdmin(access === 'admin');
+    };
+    checkAdminAccess();
+  }, []);
 
   React.useEffect(() => {
     setQuoteRequestId(quoteId);
@@ -397,159 +407,173 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     );
   }
 
+  const tabItems = [
+    {
+      key: '1',
+      label: rawQuoteData.quoteRequest?.foxy_quoteid || 'New Quote',
+      children: (
+        <Row gutter={[0, 16]}>
+          <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ marginBottom: '8px' }}>
+              <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
+              <Space>
+                {isEditingSubject ? (
+                  <Input
+                    value={editSubjectValue}
+                    onChange={(e) => setEditSubjectValue(e.target.value)}
+                    onPressEnter={async () => {
+                      try {
+                        await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
+                        await refetch();
+                        message.success('Subject updated successfully');
+                        setIsEditingSubject(false);
+                      } catch (error) {
+                        message.error('Failed to update subject');
+                        console.error('Update subject error:', error);
+                      }
+                    }}
+                    onBlur={async () => {
+                      try {
+                        await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
+                        await refetch();
+                        message.success('Subject updated successfully');
+                        setIsEditingSubject(false);
+                      } catch (error) {
+                        message.error('Failed to update subject');
+                        console.error('Update subject error:', error);
+                      }
+                    }}
+                    autoFocus
+                    style={{ minWidth: '500px' }}
+                  />
+                ) : (
+                  <div 
+                    onClick={() => {
+                      setEditSubjectValue(rawQuoteData.quoteRequest?.foxy_subject || '');
+                      setIsEditingSubject(true);
+                    }}
+                    style={{ 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      maxWidth: '500px'
+                    }}
+                  >
+                    <Text 
+                      type="secondary" 
+                      style={{ 
+                        fontSize: '14px',
+                        display: 'inline-block'
+                      }}
+                    >
+                      {rawQuoteData.quoteRequest?.foxy_subject || '-'}
+                    </Text>
+                    <EditOutlined style={{ color: '#00000073', flexShrink: 0 }} />
+                  </div>
+                )}
+              </Space>
+            </div>
+            <PageActions 
+              onAddLocation={show}
+              onToggleExpand={toggleExpandAll}
+              expandAll={expandAll}
+              onCloneQuote={handleCloneQuote}
+              quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
+              quoteId={id}
+              onRefresh={refetch}
+              locations={locations}
+              lineItems={lineItems}
+            />
+          </Col>
+          <Col span={24}>
+            <QuoteSummary 
+              owner={owninguser?.fullname || ''} 
+              totalMRR={calculateTotals(lineItems).totalMRR} 
+              totalTCV={calculateTotals(lineItems).totalTCV}
+              quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
+              quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
+              opticQuote={rawQuoteData.quoteRequest?.foxy_opticquote || ''}
+              onOpticQuoteEdit={async (value) => {
+                try {
+                  await updateQuoteRequest(id!, { foxy_opticquote: value });
+                  await refetch();
+                  message.success('OptiC Quote updated successfully');
+                } catch (error) {
+                  message.error('Failed to update OptiC Quote');
+                  console.error('Update OptiC Quote error:', error);
+                }
+              }}
+            />
+          </Col>
+          {error && (
+            <Col span={24}>
+              <Alert message="Error" description={error} type="error" showIcon />
+            </Col>
+          )}
+          <Col span={24}>
+            <LocationsTable
+              data={locations}
+              lineItems={lineItems}
+              onAddLine={handleAddLineItem}
+              expandAll={expandAll}
+              onDeleteLocation={handleDeleteLocation}
+              onUpdateLineItem={handleUpdateLineItem}
+              onDeleteLineItem={handleDeleteLineItem}
+              quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
+            />
+          </Col>
+        </Row>
+      ),
+    },
+    {
+      key: '2',
+      label: 'Compensation',
+      children: (
+        <div style={{ padding: '20px' }}>
+          <h3>Compensation Details</h3>
+          <p>This section is only visible to administrators.</p>
+          {/* Add compensation-specific content here */}
+        </div>
+      ),
+    },
+    {
+      key: '3',
+      label: 'Line Items',
+      children: (
+        <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+          {JSON.stringify(rawData.lineItems, null, 2)}
+        </pre>
+      ),
+    },
+    {
+      key: '4',
+      label: 'Locations',
+      children: (
+        <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+          {JSON.stringify(rawData.locations, null, 2)}
+        </pre>
+      ),
+    },
+    {
+      key: '5',
+      label: 'Quote Request',
+      children: (
+        <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+          {JSON.stringify(rawData.quoteRequest, null, 2)}
+        </pre>
+      ),
+    },
+  ];
+
+  // Filter out the Compensation tab if user is not an admin
+  const visibleTabs = isAdmin ? tabItems : tabItems.filter(tab => tab.key !== '2');
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <QuoteCPQHeader />
       <Content style={{ padding: '20px 50px' }}>
-        <Tabs
-          items={[
-            {
-              key: '1',
-              label: rawQuoteData.quoteRequest?.foxy_quoteid || 'New Quote',
-              children: (
-                <Row gutter={[0, 16]}>
-                  <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ marginBottom: '8px' }}>
-                      <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
-                      <Space>
-                        {isEditingSubject ? (
-                          <Input
-                            value={editSubjectValue}
-                            onChange={(e) => setEditSubjectValue(e.target.value)}
-                            onPressEnter={async () => {
-                              try {
-                                await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
-                                await refetch();
-                                message.success('Subject updated successfully');
-                                setIsEditingSubject(false);
-                              } catch (error) {
-                                message.error('Failed to update subject');
-                                console.error('Update subject error:', error);
-                              }
-                            }}
-                            onBlur={async () => {
-                              try {
-                                await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
-                                await refetch();
-                                message.success('Subject updated successfully');
-                                setIsEditingSubject(false);
-                              } catch (error) {
-                                message.error('Failed to update subject');
-                                console.error('Update subject error:', error);
-                              }
-                            }}
-                            autoFocus
-                            style={{ minWidth: '500px' }}
-                          />
-                        ) : (
-                          <div 
-                            onClick={() => {
-                              setEditSubjectValue(rawQuoteData.quoteRequest?.foxy_subject || '');
-                              setIsEditingSubject(true);
-                            }}
-                            style={{ 
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              maxWidth: '500px'
-                            }}
-                          >
-                            <Text 
-                              type="secondary" 
-                              style={{ 
-                                fontSize: '14px',
-                                display: 'inline-block'
-                              }}
-                            >
-                              {rawQuoteData.quoteRequest?.foxy_subject || '-'}
-                            </Text>
-                            <EditOutlined style={{ color: '#00000073', flexShrink: 0 }} />
-                          </div>
-                        )}
-                      </Space>
-                    </div>
-                    <PageActions 
-                      onAddLocation={show}
-                      onToggleExpand={toggleExpandAll}
-                      expandAll={expandAll}
-                      onCloneQuote={handleCloneQuote}
-                      quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-                      quoteId={id}
-                      onRefresh={refetch}
-                      locations={locations}
-                      lineItems={lineItems}
-                    />
-                  </Col>
-                  <Col span={24}>
-                    <QuoteSummary 
-                      owner={owninguser?.fullname || ''} 
-                      totalMRR={calculateTotals(lineItems).totalMRR} 
-                      totalTCV={calculateTotals(lineItems).totalTCV}
-                      quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-                      quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
-                      opticQuote={rawQuoteData.quoteRequest?.foxy_opticquote || ''}
-                      onOpticQuoteEdit={async (value) => {
-                        try {
-                          await updateQuoteRequest(id!, { foxy_opticquote: value });
-                          await refetch();
-                          message.success('OptiC Quote updated successfully');
-                        } catch (error) {
-                          message.error('Failed to update OptiC Quote');
-                          console.error('Update OptiC Quote error:', error);
-                        }
-                      }}
-                    />
-                  </Col>
-                  {error && (
-                    <Col span={24}>
-                      <Alert message="Error" description={error} type="error" showIcon />
-                    </Col>
-                  )}
-                  <Col span={24}>
-                    <LocationsTable
-                      data={locations}
-                      lineItems={lineItems}
-                      onAddLine={handleAddLineItem}
-                      expandAll={expandAll}
-                      onDeleteLocation={handleDeleteLocation}
-                      onUpdateLineItem={handleUpdateLineItem}
-                      onDeleteLineItem={handleDeleteLineItem}
-                      quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-                    />
-                  </Col>
-                </Row>
-              ),
-            },
-            {
-              key: '2',
-              label: 'Line Items',
-              children: (
-                <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-                  {JSON.stringify(rawData.lineItems, null, 2)}
-                </pre>
-              ),
-            },
-            {
-              key: '3',
-              label: 'Locations',
-              children: (
-                <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-                  {JSON.stringify(rawData.locations, null, 2)}
-                </pre>
-              ),
-            },
-            {
-              key: '4',
-              label: 'Quote Request',
-              children: (
-                <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-                  {JSON.stringify(rawData.quoteRequest, null, 2)}
-                </pre>
-              ),
-            },
-          ]}
-        />
+        <Tabs items={visibleTabs} />
       </Content>
       <AddLocationModal
         isVisible={isVisible}
