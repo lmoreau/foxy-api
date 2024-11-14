@@ -11,6 +11,7 @@ import { QuoteLineItem, QuoteLocation } from '../types';
 import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../utils/api';
 import { getQuoteStageLabel } from '../utils/quoteStageMapper';
 import { getQuoteTypeLabel } from '../utils/quoteTypeMapper';
+import QuoteCPQHeader from './QuoteCPQHeader';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -398,8 +399,9 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   }
 
   return (
-    <Layout style={{ minHeight: '100vh', padding: '12px' }}>
-      <Content>
+    <Layout style={{ minHeight: '100vh' }}>
+      <QuoteCPQHeader />
+      <Content style={{ padding: '12px' }}>
         <Tabs
           items={[
             {
