@@ -75,6 +75,7 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
                     icon={<EditOutlined />}
                     onClick={handleEditStart}
                     style={{ marginLeft: 8 }}
+                    disabled={quoteStage === 612100000}
                   />
                 </Space>
               )}

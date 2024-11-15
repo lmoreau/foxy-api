@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Space, Modal, Tooltip, message } from 'antd';
-import { PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, CheckOutlined } from '@ant-design/icons';
+import { PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, SendOutlined, RollbackOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../../utils/api';
 import { QuoteActionsProps } from './types';
@@ -99,7 +99,7 @@ const QuoteActions: React.FC<QuoteActionsProps> = ({
         }>
           <Button 
             type="primary"
-            icon={<CheckOutlined />}
+            icon={quoteStage === 612100001 ? <RollbackOutlined /> : <CheckCircleOutlined />}
             onClick={handleQuoteAction}
             disabled={!isQuoteValid}
           >

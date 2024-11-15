@@ -184,7 +184,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     },
   ];
 
-  const visibleTabs = isAdmin ? tabItems : tabItems.filter(tab => tab.key !== '2');
+  // Show only the first tab for non-admin users
+  const visibleTabs = isAdmin ? tabItems : [tabItems[0]];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
