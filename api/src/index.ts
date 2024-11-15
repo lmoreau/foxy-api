@@ -1,7 +1,4 @@
 import { app } from "@azure/functions";
-import "./functions/getAccountById";
-import "./functions/createFoxyQuoteRequestLocation";
-import "./functions/createResidualScrubAudit";
 import "./functions/deleteQuoteLocation";
 import "./functions/getOpportunityById";
 import "./functions/getQuoteLineItemById";
@@ -35,6 +32,12 @@ import "./functions/deleteQuoteLineItem";
 import "./functions/listPosts";
 import "./functions/listAnnotations";
 import "./functions/createPost";
+import "./functions/listUsers";
+
+export * from "./functions/listPosts";
+export * from "./functions/createPost";
+export * from "./functions/listAnnotations";
+export * from "./functions/listUsers";
 
 // Initialize the app
 const functionApp = app;
