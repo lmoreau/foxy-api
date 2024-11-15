@@ -164,7 +164,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
         }}
         onCancel={() => setDeleteModalVisible(false)}
       >
-        <p>Are you sure you want to delete this location? This action cannot be undone.</p>
+        <p>Are you sure you want to delete this location and all its line items? This action cannot be undone.</p>
       </Modal>
     </div>
   );

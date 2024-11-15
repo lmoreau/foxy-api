@@ -8,7 +8,7 @@ import { useQuoteData } from '../hooks/useQuoteData';
 import { useModal } from '../hooks/useModal';
 import { calculateTotals, deleteQuoteLocation } from '../utils/quoteUtils';
 import { QuoteLineItem, QuoteLocation } from '../types';
-import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../utils/api';
+import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest, deleteQuoteLineItem } from '../utils/api';
 import { getQuoteStageLabel } from '../utils/quoteStageMapper';
 import { getQuoteTypeLabel } from '../utils/quoteTypeMapper';
 import QuoteCPQHeader from './QuoteCPQHeader';
@@ -372,11 +372,21 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   const handleDeleteLocation = async (locationId: string) => {
     try {
+      // Get all line items for this location
+      const locationLineItems = lineItems[locationId] || [];
+      
+      // Delete all line items first
+      for (const item of locationLineItems) {
+        await deleteQuoteLineItem(item.foxy_foxyquoterequestlineitemid);
+      }
+      
+      // Then delete the location
       await deleteQuoteLocation(locationId);
       message.success('Location deleted successfully');
       refetchLocations();
     } catch (error) {
       message.error('Failed to delete location');
+      console.error('Delete location error:', error);
     }
   };
 
