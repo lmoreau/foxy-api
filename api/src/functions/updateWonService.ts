@@ -47,6 +47,11 @@ export async function updateWonService(request: HttpRequest, context: Invocation
 
         const updateData: any = {};
 
+        if (requestBody.foxy_expectedcomp !== undefined) {
+            context.log(`🟦 Adding expected comp to update: ${requestBody.foxy_expectedcomp}`);
+            updateData.foxy_expectedcomp = requestBody.foxy_expectedcomp;
+        }
+
         if (requestBody.crc9f_claimid !== undefined) {
             context.log(`🟦 Adding claim ID to update: ${requestBody.crc9f_claimid}`);
             updateData.crc9f_claimid = requestBody.crc9f_claimid;
