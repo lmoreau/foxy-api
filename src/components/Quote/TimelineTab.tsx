@@ -1,7 +1,8 @@
-import React from 'react';
-import { Timeline, Card, Spin, Typography } from 'antd';
-import { MessageOutlined, FileTextOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Timeline, Card, Spin, Typography, Button } from 'antd';
+import { MessageOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons';
 import { useTimelineData } from '../../hooks/useTimelineData';
+import CreatePostModal from './CreatePostModal';
 import './timeline.css';
 
 const { Text } = Typography;
@@ -38,7 +39,21 @@ const formatMentions = (text: string) => {
 };
 
 const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
-  const { timelineItems, loading } = useTimelineData(id);
+  const { timelineItems, loading, createPost } = useTimelineData(id);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleCreatePost = async (text: string) => {
+    try {
+      setSubmitting(true);
+      await createPost(text);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error creating post:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) {
     return <Spin size="large" />;
@@ -46,6 +61,16 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
 
   return (
     <div style={{ padding: '20px' }}>
+      <div style={{ marginBottom: '20px' }}>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalOpen(true)}
+        >
+          Create Post
+        </Button>
+      </div>
+
       <Timeline className="timeline-custom">
         {timelineItems.map((item) => (
           <Timeline.Item 
@@ -73,6 +98,13 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
           </Timeline.Item>
         ))}
       </Timeline>
+
+      <CreatePostModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onSubmit={handleCreatePost}
+        loading={submitting}
+      />
     </div>
   );
 };

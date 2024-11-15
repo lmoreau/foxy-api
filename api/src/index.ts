@@ -34,6 +34,7 @@ import "./functions/createQuoteRequest";
 import "./functions/deleteQuoteLineItem";
 import "./functions/listPosts";
 import "./functions/listAnnotations";
+import "./functions/createPost";
 
 // Initialize the app
 const functionApp = app;
