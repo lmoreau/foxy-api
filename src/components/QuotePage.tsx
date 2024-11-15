@@ -403,7 +403,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const handleUpdateLineItem = async (locationId: string, updatedItem: QuoteLineItem) => {
     try {
       await refetchLocations();
-      const isNewItem = updatedItem.foxy_foxyquoterequestlineitemid.startsWith('temp-');
+      const isNewItem = updatedItem?.foxy_foxyquoterequestlineitemid?.startsWith('temp-') || false;
       message.success(`Line item ${isNewItem ? 'created' : 'updated'} successfully`);
     } catch (error) {
       console.error('Error updating line item:', error);
@@ -442,26 +442,30 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
                     value={editSubjectValue}
                     onChange={(e) => setEditSubjectValue(e.target.value)}
                     onPressEnter={async () => {
-                      try {
-                        await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
-                        await refetch();
-                        message.success('Subject updated successfully');
-                        setIsEditingSubject(false);
-                      } catch (error) {
-                        message.error('Failed to update subject');
-                        console.error('Update subject error:', error);
+                      if (editSubjectValue !== rawQuoteData.quoteRequest?.foxy_subject) {
+                        try {
+                          await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
+                          await refetch();
+                          message.success('Subject updated successfully');
+                        } catch (error) {
+                          message.error('Failed to update subject');
+                          console.error('Update subject error:', error);
+                        }
                       }
+                      setIsEditingSubject(false);
                     }}
                     onBlur={async () => {
-                      try {
-                        await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
-                        await refetch();
-                        message.success('Subject updated successfully');
-                        setIsEditingSubject(false);
-                      } catch (error) {
-                        message.error('Failed to update subject');
-                        console.error('Update subject error:', error);
+                      if (editSubjectValue !== rawQuoteData.quoteRequest?.foxy_subject) {
+                        try {
+                          await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
+                          await refetch();
+                          message.success('Subject updated successfully');
+                        } catch (error) {
+                          message.error('Failed to update subject');
+                          console.error('Update subject error:', error);
+                        }
                       }
+                      setIsEditingSubject(false);
                     }}
                     autoFocus
                     style={{ minWidth: '500px' }}
