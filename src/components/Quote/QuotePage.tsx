@@ -116,6 +116,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     );
   }
 
+  const CompensationTabWithData = () => (
+    <Suspense fallback={<Spin size="large" />}>
+      <CompensationTab lineItems={lineItems} locations={locations} />
+    </Suspense>
+  );
+
   const tabItems = [
     {
       key: '1',
@@ -149,11 +155,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     {
       key: '2',
       label: 'Compensation',
-      children: (
-        <Suspense fallback={<Spin size="large" />}>
-          <CompensationTab />
-        </Suspense>
-      ),
+      children: <CompensationTabWithData />,
     },
     {
       key: '3',
