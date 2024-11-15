@@ -1,12 +1,17 @@
-import React from 'react';
-import { Row, Col, Alert, Space, Input, Typography } from 'antd';
+import React, { ChangeEvent } from 'react';
 import { EditOutlined } from '@ant-design/icons';
 import LocationsTable from '../LocationsTable';
 import QuoteActions from './QuoteActions';
 import QuoteSummary from './QuoteSummary';
 import { calculateTotals } from '../../utils/quoteUtils';
-
-const { Text } = Typography;
+import {
+  Row,
+  Col,
+  Alert,
+  Space,
+  Input,
+  Text
+} from './AntComponents';
 
 interface MainTabProps {
   accountName: string;
@@ -64,7 +69,7 @@ const MainTab: React.FC<MainTabProps> = ({
             {isEditingSubject ? (
               <Input
                 value={editSubjectValue}
-                onChange={(e) => setEditSubjectValue(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setEditSubjectValue(e.target.value)}
                 onPressEnter={async () => {
                   if (editSubjectValue !== rawQuoteData.quoteRequest?.foxy_subject) {
                     try {

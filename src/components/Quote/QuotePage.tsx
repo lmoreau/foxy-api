@@ -1,8 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
-import Layout from 'antd/lib/layout';
-import Spin from 'antd/lib/spin';
-import Tabs from 'antd/lib/tabs';
 import message from 'antd/lib/message';
 import { useQuoteData } from '../../hooks/useQuoteData';
 import { useModal } from '../../hooks/useModal';
@@ -13,12 +10,16 @@ import QuoteCPQHeader from '../QuoteCPQHeader';
 import AddLocationModal from '../AddLocationModal';
 import { QuotePageProps, RawQuoteData } from './types';
 import MainTab from './MainTab';
+import {
+  Layout,
+  Content,
+  LazyTabs,
+  Spin
+} from './AntComponents';
 
 // Lazy load components that aren't immediately needed
 const RawDataTab = lazy(() => import('./RawDataTab'));
 const CompensationTab = lazy(() => import('./CompensationTab'));
-
-const { Content } = Layout;
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
@@ -189,7 +190,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     <Layout style={{ minHeight: '100vh' }}>
       <QuoteCPQHeader />
       <Content style={{ padding: '20px 50px' }}>
-        <Tabs items={visibleTabs} />
+        <LazyTabs items={visibleTabs} />
       </Content>
       <AddLocationModal
         isVisible={isVisible}
