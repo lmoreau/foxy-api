@@ -86,12 +86,13 @@ const useQuoteLineItems = (
 
           try {
             const createdItem = await createQuoteLineItem(lineItemData);
-            newData[index] = {
+            const itemWithProduct = {
               ...createdItem,
               foxy_Product: selectedProduct
             };
+            newData[index] = itemWithProduct;
             setLineItems(newData);
-            onUpdateLineItem(createdItem);
+            onUpdateLineItem(itemWithProduct);
             message.success({ content: 'Line item created successfully', key: 'saveLineItem' });
           } catch (error) {
             message.error({ content: 'Failed to create line item', key: 'saveLineItem' });
@@ -109,9 +110,20 @@ const useQuoteLineItems = (
             foxy_linetcv: calculatedTCV,
             foxy_renewaldate: row.foxy_renewaldate?.format('YYYY-MM-DD') || ''
           };
-          await updateQuoteLineItem(updatedItem);
-          onUpdateLineItem(updatedItem);
-          message.success({ content: 'Line item updated successfully', key: 'saveLineItem' });
+          
+          try {
+            await updateQuoteLineItem(updatedItem);
+            const updatedItemWithProduct = {
+              ...updatedItem,
+              foxy_Product: item.foxy_Product // Preserve the existing product information
+            };
+            onUpdateLineItem(updatedItemWithProduct);
+            message.success({ content: 'Line item updated successfully', key: 'saveLineItem' });
+          } catch (error) {
+            message.error({ content: 'Failed to update line item', key: 'saveLineItem' });
+            console.error('Update line item error:', error);
+            return;
+          }
         }
 
         setEditingKey('');
