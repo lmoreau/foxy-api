@@ -18,7 +18,7 @@ export interface QuoteActionsProps {
   onAddLocation: () => void;
   onToggleExpand: () => void;
   expandAll: boolean;
-  onCloneQuote: () => void;
+  onCloneQuote: () => Promise<void>;
   quoteStage: number;
   quoteId?: string;
   onRefresh: () => Promise<void>;

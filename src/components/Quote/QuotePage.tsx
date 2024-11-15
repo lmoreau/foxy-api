@@ -1,25 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Spin, Alert, Row, Col, Tabs, Typography, Input, Space, message } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
-import LocationsTable from '../LocationsTable';
-import AddLocationModal from '../AddLocationModal';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useParams } from 'react-router-dom';
+import Layout from 'antd/lib/layout';
+import Spin from 'antd/lib/spin';
+import Tabs from 'antd/lib/tabs';
+import message from 'antd/lib/message';
 import { useQuoteData } from '../../hooks/useQuoteData';
 import { useModal } from '../../hooks/useModal';
-import { calculateTotals, deleteQuoteLocation } from '../../utils/quoteUtils';
+import { deleteQuoteLocation } from '../../utils/quoteUtils';
 import { deleteQuoteLineItem, updateQuoteRequest } from '../../utils/api';
 import { checkUserAccess } from '../../auth/authService';
 import QuoteCPQHeader from '../QuoteCPQHeader';
-import QuoteSummary from './QuoteSummary';
-import QuoteActions from './QuoteActions';
+import AddLocationModal from '../AddLocationModal';
 import { QuotePageProps, RawQuoteData } from './types';
+import MainTab from './MainTab';
+
+// Lazy load components that aren't immediately needed
+const RawDataTab = lazy(() => import('./RawDataTab'));
+const CompensationTab = lazy(() => import('./CompensationTab'));
 
 const { Content } = Layout;
-const { Text } = Typography;
 
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { 
     accountName, 
     quoteId, 
@@ -73,15 +75,10 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   const handleDeleteLocation = async (locationId: string) => {
     try {
-      // Get all line items for this location
       const locationLineItems = lineItems[locationId] || [];
-      
-      // Delete all line items first
       for (const item of locationLineItems) {
         await deleteQuoteLineItem(item.foxy_foxyquoterequestlineitemid);
       }
-      
-      // Then delete the location
       await deleteQuoteLocation(locationId);
       message.success('Location deleted successfully');
       refetchLocations();
@@ -123,166 +120,69 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       key: '1',
       label: rawQuoteData.quoteRequest?.foxy_quoteid || 'New Quote',
       children: (
-        <Row gutter={[0, 16]}>
-          <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div style={{ marginBottom: '8px' }}>
-              <Text strong style={{ fontSize: '16px', display: 'block' }}>{accountName}</Text>
-              <Space>
-                {isEditingSubject ? (
-                  <Input
-                    value={editSubjectValue}
-                    onChange={(e) => setEditSubjectValue(e.target.value)}
-                    onPressEnter={async () => {
-                      if (editSubjectValue !== rawQuoteData.quoteRequest?.foxy_subject) {
-                        try {
-                          await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
-                          await refetch();
-                          message.success('Subject updated successfully');
-                        } catch (error) {
-                          message.error('Failed to update subject');
-                          console.error('Update subject error:', error);
-                        }
-                      }
-                      setIsEditingSubject(false);
-                    }}
-                    onBlur={async () => {
-                      if (editSubjectValue !== rawQuoteData.quoteRequest?.foxy_subject) {
-                        try {
-                          await updateQuoteRequest(id!, { foxy_subject: editSubjectValue });
-                          await refetch();
-                          message.success('Subject updated successfully');
-                        } catch (error) {
-                          message.error('Failed to update subject');
-                          console.error('Update subject error:', error);
-                        }
-                      }
-                      setIsEditingSubject(false);
-                    }}
-                    autoFocus
-                    style={{ minWidth: '500px' }}
-                  />
-                ) : (
-                  <div 
-                    onClick={() => {
-                      setEditSubjectValue(rawQuoteData.quoteRequest?.foxy_subject || '');
-                      setIsEditingSubject(true);
-                    }}
-                    style={{ 
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      maxWidth: '500px'
-                    }}
-                  >
-                    <Text 
-                      type="secondary" 
-                      style={{ 
-                        fontSize: '14px',
-                        display: 'inline-block'
-                      }}
-                    >
-                      {rawQuoteData.quoteRequest?.foxy_subject || '-'}
-                    </Text>
-                    <EditOutlined style={{ color: '#00000073', flexShrink: 0 }} />
-                  </div>
-                )}
-              </Space>
-            </div>
-            <QuoteActions 
-              onAddLocation={show}
-              onToggleExpand={toggleExpandAll}
-              expandAll={expandAll}
-              onCloneQuote={() => {}}
-              quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-              quoteId={id}
-              onRefresh={refetch}
-              locations={locations}
-              lineItems={lineItems}
-              accountId={accountId}
-              opportunityId={rawQuoteData.quoteRequest?._foxy_opportunity_value}
-            />
-          </Col>
-          <Col span={24}>
-            <QuoteSummary 
-              owner={owninguser?.fullname || ''} 
-              totalMRR={calculateTotals(lineItems).totalMRR} 
-              totalTCV={calculateTotals(lineItems).totalTCV}
-              quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-              quoteType={rawQuoteData.quoteRequest?.foxy_quotetype}
-              opticQuote={rawQuoteData.quoteRequest?.foxy_opticquote || ''}
-              onOpticQuoteEdit={async (value) => {
-                try {
-                  await updateQuoteRequest(id!, { foxy_opticquote: value });
-                  await refetch();
-                  message.success('OptiC Quote updated successfully');
-                } catch (error) {
-                  message.error('Failed to update OptiC Quote');
-                  console.error('Update OptiC Quote error:', error);
-                }
-              }}
-            />
-          </Col>
-          {error && (
-            <Col span={24}>
-              <Alert message="Error" description={error} type="error" showIcon />
-            </Col>
-          )}
-          <Col span={24}>
-            <LocationsTable
-              data={locations}
-              lineItems={lineItems}
-              onAddLine={handleAddLineItem}
-              expandAll={expandAll}
-              onDeleteLocation={handleDeleteLocation}
-              onUpdateLineItem={handleUpdateLineItem}
-              onDeleteLineItem={handleDeleteLineItem}
-              quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-            />
-          </Col>
-        </Row>
+        <MainTab
+          accountName={accountName}
+          rawQuoteData={rawQuoteData}
+          locations={locations}
+          lineItems={lineItems}
+          error={error}
+          expandAll={expandAll}
+          isEditingSubject={isEditingSubject}
+          editSubjectValue={editSubjectValue}
+          owninguser={owninguser}
+          id={id || ''}
+          accountId={accountId}
+          show={show}
+          toggleExpandAll={toggleExpandAll}
+          refetch={refetch}
+          setEditSubjectValue={setEditSubjectValue}
+          setIsEditingSubject={setIsEditingSubject}
+          handleAddLineItem={handleAddLineItem}
+          handleDeleteLocation={handleDeleteLocation}
+          handleUpdateLineItem={handleUpdateLineItem}
+          handleDeleteLineItem={handleDeleteLineItem}
+          updateQuoteRequest={updateQuoteRequest}
+        />
       ),
     },
     {
       key: '2',
       label: 'Compensation',
       children: (
-        <div style={{ padding: '20px' }}>
-          <h3>Compensation Details</h3>
-          <p>This section is only visible to administrators.</p>
-        </div>
+        <Suspense fallback={<Spin size="large" />}>
+          <CompensationTab />
+        </Suspense>
       ),
     },
     {
       key: '3',
       label: 'Line Items',
       children: (
-        <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-          {JSON.stringify(rawData.lineItems, null, 2)}
-        </pre>
+        <Suspense fallback={<Spin size="large" />}>
+          <RawDataTab data={rawData.lineItems} />
+        </Suspense>
       ),
     },
     {
       key: '4',
       label: 'Locations',
       children: (
-        <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-          {JSON.stringify(rawData.locations, null, 2)}
-        </pre>
+        <Suspense fallback={<Spin size="large" />}>
+          <RawDataTab data={rawData.locations} />
+        </Suspense>
       ),
     },
     {
       key: '5',
       label: 'Quote Request',
       children: (
-        <pre style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
-          {JSON.stringify(rawData.quoteRequest, null, 2)}
-        </pre>
+        <Suspense fallback={<Spin size="large" />}>
+          <RawDataTab data={rawData.quoteRequest} />
+        </Suspense>
       ),
     },
   ];
 
-  // Filter out the Compensation tab if user is not an admin
   const visibleTabs = isAdmin ? tabItems : tabItems.filter(tab => tab.key !== '2');
 
   return (
