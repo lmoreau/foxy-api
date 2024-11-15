@@ -8,6 +8,7 @@ export interface TimelineItem {
   id: string;
   type: 'post' | 'note';
   text: string;
+  modifiedOn: string;
 }
 
 export const useTimelineData = (id: string) => {
@@ -39,18 +40,22 @@ export const useTimelineData = (id: string) => {
         const posts = postsResponse.data.value.map((post: any) => ({
           id: post.postid,
           type: 'post' as const,
-          text: post.text || post.largetext || ''
+          text: post.text || post.largetext || '',
+          modifiedOn: post.modifiedon
         }));
 
         // Transform annotations data
         const annotations = annotationsResponse.data.value.map((note: any) => ({
           id: note.annotationid,
           type: 'note' as const,
-          text: note.notetext || note.subject || ''
+          text: note.notetext || note.subject || '',
+          modifiedOn: note.modifiedon
         }));
 
-        // Combine and sort
-        const combined = [...posts, ...annotations];
+        // Combine and sort by modified date
+        const combined = [...posts, ...annotations]
+          .sort((a, b) => new Date(b.modifiedOn).getTime() - new Date(a.modifiedOn).getTime());
+
         setTimelineItems(combined);
       } catch (err) {
         console.error('Timeline fetch error:', err);
