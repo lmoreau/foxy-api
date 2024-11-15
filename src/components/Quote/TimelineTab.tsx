@@ -1,6 +1,8 @@
 import React from 'react';
-import { Timeline, Card, Spin, Typography, Space } from 'antd';
+import { Timeline, Card, Spin, Typography } from 'antd';
+import { MessageOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useTimelineData } from '../../hooks/useTimelineData';
+import './timeline.css';
 
 const { Text } = Typography;
 
@@ -44,18 +46,24 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <Timeline>
+      <Timeline className="timeline-custom">
         {timelineItems.map((item) => (
-          <Timeline.Item key={item.id}>
+          <Timeline.Item 
+            key={item.id}
+            dot={item.type === 'post' ? 
+              <MessageOutlined style={{ fontSize: '16px', color: '#1890ff' }} /> : 
+              <FileTextOutlined style={{ fontSize: '16px', color: '#1890ff' }} />
+            }
+          >
             <Card 
               size="small" 
               title={
-                <Space>
+                <span>
                   {item.type === 'post' ? 'Post' : 'Note'} by{' '}
                   <Text style={{ color: '#1890ff' }}>{item.createdBy}</Text>
                   {' - '}
                   {new Date(item.modifiedOn).toLocaleString()}
-                </Space>
+                </span>
               }
             >
               <div style={{ whiteSpace: 'pre-wrap' }}>
