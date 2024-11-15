@@ -34,7 +34,7 @@ export function calculateExpectedComp(
     // For quotes, we use assumed margin. For won services, we use actual margin
     const marginPercent = 'foxy_linemargin' in item 
         ? (item as WonServiceItem).foxy_linemargin * 100 
-        : (assumedMarginPercent || 20);
+        : (assumedMarginPercent || 60);
 
     // Get TCV based on item type
     const tcv = 'foxy_tcv' in item 
@@ -47,7 +47,7 @@ export function calculateExpectedComp(
         const comp = tcv * rate;
         return {
             comp,
-            explanation: `${formatCurrency(item.foxy_mrr)}/mo * ${item.foxy_term} months * ${(rate * 100).toFixed(0)}% = ${formatCurrency(comp)}`
+            explanation: `New: ${formatCurrency(item.foxy_mrr)}/mo * ${item.foxy_term} months * ${(rate * 100).toFixed(0)}% = ${formatCurrency(comp)}`
         };
     }
 
@@ -90,7 +90,7 @@ export function calculateExpectedComp(
 
         // Regular renewal or upsell without uptick gets 5%
         const comp = tcv * 0.05;
-        const type = item.foxy_revenuetype === 612100002 ? "Upsell (no uptick)" : "Regular Renewal";
+        const type = item.foxy_revenuetype === 612100002 ? "Upsell" : "Regular Renewal";
         return {
             comp,
             explanation: `${type}: ${formatCurrency(item.foxy_mrr)}/mo * ${item.foxy_term} months * 5% = ${formatCurrency(comp)}`

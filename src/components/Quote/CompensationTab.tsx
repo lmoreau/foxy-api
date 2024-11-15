@@ -12,7 +12,7 @@ export interface CompensationTabProps {
 }
 
 const CompensationTab: React.FC<CompensationTabProps> = ({ lineItems = {}, locations = [] }) => {
-  const [assumedMargin, setAssumedMargin] = useState(20);
+  const [assumedMargin, setAssumedMargin] = useState(60);
 
   // Calculate total potential compensation
   let totalComp = 0;
