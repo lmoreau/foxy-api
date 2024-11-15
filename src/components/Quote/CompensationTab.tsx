@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Input, Card, Space } from 'antd';
 import { formatCurrency } from '../../utils/formatters';
+import { calculateExpectedComp } from '../../utils/compensationUtils';
 import { QuoteLineItem, QuoteLocation } from '../../types';
 
 const { Title, Text, Paragraph } = Typography;
@@ -8,78 +9,6 @@ const { Title, Text, Paragraph } = Typography;
 export interface CompensationTabProps {
   lineItems?: { [key: string]: QuoteLineItem[] };
   locations?: QuoteLocation[];
-}
-
-function getCommissionRate(marginPercent: number): number {
-  if (marginPercent < 5) return 0;
-  if (marginPercent < 15) return 0.06;
-  if (marginPercent < 30) return 0.10;
-  if (marginPercent < 50) return 0.14;
-  if (marginPercent < 60) return 0.20;
-  return 0.22;
-}
-
-function calculateExpectedComp(
-  item: QuoteLineItem,
-  assumedMarginPercent: number
-): { comp: number; explanation: string } {
-  // For quotes, we'll use the assumed margin percentage since actual margins aren't known yet
-  const marginPercent = assumedMarginPercent;
-  
-  // NEW or NET NEW
-  if (item.foxy_revenuetype === 612100000 || item.foxy_revenuetype === 612100001) {
-    const rate = getCommissionRate(marginPercent);
-    const comp = item.foxy_linetcv * rate;
-    return {
-      comp,
-      explanation: `${formatCurrency(item.foxy_mrr)}/mo * ${item.foxy_term} months * ${(rate * 100).toFixed(0)}% = ${formatCurrency(comp)}`
-    };
-  }
-
-  // UPSELL or RENEWAL
-  if (item.foxy_revenuetype === 612100002 || item.foxy_revenuetype === 612100003) {
-    // Early Renewal gets no compensation
-    if (item.foxy_renewaltype === "Early Renewal") {
-      return {
-        comp: 0,
-        explanation: "Early Renewal - No compensation"
-      };
-    }
-
-    // Calculate MRR uptick if we have existing MRR
-    const mrrUptick = item.foxy_existingmrr 
-      ? item.foxy_mrr - item.foxy_existingmrr
-      : 0;
-
-    // If there's a positive MRR uptick, split the calculation
-    if (mrrUptick > 0) {
-      const existingMRR = item.foxy_existingmrr || 0;
-      const existingTCV = existingMRR * item.foxy_term;
-      const existingComp = existingTCV * 0.05;
-
-      const newTCV = mrrUptick * item.foxy_term;
-      const newRate = getCommissionRate(marginPercent);
-      const newComp = newTCV * newRate;
-
-      return {
-        comp: existingComp + newComp,
-        explanation: `Existing: ${formatCurrency(existingMRR)}/mo * ${item.foxy_term} months * 5% = ${formatCurrency(existingComp)}\nNew: ${formatCurrency(mrrUptick)}/mo * ${item.foxy_term} months * ${(newRate * 100).toFixed(0)}% = ${formatCurrency(newComp)}`
-      };
-    }
-
-    // Regular renewal or upsell without uptick gets 5%
-    const comp = item.foxy_linetcv * 0.05;
-    const type = item.foxy_revenuetype === 612100002 ? "Upsell (no uptick)" : "Regular Renewal";
-    return {
-      comp,
-      explanation: `${type}: ${formatCurrency(item.foxy_mrr)}/mo * ${item.foxy_term} months * 5% = ${formatCurrency(comp)}`
-    };
-  }
-
-  return {
-    comp: 0,
-    explanation: "No matching compensation rules"
-  };
 }
 
 const CompensationTab: React.FC<CompensationTabProps> = ({ lineItems = {}, locations = [] }) => {
