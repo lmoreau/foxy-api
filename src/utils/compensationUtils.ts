@@ -9,11 +9,20 @@ export function getCommissionRate(marginPercent: number): number {
     return 0.22;
 }
 
+function getCableCompensation(mrr: number): number {
+    if (mrr < 80) return 120;
+    if (mrr < 115) return 200;
+    return 275;
+}
+
 interface BaseItem {
     foxy_revenuetype: number;
     foxy_renewaltype?: string;
     foxy_term: number;
     foxy_mrr: number;
+    foxy_Product?: {
+        name: string;
+    };
 }
 
 interface WonServiceItem extends BaseItem {
@@ -31,6 +40,34 @@ export function calculateExpectedComp(
     item: WonServiceItem | QuoteLineItem,
     assumedMarginPercent?: number
 ): { comp: number; explanation: string } {
+    // Check if this is a Cable product
+    const isCableProduct = item.foxy_Product?.name?.includes('Cable') ?? false;
+
+    if (isCableProduct) {
+        // For Cable products, Renewal and Upsell always get 0
+        if (item.foxy_revenuetype === 612100002 || item.foxy_revenuetype === 612100003) {
+            return {
+                comp: 0,
+                explanation: "Cable product Renewal/Upsell - No compensation"
+            };
+        }
+
+        // For New Cable products, compensation is based on MRR tiers
+        if (item.foxy_revenuetype === 612100000 || item.foxy_revenuetype === 612100001) {
+            const comp = getCableCompensation(item.foxy_mrr);
+            let tier = '';
+            if (item.foxy_mrr < 80) tier = 'Under $80';
+            else if (item.foxy_mrr < 115) tier = '$80 - $114.99';
+            else tier = '$115+';
+            
+            return {
+                comp,
+                explanation: `Cable New (${tier}): ${formatCurrency(item.foxy_mrr)}/mo = ${formatCurrency(comp)} flat rate`
+            };
+        }
+    }
+
+    // For non-Cable products, use the standard compensation rules
     // For quotes, we use assumed margin. For won services, we use actual margin
     const marginPercent = 'foxy_linemargin' in item 
         ? (item as WonServiceItem).foxy_linemargin * 100 
