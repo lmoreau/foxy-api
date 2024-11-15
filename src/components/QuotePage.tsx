@@ -209,9 +209,9 @@ const PageActions: React.FC<{
 }) => {
   const showQuoteActionButton = [612100000, 612100001, 612100002].includes(quoteStage);
   const isSubmitStage = quoteStage === 612100000 || quoteStage === 612100002;
-  const isQuoteValid = !isSubmitStage || validateQuoteReadyForSubmit(locations, lineItems);
+  const isQuoteValid = validateQuoteReadyForSubmit(locations, lineItems);
   
-  const handleQuoteAction = () => {
+  const handleQuoteAction = async () => {
     const isSubmit = quoteStage === 612100000;
     const isResubmit = quoteStage === 612100002;
     const isRecall = quoteStage === 612100001;
@@ -243,7 +243,7 @@ const PageActions: React.FC<{
       }
     });
   };
-
+  
   return (
     <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
       {showQuoteActionButton && (
@@ -264,9 +264,19 @@ const PageActions: React.FC<{
           </Button>
         </Tooltip>
       )}
-      <Button icon={<CopyOutlined />} onClick={onCloneQuote}>
-        Clone Quote
-      </Button>
+      <Tooltip title={
+        !isQuoteValid ? 
+        "Cannot clone quote. Please ensure: \n• At least one location is added\n• Each location has at least one product\n• All required fields are filled in for each product" 
+        : ""
+      }>
+        <Button 
+          icon={<CopyOutlined />} 
+          onClick={onCloneQuote}
+          disabled={!isQuoteValid}
+        >
+          Clone Quote
+        </Button>
+      </Tooltip>
       <Button icon={<PlusOutlined />} onClick={onAddLocation}>
         Add Location
       </Button>
