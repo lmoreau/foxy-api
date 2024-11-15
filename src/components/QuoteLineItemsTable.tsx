@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { Table, Form, message, Button, Tooltip, Space, Select, InputNumber } from 'antd';
+import { Table, Form, message, Button, Tooltip, Space, Select, InputNumber, Spin } from 'antd';
 import type { AlignType } from 'rc-table/lib/interface';
-import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, FileTextOutlined, ToolOutlined, SaveOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons';
 import { QuoteLineItem } from 'types';
 import DeleteConfirmationModal from 'components/DeleteConfirmationModal';
 import ConfigurationModal from 'components/ConfigurationModal';
@@ -411,24 +411,24 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
           <Space>
             {editable ? (
               <>
-                <Tooltip title="Save">
-                  <Button
-                    icon={<SaveOutlined />}
-                    onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
-                    style={{ marginRight: 8 }}
-                    type="link"
-                    loading={saving}
-                    disabled={saving}
-                  />
-                </Tooltip>
-                <Tooltip title="Cancel">
-                  <Button
-                    icon={<CloseOutlined />}
-                    onClick={cancel}
-                    type="link"
-                    disabled={saving}
-                  />
-                </Tooltip>
+                <Button
+                  icon={saving ? <LoadingOutlined /> : <SaveOutlined />}
+                  onClick={() => save(record.foxy_foxyquoterequestlineitemid)}
+                  style={{ marginRight: 8 }}
+                  type="link"
+                  loading={saving}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={cancel}
+                  type="link"
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
               </>
             ) : (
               <>

@@ -43,6 +43,8 @@ const useQuoteLineItems = (
   const save = async (key: string) => {
     try {
       setSavingId(key);
+      message.loading({ content: 'Saving line item...', key: 'saveLineItem', duration: 0 });
+      
       const row = await form.validateFields();
       const newData = [...lineItems];
       const index = newData.findIndex(item => key === item.foxy_foxyquoterequestlineitemid);
@@ -63,7 +65,7 @@ const useQuoteLineItems = (
 
         if (isNewItem) {
           if (!locationId || !selectedProduct?.productid) {
-            message.error('Missing required location or product information');
+            message.error({ content: 'Missing required location or product information', key: 'saveLineItem' });
             return;
           }
 
@@ -90,8 +92,9 @@ const useQuoteLineItems = (
             };
             setLineItems(newData);
             onUpdateLineItem(createdItem);
+            message.success({ content: 'Line item created successfully', key: 'saveLineItem' });
           } catch (error) {
-            message.error('Failed to create line item');
+            message.error({ content: 'Failed to create line item', key: 'saveLineItem' });
             console.error('Create line item error:', error);
             return;
           }
@@ -108,12 +111,14 @@ const useQuoteLineItems = (
           };
           await updateQuoteLineItem(updatedItem);
           onUpdateLineItem(updatedItem);
+          message.success({ content: 'Line item updated successfully', key: 'saveLineItem' });
         }
 
         setEditingKey('');
       }
     } catch (errInfo) {
       console.log('Validate Failed:', errInfo);
+      message.error({ content: 'Failed to save line item', key: 'saveLineItem' });
     } finally {
       setSavingId(null);
     }
