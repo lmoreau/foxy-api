@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip } from 'antd';
-import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined } from '@ant-design/icons';
+import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip, message } from 'antd';
+import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined, LoadingOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { calculateTotals } from '../utils/quoteUtils';
@@ -34,6 +34,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState<string | null>(null);
   const [addingProductToLocation, setAddingProductToLocation] = useState<string | null>(null);
+  const [deletingLocation, setDeletingLocation] = useState<string | null>(null);
 
   useEffect(() => {
     if (expandAll) {
@@ -46,6 +47,24 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
   const handleDeleteClick = (locationId: string) => {
     setLocationToDelete(locationId);
     setDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (locationToDelete) {
+      setDeletingLocation(locationToDelete);
+      message.loading({ content: 'Deleting location and associated items...', key: 'deleteLocation', duration: 0 });
+      
+      try {
+        await onDeleteLocation(locationToDelete);
+        message.success({ content: 'Location deleted successfully', key: 'deleteLocation' });
+      } catch (error) {
+        message.error({ content: 'Failed to delete location', key: 'deleteLocation' });
+        console.error('Delete location error:', error);
+      } finally {
+        setDeletingLocation(null);
+        setDeleteModalVisible(false);
+      }
+    }
   };
 
   const handleAddProduct = (locationId: string) => {
@@ -63,6 +82,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
           [location.foxy_foxyquoterequestlocationid]: locationLineItems 
         });
         const isExpanded = expandedLocations.includes(location.foxy_foxyquoterequestlocationid);
+        const isDeleting = deletingLocation === location.foxy_foxyquoterequestlocationid;
 
         return (
           <Card 
@@ -100,6 +120,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                             onClick={() => handleAddProduct(location.foxy_foxyquoterequestlocationid)}
                             type="text"
                             style={{ color: '#1890ff' }}
+                            disabled={isDeleting}
                           />
                         </Tooltip>
                         <Tooltip title="Product Catalogue">
@@ -108,16 +129,18 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                             onClick={() => {/* Product Catalogue functionality */}}
                             type="text"
                             style={{ color: '#52c41a' }}
+                            disabled={isDeleting}
                           />
                         </Tooltip>
                       </>
                     )}
-                    <Tooltip title="Delete Location">
+                    <Tooltip title={isDeleting ? "Deleting..." : "Delete Location"}>
                       <Button
-                        icon={<DeleteOutlined />}
+                        icon={isDeleting ? <LoadingOutlined /> : <DeleteOutlined />}
                         onClick={() => handleDeleteClick(location.foxy_foxyquoterequestlocationid)}
                         type="text"
                         style={{ color: '#ff4d4f' }}
+                        disabled={isDeleting}
                       />
                     </Tooltip>
                     <Button
@@ -129,6 +152,7 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                           setExpandedLocations([...expandedLocations, location.foxy_foxyquoterequestlocationid]);
                         }
                       }}
+                      disabled={isDeleting}
                     >
                       {isExpanded ? 'Collapse' : 'Expand'}
                     </Button>
@@ -158,11 +182,11 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
       <Modal
         title="Confirm Deletion"
         open={deleteModalVisible}
-        onOk={() => {
-          if (locationToDelete) onDeleteLocation(locationToDelete);
-          setDeleteModalVisible(false);
-        }}
+        onOk={handleDeleteConfirm}
         onCancel={() => setDeleteModalVisible(false)}
+        confirmLoading={!!deletingLocation}
+        okButtonProps={{ disabled: !!deletingLocation }}
+        cancelButtonProps={{ disabled: !!deletingLocation }}
       >
         <p>Are you sure you want to delete this location and all its line items? This action cannot be undone.</p>
       </Modal>
