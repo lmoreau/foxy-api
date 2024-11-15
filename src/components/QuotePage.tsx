@@ -210,6 +210,7 @@ const PageActions: React.FC<{
   const showQuoteActionButton = [612100000, 612100001, 612100002].includes(quoteStage);
   const isSubmitStage = quoteStage === 612100000 || quoteStage === 612100002;
   const isQuoteValid = validateQuoteReadyForSubmit(locations, lineItems);
+  const showAddLocation = quoteStage === 612100000 || quoteStage === 612100002;
   
   const handleQuoteAction = async () => {
     const isSubmit = quoteStage === 612100000;
@@ -277,9 +278,11 @@ const PageActions: React.FC<{
           Clone Quote
         </Button>
       </Tooltip>
-      <Button icon={<PlusOutlined />} onClick={onAddLocation}>
-        Add Location
-      </Button>
+      {showAddLocation && (
+        <Button icon={<PlusOutlined />} onClick={onAddLocation}>
+          Add Location
+        </Button>
+      )}
       <Button 
         icon={expandAll ? <ShrinkOutlined /> : <ExpandAltOutlined />} 
         onClick={onToggleExpand}
