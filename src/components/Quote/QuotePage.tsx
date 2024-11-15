@@ -8,6 +8,7 @@ import { deleteQuoteLineItem, updateQuoteRequest } from '../../utils/api';
 import { checkUserAccess } from '../../auth/authService';
 import QuoteCPQHeader from '../QuoteCPQHeader';
 import AddLocationModal from '../AddLocationModal';
+import TimelineTab from './TimelineTab';
 import { QuotePageProps, RawQuoteData } from './types';
 import MainTab from './MainTab';
 import {
@@ -116,12 +117,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     );
   }
 
-  const CompensationTabWithData = () => (
-    <Suspense fallback={<Spin size="large" />}>
-      <CompensationTab lineItems={lineItems} locations={locations} />
-    </Suspense>
-  );
-
   const tabItems = [
     {
       key: '1',
@@ -154,11 +149,20 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     },
     {
       key: '2',
-      label: 'Compensation',
-      children: <CompensationTabWithData />,
+      label: 'Timeline',
+      children: <TimelineTab id={id || ''} />,
     },
     {
       key: '3',
+      label: 'Compensation',
+      children: (
+        <Suspense fallback={<Spin size="large" />}>
+          <CompensationTab />
+        </Suspense>
+      ),
+    },
+    {
+      key: '4',
       label: 'Line Items',
       children: (
         <Suspense fallback={<Spin size="large" />}>
@@ -167,7 +171,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       ),
     },
     {
-      key: '4',
+      key: '5',
       label: 'Locations',
       children: (
         <Suspense fallback={<Spin size="large" />}>
@@ -176,7 +180,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       ),
     },
     {
-      key: '5',
+      key: '6',
       label: 'Quote Request',
       children: (
         <Suspense fallback={<Spin size="large" />}>
@@ -186,8 +190,8 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     },
   ];
 
-  // Show only the first tab for non-admin users
-  const visibleTabs = isAdmin ? tabItems : [tabItems[0]];
+  // Show only the first two tabs for non-admin users (Quote and Timeline)
+  const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1]];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
