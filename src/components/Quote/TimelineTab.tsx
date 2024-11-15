@@ -1,6 +1,6 @@
 import React from 'react';
-import { Timeline, Card, Spin, Typography } from 'antd';
-import { useTimelineData, TimelineItem } from '../../hooks';
+import { Timeline, Card, Spin, Typography, Space } from 'antd';
+import { useTimelineData } from '../../hooks/useTimelineData';
 
 const { Text } = Typography;
 
@@ -45,11 +45,18 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
   return (
     <div style={{ padding: '20px' }}>
       <Timeline>
-        {timelineItems.map((item: TimelineItem) => (
+        {timelineItems.map((item) => (
           <Timeline.Item key={item.id}>
             <Card 
               size="small" 
-              title={`${item.type === 'post' ? 'Post' : 'Note'} - ${new Date(item.modifiedOn).toLocaleString()}`}
+              title={
+                <Space>
+                  {item.type === 'post' ? 'Post' : 'Note'} by{' '}
+                  <Text style={{ color: '#1890ff' }}>{item.createdBy}</Text>
+                  {' - '}
+                  {new Date(item.modifiedOn).toLocaleString()}
+                </Space>
+              }
             >
               <div style={{ whiteSpace: 'pre-wrap' }}>
                 {formatMentions(item.text)}

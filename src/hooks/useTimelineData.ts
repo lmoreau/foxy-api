@@ -9,6 +9,7 @@ export interface TimelineItem {
   type: 'post' | 'note';
   text: string;
   modifiedOn: string;
+  createdBy: string;
 }
 
 export const useTimelineData = (id: string) => {
@@ -41,7 +42,8 @@ export const useTimelineData = (id: string) => {
           id: post.postid,
           type: 'post' as const,
           text: post.text || post.largetext || '',
-          modifiedOn: post.modifiedon
+          modifiedOn: post.modifiedon,
+          createdBy: post.createdby?.fullname || 'Unknown User'
         }));
 
         // Transform annotations data
@@ -49,7 +51,8 @@ export const useTimelineData = (id: string) => {
           id: note.annotationid,
           type: 'note' as const,
           text: note.notetext || note.subject || '',
-          modifiedOn: note.modifiedon
+          modifiedOn: note.modifiedon,
+          createdBy: note.createdby?.fullname || 'Unknown User'
         }));
 
         // Combine and sort by modified date

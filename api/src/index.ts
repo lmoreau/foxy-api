@@ -1,9 +1,4 @@
 import { app } from "@azure/functions";
-
-// Initialize the app
-const functionApp = app;
-
-// Import all functions
 import "./functions/getAccountById";
 import "./functions/createFoxyQuoteRequestLocation";
 import "./functions/createResidualScrubAudit";
@@ -37,6 +32,11 @@ import "./functions/createQuoteLineItem";
 import "./functions/updateQuoteLineItem";
 import "./functions/createQuoteRequest";
 import "./functions/deleteQuoteLineItem";
+import "./functions/listPosts";
+import "./functions/listAnnotations";
+
+// Initialize the app
+const functionApp = app;
 
 // Export the initialized app
 export default functionApp;
