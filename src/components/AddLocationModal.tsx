@@ -166,9 +166,11 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
                 minZoom={2}
               >
                 <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  url={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${MAPBOX_ACCESS_TOKEN}`}
+                  attribution='© <a href="https://www.mapbox.com/about/maps/">Mapbox</a>'
                   maxZoom={19}
+                  tileSize={512}
+                  zoomOffset={-1}
                 />
                 <MapBoundsSetter locations={locations} />
                 {locations.map((location) => {
