@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Input, Select, Form, Tabs } from 'antd';
+import { Table, Button, Modal, Input, Select, Form, Tabs, message } from 'antd';
 import axios from 'axios';
 import { getCategoryLabel, getSubcategoryLabel, categoryMap, subcategoryMap } from '../utils/categoryMapper';
+import { getDynamicsAccessToken } from '../auth/authService';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -18,15 +19,25 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:7071/api/listProductByRow');
+        setLoading(true);
+        const token = await getDynamicsAccessToken();
+        const response = await axios.get('http://localhost:7071/api/listProductByRow', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         setProducts(response.data.value || []);
       } catch (error) {
         console.error('Error fetching products:', error);
+        message.error('Failed to load products. Please try again.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -108,6 +119,7 @@ const ProductsPage: React.FC = () => {
       <Tabs defaultActiveKey="1">
         <TabPane tab="Wireline Products" key="1">
           <Table 
+            loading={loading}
             dataSource={wirelineProducts} 
             columns={columns} 
             rowKey="productid" 
@@ -122,6 +134,7 @@ const ProductsPage: React.FC = () => {
         </TabPane>
         <TabPane tab="Wireless Products" key="2">
           <Table 
+            loading={loading}
             dataSource={wirelessProducts} 
             columns={wirelessColumns} 
             rowKey="productid" 
