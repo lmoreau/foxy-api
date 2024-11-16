@@ -135,6 +135,7 @@ const MainTab: React.FC<MainTabProps> = ({
           lineItems={lineItems}
           accountId={accountId}
           opportunityId={rawQuoteData.quoteRequest?._foxy_opportunity_value}
+          rawQuoteData={rawQuoteData}
         />
       </Col>
       <Col span={24}>
