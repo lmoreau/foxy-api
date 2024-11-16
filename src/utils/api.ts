@@ -41,9 +41,16 @@ export const createQuoteRequest = async (data: any) => {
       }),
       ...(data._foxy_opportunity_value && {
         "foxy_Opportunity@odata.bind": `/opportunities(${data._foxy_opportunity_value})`
+      }),
+      ...(data.foxy_subject && {
+        foxy_subject: data.foxy_subject
+      }),
+      ...(data.foxy_quotetype !== undefined && {
+        foxy_quotetype: data.foxy_quotetype
       })
     };
 
+    console.log('Creating quote request with:', requestBody);
     const response = await axios.post(url, requestBody, { headers });
     return response.data;
   } catch (error) {

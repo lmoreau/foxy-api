@@ -16,7 +16,8 @@ const QuoteActions: React.FC<QuoteActionsProps> = ({
   locations,
   lineItems,
   accountId,
-  opportunityId
+  opportunityId,
+  rawQuoteData
 }) => {
   const navigate = useNavigate();
   const showQuoteActionButton = [612100000, 612100001, 612100002].includes(quoteStage);
@@ -63,9 +64,23 @@ const QuoteActions: React.FC<QuoteActionsProps> = ({
       content: 'Are you sure you want to clone this quote?',
       onOk: async () => {
         try {
+          // Get the values from rawQuoteData, ensuring they exist
+          const subject = rawQuoteData?.quoteRequest?.foxy_subject;
+          const quoteType = rawQuoteData?.quoteRequest?.foxy_quotetype;
+
+          if (!subject || quoteType === undefined) {
+            console.error('Missing required quote data:', { subject, quoteType });
+            message.error('Failed to clone quote: Missing required quote data');
+            return;
+          }
+
+          console.log('Cloning quote with:', { subject, quoteType });
+
           const newQuote = await createQuoteRequest({
             _foxy_account_value: accountId,
-            _foxy_opportunity_value: opportunityId
+            _foxy_opportunity_value: opportunityId,
+            foxy_subject: subject,
+            foxy_quotetype: quoteType
           });
 
           if (newQuote.foxy_foxyquoterequestid) {
