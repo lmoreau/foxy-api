@@ -25,8 +25,8 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
         // Get filter from query params, default to no filter if none provided
         const filter = request.query.get('$filter') || '';
         
-        // Construct the URL with the filter if provided
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/products?$select=name&$orderby=name&$top=5000${
+        // Construct the URL with the filter if provided, including all required fields
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/products?$select=productid,name,foxy_category,foxy_subcategory,description&$orderby=name&$top=5000${
             filter ? `&$filter=${filter}` : ''
         }`;
 
@@ -51,6 +51,10 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
         };
     } catch (error) {
         context.log(`Error retrieving products: ${error}`);
+        if (axios.isAxiosError(error)) {
+            context.log('Error response status:', error.response?.status);
+            context.log('Error response data:', JSON.stringify(error.response?.data));
+        }
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
         return { 

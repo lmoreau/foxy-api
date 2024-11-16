@@ -56,13 +56,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      // Transform mentions to Dynamics format
-      const text = values.text.replace(/@(\S+)\s/g, (match: string, username: string) => {
-        const user = users.find(u => u.fullname.includes(username));
+      const text = values.text.replace(/@(\S+\s+\S+|\S+)/g, (_match: string, username: string) => {
+        const user = users.find(u => u.fullname === username);
         if (user) {
-          return `@[8,${user.systemuserid},"${user.fullname}"] `;
+          return `@[8,${user.systemuserid},"${user.fullname}"]`;
         }
-        return match;
+        return `@${username}`;
       });
       onSubmit(text);
       form.resetFields();
