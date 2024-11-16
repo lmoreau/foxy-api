@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Statistic, Button, Space, Input, message } from 'antd';
+import { Row, Col, Card, Statistic, Button, Space, Input, message, Tag } from 'antd';
 import { UserOutlined, EditOutlined } from '@ant-design/icons';
 import { getQuoteStageLabel } from '../../utils/quoteStageMapper';
 import { getQuoteTypeLabel } from '../../utils/quoteTypeMapper';
@@ -40,6 +40,35 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditValue(e.target.value);
+  };
+
+  const getQuoteStageColor = (stage: number): string => {
+    switch (stage) {
+      case 612100000: return 'default';     // Draft
+      case 612100001: return 'processing';   // In Queue
+      case 612100002: return 'warning';      // Pending Sales
+      case 612100003: return 'blue';         // Submitted to SA
+      case 612100004: return 'purple';       // Pending COR
+      case 612100005: return 'cyan';         // Pending 3rd Party/MAT
+      case 612100006: return 'geekblue';     // NIKA Requested
+      case 612100007: return 'volcano';      // Finance Review
+      case 612100008: return 'orange';       // Waiting on CSE
+      case 755280001: return 'magenta';      // MAT with DBM
+      case 612100009: return 'success';      // Completed
+      case 612100010: return 'gold';         // Technical Review
+      default: return 'default';
+    }
+  };
+
+  const getQuoteTypeColor = (type: number): string => {
+    switch (type) {
+      case 612100000: return 'blue';      // Wireline
+      case 612100001: return 'green';     // Wireless
+      case 612100002: return 'purple';    // Data Centre
+      case 612100003: return 'cyan';      // IoT
+      case 612100004: return 'magenta';   // Small Business
+      default: return 'default';
+    }
   };
 
   return (
@@ -83,18 +112,20 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
           </div>
         </Col>
         <Col flex="1">
-          <Statistic
-            title="Quote Type"
-            value={getQuoteTypeLabel(quoteType)}
-            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
-          />
+          <div>
+            <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: '14px', marginBottom: '8px' }}>Quote Type</div>
+            <Tag color={getQuoteTypeColor(quoteType)} style={{ margin: 0 }}>
+              {getQuoteTypeLabel(quoteType)}
+            </Tag>
+          </div>
         </Col>
         <Col flex="1">
-          <Statistic
-            title="Quote Stage"
-            value={getQuoteStageLabel(quoteStage)}
-            valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
-          />
+          <div>
+            <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: '14px', marginBottom: '8px' }}>Quote Stage</div>
+            <Tag color={getQuoteStageColor(quoteStage)} style={{ margin: 0 }}>
+              {getQuoteStageLabel(quoteStage)}
+            </Tag>
+          </div>
         </Col>
         <Col flex="1">
           <Statistic
