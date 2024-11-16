@@ -34,11 +34,13 @@ import "./functions/listAnnotations";
 import "./functions/createPost";
 import "./functions/listUsers";
 import "./functions/createFoxyQuoteRequestLocation";
+import "./functions/getBlobSasToken";
 
 export * from "./functions/listPosts";
 export * from "./functions/createPost";
 export * from "./functions/listAnnotations";
 export * from "./functions/listUsers";
+export * from "./functions/getBlobSasToken";
 
 // Initialize the app
 const functionApp = app;
