@@ -19,15 +19,17 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
 }) => {
   const [form] = Form.useForm();
 
+  // Reset form with initial values when modal opens
   React.useEffect(() => {
-    if (initialValues) {
+    if (open && initialValues) {
+      form.resetFields();
       form.setFieldsValue({
         ...initialValues,
         foxy_renewaldate: initialValues.foxy_renewaldate ? dayjs(initialValues.foxy_renewaldate) : null,
-        foxy_existingqty: initialValues.foxy_existingqty || 1  // Default to 1
+        foxy_existingqty: initialValues.foxy_existingqty || 1
       });
     }
-  }, [initialValues, form]);
+  }, [open, initialValues, form]);
 
   const handleSubmit = async () => {
     try {
@@ -63,7 +65,6 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ foxy_existingqty: 1 }}  // Set default here too
       >
         <Form.Item
           name="foxy_renewaltype"
@@ -89,7 +90,7 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
           label="Existing Quantity"
           rules={[{ required: true, message: 'Please enter the existing quantity' }]}
         >
-          <InputNumber min={1} defaultValue={1} style={{ width: '100%' }} />
+          <InputNumber min={1} style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item
