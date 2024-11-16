@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Timeline, Card, Spin, Typography, Button } from 'antd';
+import { Timeline, Card, Spin, Typography, Button, Row, Col } from 'antd';
 import { MessageOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons';
 import { useTimelineData } from '../../hooks/useTimelineData';
+import { useQuoteData } from '../../hooks/useQuoteData';
 import CreatePostModal from './CreatePostModal';
 import './timeline.css';
 
@@ -40,6 +41,7 @@ const formatMentions = (text: string) => {
 
 const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
   const { timelineItems, loading, createPost } = useTimelineData(id);
+  const { rawQuoteData } = useQuoteData(id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -59,18 +61,30 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
     return <Spin size="large" />;
   }
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Create Post
-        </Button>
-      </div>
+  const quoteId = rawQuoteData?.quoteRequest?.foxy_quoteid || id;
 
+  return (
+    <div>
+      {/* Header section matching main quote page */}
+      <Row gutter={[0, 16]}>
+        <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+          <div>
+            <Text strong style={{ fontSize: '16px', display: 'block' }}>Posts & Notes</Text>
+            <Text type="secondary" style={{ fontSize: '14px' }}>
+              Foxy Timeline for {quoteId}
+            </Text>
+          </div>
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Create Post
+          </Button>
+        </Col>
+      </Row>
+
+      {/* Timeline content */}
       <Timeline className="timeline-custom">
         {timelineItems.map((item) => (
           <Timeline.Item 
