@@ -22,6 +22,29 @@ import {
 const RawDataTab = lazy(() => import('./RawDataTab'));
 const CompensationTab = lazy(() => import('./CompensationTab'));
 
+// Add this new component
+const RawDataTabs: React.FC<{ data: any }> = ({ data }) => {
+  const items = [
+    {
+      key: 'lineItems',
+      label: 'Line Items',
+      children: <RawDataTab data={data.lineItems} />
+    },
+    {
+      key: 'locations',
+      label: 'Locations',
+      children: <RawDataTab data={data.locations} />
+    },
+    {
+      key: 'quoteRequest',
+      label: 'Quote Request',
+      children: <RawDataTab data={data.quoteRequest} />
+    }
+  ];
+
+  return <LazyTabs items={items} />;
+};
+
 const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   const { id } = useParams<{ id: string }>();
   const { 
@@ -149,7 +172,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     },
     {
       key: '2',
-      label: 'Timeline',
+      label: 'Notes',
       children: <TimelineTab id={id || ''} />,
     },
     {
@@ -163,34 +186,16 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     },
     {
       key: '4',
-      label: 'Line Items',
+      label: 'Raw Data',
       children: (
         <Suspense fallback={<Spin size="large" />}>
-          <RawDataTab data={rawData.lineItems} />
+          <RawDataTabs data={rawData} />
         </Suspense>
       ),
-    },
-    {
-      key: '5',
-      label: 'Locations',
-      children: (
-        <Suspense fallback={<Spin size="large" />}>
-          <RawDataTab data={rawData.locations} />
-        </Suspense>
-      ),
-    },
-    {
-      key: '6',
-      label: 'Quote Request',
-      children: (
-        <Suspense fallback={<Spin size="large" />}>
-          <RawDataTab data={rawData.quoteRequest} />
-        </Suspense>
-      ),
-    },
+    }
   ];
 
-  // Show only the first two tabs for non-admin users (Quote and Timeline)
+  // Show only the first two tabs for non-admin users (Quote and Notes)
   const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1]];
 
   return (

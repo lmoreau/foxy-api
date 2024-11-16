@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Timeline, Card, Spin, Typography, Button, Row, Col } from 'antd';
-import { MessageOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons';
+import { MessageOutlined, FileTextOutlined, PlusOutlined, FileOutlined } from '@ant-design/icons';
 import { useTimelineData } from '../../hooks/useTimelineData';
-import { useQuoteData } from '../../hooks/useQuoteData';
 import CreatePostModal from './CreatePostModal';
 import './timeline.css';
 
@@ -39,9 +38,32 @@ const formatMentions = (text: string) => {
   return parts;
 };
 
+const formatPostContent = (text: string) => {
+  // Split content and attachment
+  const [content, attachment] = text.split('[ATTACHMENT]');
+  
+  if (!attachment) {
+    return formatMentions(content);
+  }
+
+  const [fileName, fileUrl] = attachment.replace('[/ATTACHMENT]', '').split('|');
+
+  return (
+    <>
+      <div style={{ whiteSpace: 'pre-wrap', marginBottom: '8px' }}>
+        {formatMentions(content)}
+      </div>
+      <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '8px' }}>
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+          <FileOutlined /> {fileName}
+        </a>
+      </div>
+    </>
+  );
+};
+
 const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
   const { timelineItems, loading, createPost } = useTimelineData(id);
-  const { rawQuoteData } = useQuoteData(id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -61,19 +83,11 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
     return <Spin size="large" />;
   }
 
-  const quoteId = rawQuoteData?.quoteRequest?.foxy_quoteid || id;
-
   return (
     <div>
-      {/* Header section matching main quote page */}
-      <Row gutter={[0, 16]}>
-        <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
-            <Text strong style={{ fontSize: '16px', display: 'block' }}>Posts & Notes</Text>
-            <Text type="secondary" style={{ fontSize: '14px' }}>
-              Foxy Timeline for {quoteId}
-            </Text>
-          </div>
+      {/* Simple create button */}
+      <Row justify="center">
+        <Col xs={24} sm={24} md={20} lg={16} xl={14} style={{ textAlign: 'right', marginBottom: '20px' }}>
           <Button 
             type="primary" 
             icon={<PlusOutlined />}
@@ -85,33 +99,38 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ id }) => {
       </Row>
 
       {/* Timeline content */}
-      <Timeline className="timeline-custom">
-        {timelineItems.map((item) => (
-          <Timeline.Item 
-            key={item.id}
-            dot={item.type === 'post' ? 
-              <MessageOutlined style={{ fontSize: '16px', color: '#1890ff' }} /> : 
-              <FileTextOutlined style={{ fontSize: '16px', color: '#1890ff' }} />
-            }
-          >
-            <Card 
-              size="small" 
-              title={
-                <span>
-                  {item.type === 'post' ? 'Post' : 'Note'} by{' '}
-                  <Text style={{ color: '#1890ff' }}>{item.createdBy}</Text>
-                  {' - '}
-                  {new Date(item.modifiedOn).toLocaleString()}
-                </span>
-              }
-            >
-              <div style={{ whiteSpace: 'pre-wrap' }}>
-                {formatMentions(item.text)}
-              </div>
-            </Card>
-          </Timeline.Item>
-        ))}
-      </Timeline>
+      <Row justify="center">
+        <Col xs={24} sm={24} md={20} lg={16} xl={14}>
+          <Timeline className="timeline-custom">
+            {timelineItems.map((item) => (
+              <Timeline.Item 
+                key={item.id}
+                dot={item.type === 'post' ? 
+                  <MessageOutlined style={{ fontSize: '16px', color: '#1890ff' }} /> : 
+                  <FileTextOutlined style={{ fontSize: '16px', color: '#1890ff' }} />
+                }
+              >
+                <Card 
+                  size="small" 
+                  title={
+                    <span>
+                      {item.type === 'post' ? 'Post' : 'Note'} by{' '}
+                      <Text style={{ color: '#1890ff' }}>{item.createdBy}</Text>
+                      {' - '}
+                      {new Date(item.modifiedOn).toLocaleString()}
+                    </span>
+                  }
+                  style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+                >
+                  <div style={{ whiteSpace: 'pre-wrap' }}>
+                    {formatPostContent(item.text)}
+                  </div>
+                </Card>
+              </Timeline.Item>
+            ))}
+          </Timeline>
+        </Col>
+      </Row>
 
       <CreatePostModal
         open={isModalOpen}
