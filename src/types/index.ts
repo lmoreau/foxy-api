@@ -1,5 +1,6 @@
 export interface QuoteLineItem {
   foxy_foxyquoterequestlineitemid: string;
+  _foxy_product_value?: string;  // Made optional with ?
   foxy_Product?: {
     name: string;
     crc9f_requiresconfiguration?: boolean;

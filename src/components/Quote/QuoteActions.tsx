@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Space, Modal, Tooltip, message } from 'antd';
 import { PlusOutlined, ExpandAltOutlined, ShrinkOutlined, CopyOutlined, RollbackOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest } from '../../utils/api';
+import { createQuoteRequest, createFoxyQuoteRequestLocation, updateQuoteRequest, createQuoteLineItem } from '../../utils/api';
 import { QuoteActionsProps } from './types';
 import { validateQuoteReadyForSubmit } from './utils';
 
@@ -64,36 +64,73 @@ const QuoteActions: React.FC<QuoteActionsProps> = ({
       content: 'Are you sure you want to clone this quote?',
       onOk: async () => {
         try {
-          // Get the values from rawQuoteData, ensuring they exist
-          const subject = rawQuoteData?.quoteRequest?.foxy_subject;
-          const quoteType = rawQuoteData?.quoteRequest?.foxy_quotetype;
-
-          if (!subject || quoteType === undefined) {
-            console.error('Missing required quote data:', { subject, quoteType });
-            message.error('Failed to clone quote: Missing required quote data');
-            return;
-          }
-
-          console.log('Cloning quote with:', { subject, quoteType });
+          console.log('Cloning quote with: ', {
+            subject: rawQuoteData?.quoteRequest?.foxy_subject,
+            quoteType: rawQuoteData?.quoteRequest?.foxy_quotetype
+          });
 
           const newQuote = await createQuoteRequest({
             _foxy_account_value: accountId,
             _foxy_opportunity_value: opportunityId,
-            foxy_subject: subject,
-            foxy_quotetype: quoteType
+            foxy_subject: rawQuoteData?.quoteRequest?.foxy_subject,
+            foxy_quotetype: rawQuoteData?.quoteRequest?.foxy_quotetype
           });
 
           if (newQuote.foxy_foxyquoterequestid) {
-            const locationPromises = locations.map(location => 
-              createFoxyQuoteRequestLocation(
+            // Create a map to store old location ID to new location ID mapping
+            const locationMap = new Map<string, string>();
+
+            // Create all locations first
+            const locationPromises = locations.map(async location => {
+              const newLocation = await createFoxyQuoteRequestLocation(
                 location._foxy_building_value,
                 newQuote.foxy_foxyquoterequestid,
                 location._foxy_companylocation_value
-              )
-            );
+              );
+              // Store the mapping of old location ID to new location ID
+              locationMap.set(location.foxy_foxyquoterequestlocationid, newLocation.foxy_foxyquoterequestlocationid);
+              return newLocation;
+            });
 
             await Promise.all(locationPromises);
-            message.success('Quote and locations cloned successfully');
+
+            // Now create line items for each location
+            const lineItemPromises: Promise<any>[] = [];
+
+            locations.forEach(location => {
+              const locationLineItems = lineItems[location.foxy_foxyquoterequestlocationid] || [];
+              const newLocationId = locationMap.get(location.foxy_foxyquoterequestlocationid);
+
+              if (newLocationId) {
+                locationLineItems.forEach(item => {
+                  // Skip if no product value
+                  if (!item._foxy_product_value) {
+                    console.warn('Skipping line item without product value:', item);
+                    return;
+                  }
+
+                  // Create new line item with the same properties but for the new location
+                  const lineItemPromise = createQuoteLineItem({
+                    _foxy_foxyquoterequestlocation_value: newLocationId,
+                    _foxy_product_value: item._foxy_product_value,
+                    foxy_quantity: item.foxy_quantity,
+                    foxy_each: item.foxy_each,
+                    foxy_mrr: item.foxy_mrr,
+                    foxy_linetcv: item.foxy_linetcv,
+                    foxy_term: item.foxy_term,
+                    foxy_revenuetype: item.foxy_revenuetype,
+                    foxy_renewaltype: item.foxy_renewaltype,
+                    foxy_renewaldate: item.foxy_renewaldate,
+                    foxy_existingqty: item.foxy_existingqty,
+                    foxy_existingmrr: item.foxy_existingmrr
+                  });
+                  lineItemPromises.push(lineItemPromise);
+                });
+              }
+            });
+
+            await Promise.all(lineItemPromises);
+            message.success('Quote, locations, and line items cloned successfully');
             navigate(`/quote/${newQuote.foxy_foxyquoterequestid}`);
           }
         } catch (error) {
