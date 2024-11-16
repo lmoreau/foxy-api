@@ -33,6 +33,7 @@ import "./functions/listPosts";
 import "./functions/listAnnotations";
 import "./functions/createPost";
 import "./functions/listUsers";
+import "./functions/createFoxyQuoteRequestLocation";
 
 export * from "./functions/listPosts";
 export * from "./functions/createPost";
