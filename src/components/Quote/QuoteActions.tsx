@@ -64,15 +64,25 @@ const QuoteActions: React.FC<QuoteActionsProps> = ({
       content: 'Are you sure you want to clone this quote?',
       onOk: async () => {
         try {
+          const originalQuoteId = rawQuoteData?.quoteRequest?.foxy_quoteid;
+          const originalSubject = rawQuoteData?.quoteRequest?.foxy_subject;
+          
+          if (!originalSubject) {
+            message.error('Original quote subject is missing');
+            return;
+          }
+
+          const newSubject = `${originalSubject} (Cloned from ${originalQuoteId || 'unknown'})`;
+
           console.log('Cloning quote with: ', {
-            subject: rawQuoteData?.quoteRequest?.foxy_subject,
+            subject: newSubject,
             quoteType: rawQuoteData?.quoteRequest?.foxy_quotetype
           });
 
           const newQuote = await createQuoteRequest({
             _foxy_account_value: accountId,
             _foxy_opportunity_value: opportunityId,
-            foxy_subject: rawQuoteData?.quoteRequest?.foxy_subject,
+            foxy_subject: newSubject,
             foxy_quotetype: rawQuoteData?.quoteRequest?.foxy_quotetype
           });
 

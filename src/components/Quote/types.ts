@@ -26,6 +26,13 @@ export interface QuoteActionsProps {
   lineItems: { [key: string]: QuoteLineItem[] };
   accountId?: string;
   opportunityId?: string;
+  rawQuoteData: {
+    quoteRequest?: {
+      foxy_subject?: string;
+      foxy_quotetype?: number;
+      foxy_quoteid?: string;
+    };
+  };
 }
 
 export interface RawQuoteData {
