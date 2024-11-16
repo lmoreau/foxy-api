@@ -15,6 +15,7 @@ import IncomingWirelinePayments from './components/IncomingWirelinePayments';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
+import { Link } from 'react-router-dom';
 
 const { Content } = Layout;
 
@@ -30,6 +31,36 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         {children}
       </Content>
     </Layout>
+  );
+};
+
+// Add this new component
+const NotFound = () => {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center', 
+      justifyContent: 'center',
+      minHeight: 'calc(100vh - 64px)',
+      padding: '20px',
+      textAlign: 'center'
+    }}>
+      <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '60px', marginBottom: '24px' }} />
+      <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>404 - Page Not Found</h1>
+      <p style={{ marginBottom: '24px', color: '#595959' }}>
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <Link to="/" style={{ 
+        padding: '8px 16px',
+        background: '#1890ff',
+        color: 'white',
+        borderRadius: '4px',
+        textDecoration: 'none'
+      }}>
+        Return Home
+      </Link>
+    </div>
   );
 };
 
@@ -98,6 +129,8 @@ function App() {
                 path="/" 
                 element={<ResidualCheck />} 
               />
+              {/* Add catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>
         </ProtectedRoute>

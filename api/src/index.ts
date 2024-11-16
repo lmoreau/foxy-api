@@ -1,5 +1,6 @@
 import { app } from "@azure/functions";
 import "./functions/deleteQuoteLocation";
+import "./functions/getAccountById";
 import "./functions/getOpportunityById";
 import "./functions/getQuoteLineItemById";
 import "./functions/getQuoteLocationById";
@@ -35,6 +36,7 @@ import "./functions/createPost";
 import "./functions/listUsers";
 import "./functions/createFoxyQuoteRequestLocation";
 import "./functions/getBlobSasToken";
+import "./functions/createResidualScrubAudit";
 
 export * from "./functions/listPosts";
 export * from "./functions/createPost";

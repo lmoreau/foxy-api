@@ -44,8 +44,8 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
 
   return (
     <Card size="small">
-      <Row gutter={[8, 8]} align="middle">
-        <Col span={3}>
+      <Row gutter={[8, 8]} align="middle" justify="space-between">
+        <Col flex="1">
           <Statistic
             title="Owner"
             value={owner}
@@ -53,10 +53,10 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
             valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
-        <Col span={4}>
+        <Col flex="1">
           <div>
             <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: '14px' }}>OptiC Quote</div>
-            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
               {isEditing ? (
                 <Space>
                   <Input
@@ -82,28 +82,28 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
             </div>
           </div>
         </Col>
-        <Col span={4}>
+        <Col flex="1">
           <Statistic
             title="Quote Type"
             value={getQuoteTypeLabel(quoteType)}
             valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
-        <Col span={4}>
+        <Col flex="1">
           <Statistic
             title="Quote Stage"
             value={getQuoteStageLabel(quoteStage)}
             valueStyle={{ fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
-        <Col span={4}>
+        <Col flex="1">
           <Statistic
             title="Total MRR"
             value={formatCurrency(totalMRR)}
             valueStyle={{ color: '#000000', fontSize: '14px', fontWeight: 'bold' }}
           />
         </Col>
-        <Col span={5}>
+        <Col flex="1">
           <Statistic
             title="Total TCV"
             value={formatCurrency(totalTCV)}
