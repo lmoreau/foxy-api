@@ -157,7 +157,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       label: 'Compensation',
       children: (
         <Suspense fallback={<Spin size="large" />}>
-          <CompensationTab />
+          <CompensationTab lineItems={lineItems} locations={locations} />
         </Suspense>
       ),
     },
