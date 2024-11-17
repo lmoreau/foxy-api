@@ -30,13 +30,9 @@ export async function getQuoteRequestById(request: HttpRequest, context: Invocat
     }
 
     try {
-        // Format the GUID properly for Dataverse
         const formattedId = id.replace(/[{}]/g, '');
         const headers = getDataverseHeaders(authHeader);
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequests(${formattedId})?$expand=foxy_Account,owninguser`;
-
-        context.log('Using auth header:', authHeader.substring(0, 50) + '...');
-        context.log('Calling URL:', apiUrl);
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequests(${formattedId})?$expand=foxy_Account($select=name,foxy_duns,foxy_basecustomer),owninguser($select=fullname),foxy_Opportunity($select=foxy_opportunitytype,estimatedclosedate,foxy_sfdcoppid,name)`;
 
         const response = await axios.get(apiUrl, { headers });
 

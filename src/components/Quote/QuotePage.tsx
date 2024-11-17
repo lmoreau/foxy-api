@@ -17,6 +17,7 @@ import {
   LazyTabs,
   Spin
 } from './AntComponents';
+import DetailsTab from './DetailsTab';
 
 // Lazy load components that aren't immediately needed
 const RawDataTab = lazy(() => import('./RawDataTab'));
@@ -172,11 +173,22 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     },
     {
       key: '2',
+      label: 'Details',
+      children: (
+        <DetailsTab 
+          opportunity={rawQuoteData.quoteRequest?.foxy_Opportunity}
+          account={rawQuoteData.quoteRequest?.foxy_Account}
+          subject={rawQuoteData.quoteRequest?.foxy_subject}
+        />
+      ),
+    },
+    {
+      key: '3',
       label: 'Notes',
       children: <TimelineTab id={id || ''} />,
     },
     {
-      key: '3',
+      key: '4',
       label: 'Compensation',
       children: (
         <Suspense fallback={<Spin size="large" />}>
@@ -185,7 +197,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       ),
     },
     {
-      key: '4',
+      key: '5',
       label: 'Raw Data',
       children: (
         <Suspense fallback={<Spin size="large" />}>
