@@ -37,6 +37,7 @@ import "./functions/listUsers";
 import "./functions/createFoxyQuoteRequestLocation";
 import "./functions/getBlobSasToken";
 import "./functions/createResidualScrubAudit";
+import "./functions/listQuoteRequests";
 
 export * from "./functions/listPosts";
 export * from "./functions/createPost";

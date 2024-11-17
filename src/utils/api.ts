@@ -439,3 +439,11 @@ export const deleteQuoteLineItem = async (id: string): Promise<void> => {
     throw error;
   }
 };
+
+export const listQuoteRequests = async (stages: number[]) => {
+    const headers = await getAuthHeaders();
+    const stagesQuery = stages.map(stage => `foxy_quotestage eq ${stage}`).join(' or ');
+    const url = `${API_BASE_URL}/listQuoteRequests?stages=${encodeURIComponent(stagesQuery)}`;
+    const response = await axios.get(url, { headers });
+    return response.data;
+};

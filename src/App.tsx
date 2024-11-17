@@ -16,6 +16,7 @@ import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
 import { Link } from 'react-router-dom';
+import QuoteList from './pages/QuoteList';
 
 const { Content } = Layout;
 
@@ -123,6 +124,10 @@ function App() {
               <Route 
                 path="/incoming-wireline-payments" 
                 element={<IncomingWirelinePayments />} 
+              />
+              <Route
+                path="/quotes"
+                element={<QuoteList />}
               />
               {/* Redirect root to residual-check */}
               <Route 
