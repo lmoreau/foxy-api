@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Row, Col, Typography, Space } from 'antd';
+import { Form, Row, Col, Typography, Space, Tag } from 'antd';
 import dayjs from 'dayjs';
 import { getBaseCustomerLabel } from '../../utils/baseCustomerMapper';
 import { getOpportunityTypeLabel } from '../../utils/opportunityTypeMapper';
@@ -89,11 +89,13 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject, 
               </Col>
               <Col span={12}>
                 <Form.Item label={<span style={labelStyle}>Opportunity Type</span>}>
-                  <Text>
-                    {opportunity?.foxy_opportunitytype 
-                      ? getOpportunityTypeLabel(opportunity.foxy_opportunitytype)
-                      : '-'}
-                  </Text>
+                  {opportunity?.foxy_opportunitytype ? (
+                    <Tag color="blue" style={{ fontWeight: 600, fontSize: '14px' }}>
+                      {getOpportunityTypeLabel(opportunity.foxy_opportunitytype)}
+                    </Tag>
+                  ) : (
+                    <Text>-</Text>
+                  )}
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -103,11 +105,13 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject, 
               </Col>
               <Col span={12}>
                 <Form.Item label={<span style={labelStyle}>Base Customer Status</span>}>
-                  <Text>
-                    {account?.foxy_basecustomer 
-                      ? getBaseCustomerLabel(account.foxy_basecustomer)
-                      : '-'}
-                  </Text>
+                  {account?.foxy_basecustomer ? (
+                    <Tag color="green" style={{ fontWeight: 600, fontSize: '14px' }}>
+                      {getBaseCustomerLabel(account.foxy_basecustomer)}
+                    </Tag>
+                  ) : (
+                    <Text>-</Text>
+                  )}
                 </Form.Item>
               </Col>
             </Row>
