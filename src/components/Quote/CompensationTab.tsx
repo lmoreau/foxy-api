@@ -14,8 +14,14 @@ export interface CompensationTabProps {
 const CompensationTab: React.FC<CompensationTabProps> = ({ lineItems = {}, locations = [] }) => {
   const [assumedMargin, setAssumedMargin] = useState(60);
 
-  // Calculate total potential compensation
-  let totalComp = 0;
+  // Calculate total potential compensation before rendering
+  const totalComp = locations.reduce((total, location) => {
+    const locationItems = lineItems[location.foxy_foxyquoterequestlocationid] || [];
+    return total + locationItems.reduce((locTotal, item) => {
+      const { comp } = calculateExpectedComp(item, assumedMargin);
+      return locTotal + comp;
+    }, 0);
+  }, 0);
 
   return (
     <Row gutter={[0, 16]}>
@@ -46,18 +52,28 @@ const CompensationTab: React.FC<CompensationTabProps> = ({ lineItems = {}, locat
           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
         }}>
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <Space align="center">
-              <Text>Assumed Margin:</Text>
-              <Input
-                type="number"
-                value={assumedMargin}
-                onChange={(e) => setAssumedMargin(Number(e.target.value))}
-                style={{ width: '100px' }}
-                suffix="%"
-                min={0}
-                max={100}
-              />
-            </Space>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '24px'
+            }}>
+              <Space align="center">
+                <Text>Assumed Margin:</Text>
+                <Input
+                  type="number"
+                  value={assumedMargin}
+                  onChange={(e) => setAssumedMargin(Number(e.target.value))}
+                  style={{ width: '100px' }}
+                  suffix="%"
+                  min={0}
+                  max={100}
+                />
+              </Space>
+              <Text strong style={{ fontSize: '16px' }}>
+                Total Potential Compensation: {formatCurrency(totalComp)}
+              </Text>
+            </div>
 
             {locations.map(location => {
               const locationItems = lineItems[location.foxy_foxyquoterequestlocationid] || [];
@@ -74,8 +90,6 @@ const CompensationTab: React.FC<CompensationTabProps> = ({ lineItems = {}, locat
                   {locationItems.map(item => {
                     const { comp, explanation } = calculateExpectedComp(item, assumedMargin);
                     locationTotal += comp;
-                    totalComp += comp;
-
                     return (
                       <div key={item.foxy_foxyquoterequestlineitemid} style={{ marginBottom: '16px' }}>
                         <Text strong>{item.foxy_Product?.name}</Text>
@@ -91,12 +105,6 @@ const CompensationTab: React.FC<CompensationTabProps> = ({ lineItems = {}, locat
                 </Card>
               );
             })}
-
-            <Card>
-              <Text strong style={{ fontSize: '16px' }}>
-                Total Potential Compensation: {formatCurrency(totalComp)}
-              </Text>
-            </Card>
           </Space>
         </div>
       </Col>

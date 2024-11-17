@@ -20,15 +20,28 @@ interface DetailsTabProps {
   };
   subject?: string;
   opportunityId?: string;
+  quoteId?: string;
+  foxyQuoteId?: string;
 }
 
 const labelStyle = {
   fontWeight: 600  // Makes labels bold
 };
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject, opportunityId }) => {
+const DetailsTab: React.FC<DetailsTabProps> = ({ 
+  opportunity, 
+  account, 
+  subject, 
+  opportunityId,
+  quoteId,
+  foxyQuoteId 
+}) => {
   const opportunityUrl = opportunityId ? 
     `https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=${opportunityId}` 
+    : undefined;
+
+  const quoteUrl = quoteId ?
+    `https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=foxy_foxyquoterequest&id=${quoteId}`
     : undefined;
 
   return (
@@ -111,6 +124,20 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject, 
                     </Tag>
                   ) : (
                     <Text>-</Text>
+                  )}
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item 
+                  label={<span style={labelStyle}>Foxy Quote</span>}
+                  style={{ marginBottom: '24px' }}
+                >
+                  {quoteId ? (
+                    <Link href={quoteUrl} target="_self">
+                      {foxyQuoteId || '-'}
+                    </Link>
+                  ) : (
+                    <Text>{foxyQuoteId || '-'}</Text>
                   )}
                 </Form.Item>
               </Col>
