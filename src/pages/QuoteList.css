@@ -1,0 +1,27 @@
+.quote-list-container {
+  padding: 20px;
+}
+
+.quote-list-container h2 {
+  margin-bottom: 16px;
+}
+
+.ant-table-wrapper {
+  background: white;
+  border-radius: 8px;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f0f2f5;
+  white-space: nowrap;
+}
+
+.ant-table-tbody > tr > td {
+  white-space: nowrap;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+.ant-tag {
+  margin: 2px;
+} 
