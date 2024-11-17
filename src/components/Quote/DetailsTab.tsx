@@ -1,9 +1,10 @@
 import React from 'react';
-import { Form, Input, DatePicker, Row, Col, Typography, Space } from 'antd';
+import { Form, Row, Col, Typography, Space } from 'antd';
 import dayjs from 'dayjs';
 import { getBaseCustomerLabel } from '../../utils/baseCustomerMapper';
+import { getOpportunityTypeLabel } from '../../utils/opportunityTypeMapper';
 
-const { Text } = Typography;
+const { Text, Link } = Typography;
 
 interface DetailsTabProps {
   opportunity?: {
@@ -18,9 +19,18 @@ interface DetailsTabProps {
     name?: string;
   };
   subject?: string;
+  opportunityId?: string;
 }
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject }) => {
+const labelStyle = {
+  fontWeight: 600  // Makes labels bold
+};
+
+const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject, opportunityId }) => {
+  const opportunityUrl = opportunityId ? 
+    `https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=${opportunityId}` 
+    : undefined;
+
   return (
     <Row gutter={[0, 16]}>
       <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -44,52 +54,54 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ opportunity, account, subject }
         <Form layout="vertical">
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label="Opportunity Name">
-                <Input 
-                  value={opportunity?.name || ''} 
-                  readOnly 
-                />
+              <Form.Item 
+                label={<span style={labelStyle}>Opportunity Name</span>}
+                style={{ marginBottom: '24px' }}
+              >
+                {opportunityId ? (
+                  <Link href={opportunityUrl} target="_self">
+                    {opportunity?.name || '-'}
+                  </Link>
+                ) : (
+                  <Text>{opportunity?.name || '-'}</Text>
+                )}
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Salesforce Opportunity ID">
-                <Input 
-                  value={opportunity?.foxy_sfdcoppid || ''} 
-                  readOnly 
-                />
+              <Form.Item label={<span style={labelStyle}>Salesforce Opportunity ID</span>}>
+                <Text>{opportunity?.foxy_sfdcoppid || '-'}</Text>
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Estimated Close Date">
-                <DatePicker 
-                  value={opportunity?.estimatedclosedate ? dayjs(opportunity.estimatedclosedate) : null}
-                  disabled
-                  style={{ width: '100%' }}
-                />
+              <Form.Item label={<span style={labelStyle}>Estimated Close Date</span>}>
+                <Text>
+                  {opportunity?.estimatedclosedate 
+                    ? dayjs(opportunity.estimatedclosedate).format('MMMM D, YYYY')
+                    : '-'}
+                </Text>
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Opportunity Type">
-                <Input 
-                  value={opportunity?.foxy_opportunitytype?.toString() || ''} 
-                  readOnly 
-                />
+              <Form.Item label={<span style={labelStyle}>Opportunity Type</span>}>
+                <Text>
+                  {opportunity?.foxy_opportunitytype 
+                    ? getOpportunityTypeLabel(opportunity.foxy_opportunitytype)
+                    : '-'}
+                </Text>
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="DUNS Number">
-                <Input 
-                  value={account?.foxy_duns || ''} 
-                  readOnly 
-                />
+              <Form.Item label={<span style={labelStyle}>DUNS Number</span>}>
+                <Text>{account?.foxy_duns || '-'}</Text>
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label="Base Customer Status">
-                <Input 
-                  value={account?.foxy_basecustomer ? getBaseCustomerLabel(account.foxy_basecustomer) : ''} 
-                  readOnly 
-                />
+              <Form.Item label={<span style={labelStyle}>Base Customer Status</span>}>
+                <Text>
+                  {account?.foxy_basecustomer 
+                    ? getBaseCustomerLabel(account.foxy_basecustomer)
+                    : '-'}
+                </Text>
               </Form.Item>
             </Col>
           </Row>

@@ -179,6 +179,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
           opportunity={rawQuoteData.quoteRequest?.foxy_Opportunity}
           account={rawQuoteData.quoteRequest?.foxy_Account}
           subject={rawQuoteData.quoteRequest?.foxy_subject}
+          opportunityId={rawQuoteData.quoteRequest?._foxy_opportunity_value}
         />
       ),
     },
