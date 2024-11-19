@@ -10,6 +10,7 @@ const ProductCompensationPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<WonService[]>([]);
     const [userAccess, setUserAccess] = useState<string>('none');
+    const [showPastYearOnly, setShowPastYearOnly] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<string>("Wireless Business Internet 50/10");
     const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
     const [usePerUnitCalculation, setUsePerUnitCalculation] = useState(false);
@@ -26,7 +27,7 @@ const ProductCompensationPage: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const startDate = dayjs().subtract(1, 'year');
+                const startDate = dayjs().subtract(15, 'years');
                 const endDate = dayjs();
                 
                 const response = await listWonServices(
@@ -35,7 +36,6 @@ const ProductCompensationPage: React.FC = () => {
                 );
                 
                 if (response.value) {
-                    // Use the raw services data without grouping
                     setData(response.value as WonService[]);
                 }
             } catch (error) {
@@ -46,6 +46,13 @@ const ProductCompensationPage: React.FC = () => {
         };
 
         fetchData();
+    }, []);
+
+    useEffect(() => {
+        document.title = 'Product Profit Dashboard';
+        return () => {
+          document.title = 'Foxy Ledger';
+        };
     }, []);
 
     // Get unique products for the filter
@@ -87,14 +94,24 @@ const ProductCompensationPage: React.FC = () => {
         }
     }, [termOptions, selectedTerm]);
 
-    // Filter data based on selected filters
-    const filteredData = useMemo(() => {
+    // Filter data based on time period
+    const timeFilteredData = useMemo(() => {
+        if (!showPastYearOnly) return data;
+        const oneYearAgo = dayjs().subtract(1, 'year');
         return data.filter(item => {
+            const itemDate = dayjs(item.foxy_Opportunity?.actualclosedate);
+            return itemDate.isAfter(oneYearAgo);
+        });
+    }, [data, showPastYearOnly]);
+
+    // Filter data based on selected filters (for Table View)
+    const filteredData = useMemo(() => {
+        return timeFilteredData.filter(item => {
             const matchesProduct = !selectedProduct || item.foxy_Product?.name === selectedProduct;
             const matchesTerm = !selectedTerm || item.foxy_term === selectedTerm;
             return matchesProduct && matchesTerm;
         });
-    }, [data, selectedProduct, selectedTerm]);
+    }, [timeFilteredData, selectedProduct, selectedTerm]);
 
     // Calculate statistics for total payments
     const paymentStats = useMemo(() => {
@@ -129,6 +146,39 @@ const ProductCompensationPage: React.FC = () => {
             total: validPayments.reduce((sum, item) => sum + item.foxy_totalinpayments!, 0)
         };
     }, [filteredData, usePerUnitCalculation]);
+
+    // Aggregate data by product using unfiltered data
+    const aggregatedData = useMemo(() => {
+        const productMap = new Map();
+        
+        timeFilteredData.forEach(item => {
+            const productName = item.foxy_Product?.name || 'Unknown';
+            if (!productMap.has(productName)) {
+                productMap.set(productName, {
+                    productName,
+                    totalPayments: 0,
+                    totalQuantity: 0,
+                    instances: 0,
+                    averageMRR: 0,
+                    totalMRR: 0
+                });
+            }
+            
+            const record = productMap.get(productName);
+            record.totalPayments += item.foxy_totalinpayments || 0;
+            record.totalQuantity += item.foxy_quantity || 0;
+            record.instances += 1;
+            record.totalMRR += item.foxy_mrr || 0;
+        });
+
+        // Calculate averages and convert to array
+        return Array.from(productMap.values())
+            .map(record => ({
+                ...record,
+                averageMRR: record.totalMRR / record.instances
+            }))
+            .sort((a, b) => b.totalPayments - a.totalPayments); // Sort by total payments descending
+    }, [timeFilteredData]);
 
     const columns = [
         {
@@ -185,6 +235,47 @@ const ProductCompensationPage: React.FC = () => {
             sorter: (a: WonService, b: WonService) => (a.foxy_totalinpayments || 0) - (b.foxy_totalinpayments || 0),
             render: (value: number) => value ? formatCurrency(value) : '-',
         },
+    ];
+
+    const aggregatedColumns = [
+        {
+            title: 'Product',
+            dataIndex: 'productName',
+            key: 'productName',
+            width: 400,
+            ellipsis: true,
+            sorter: (a: any, b: any) => a.productName.localeCompare(b.productName),
+        },
+        {
+            title: 'Total Payments',
+            dataIndex: 'totalPayments',
+            key: 'totalPayments',
+            width: 150,
+            sorter: (a: any, b: any) => a.totalPayments - b.totalPayments,
+            render: (value: number) => formatCurrency(value),
+        },
+        {
+            title: 'Total Quantity',
+            dataIndex: 'totalQuantity',
+            key: 'totalQuantity',
+            width: 150,
+            sorter: (a: any, b: any) => a.totalQuantity - b.totalQuantity,
+        },
+        {
+            title: 'Number of Instances',
+            dataIndex: 'instances',
+            key: 'instances',
+            width: 150,
+            sorter: (a: any, b: any) => a.instances - b.instances,
+        },
+        {
+            title: 'Average MRR',
+            dataIndex: 'averageMRR',
+            key: 'averageMRR',
+            width: 150,
+            sorter: (a: any, b: any) => a.averageMRR - b.averageMRR,
+            render: (value: number) => formatCurrency(value),
+        }
     ];
 
     const items = [
@@ -293,6 +384,29 @@ const ProductCompensationPage: React.FC = () => {
         },
         {
             key: '2',
+            label: 'Product Summary',
+            children: (
+                <Table
+                    columns={aggregatedColumns}
+                    dataSource={aggregatedData}
+                    loading={loading}
+                    rowKey="productName"
+                    scroll={{ x: 'max-content' }}
+                    className={`custom-table ${isDarkMode ? 'dark-mode-table' : 'light-mode-table'}`}
+                    size="middle"
+                    pagination={{ 
+                        pageSize: 50,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Total ${total} products`,
+                    }}
+                    style={{
+                        backgroundColor: isDarkMode ? '#141414' : '#ffffff',
+                    }}
+                />
+            ),
+        },
+        {
+            key: '3',
             label: 'Raw Data',
             children: (
                 <div style={{ 
@@ -428,12 +542,20 @@ const ProductCompensationPage: React.FC = () => {
                                     Product Profit Dashboard
                                 </h1>
                             </div>
-                            <Switch
-                                checked={isDarkMode}
-                                onChange={setIsDarkMode}
-                                checkedChildren="🌙"
-                                unCheckedChildren="☀️"
-                            />
+                            <Space>
+                                <Switch
+                                    checked={showPastYearOnly}
+                                    onChange={setShowPastYearOnly}
+                                    checkedChildren="Past Year"
+                                    unCheckedChildren="All"
+                                />
+                                <Switch
+                                    checked={isDarkMode}
+                                    onChange={setIsDarkMode}
+                                    checkedChildren="🌙"
+                                    unCheckedChildren="☀️"
+                                />
+                            </Space>
                         </div>
                         <Tabs 
                             defaultActiveKey="1" 
