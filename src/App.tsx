@@ -9,6 +9,7 @@ import { ResidualDetails } from './components/ResidualDetails';
 import ResidualUpload from './components/ResidualUpload';
 import WirelineUpload from './components/WirelineUpload';
 import WonServicesPage from './components/WonServicesPage';
+import ProductCompensationPage from './components/ProductCompensationPage';
 import RawExcelUpload from './components/RawExcelUpload';
 import MasterResidualList from './components/MasterResidualList';
 import IncomingWirelinePayments from './components/IncomingWirelinePayments';
@@ -83,61 +84,70 @@ function App() {
     <MsalProvider instance={msalInstance}>
       <Router>
         <ProtectedRoute>
-          <AppLayout>
-            <Routes>
-              <Route 
-                path="/quote/:id" 
-                element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} 
-              />
-              <Route 
-                path="/products" 
-                element={<ProductsPage />} 
-              />
-              <Route 
-                path="/residual-check" 
-                element={<ResidualCheck />} 
-              />
-              <Route 
-                path="/residual-details/:id" 
-                element={<ResidualDetails />} 
-              />
-              <Route 
-                path="/residual-upload" 
-                element={<ResidualUpload />} 
-              />
-              <Route 
-                path="/wireline-upload" 
-                element={<WirelineUpload />} 
-              />
-              <Route 
-                path="/raw-excel-upload" 
-                element={<RawExcelUpload />} 
-              />
-              <Route 
-                path="/won-services" 
-                element={<WonServicesPage />} 
-              />
-              <Route 
-                path="/master-residual-list" 
-                element={<MasterResidualList />} 
-              />
-              <Route 
-                path="/incoming-wireline-payments" 
-                element={<IncomingWirelinePayments />} 
-              />
-              <Route
-                path="/quotes"
-                element={<QuoteList />}
-              />
-              {/* Redirect root to residual-check */}
-              <Route 
-                path="/" 
-                element={<ResidualCheck />} 
-              />
-              {/* Add catch-all route for 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
+          <Routes>
+            {/* Independent route for ProductCompensationPage */}
+            <Route 
+              path="/product-compensation" 
+              element={<ProductCompensationPage />} 
+            />
+            
+            {/* All other routes wrapped in AppLayout */}
+            <Route element={<AppLayout>
+              <Routes>
+                <Route 
+                  path="/quote/:id" 
+                  element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} 
+                />
+                <Route 
+                  path="/products" 
+                  element={<ProductsPage />} 
+                />
+                <Route 
+                  path="/residual-check" 
+                  element={<ResidualCheck />} 
+                />
+                <Route 
+                  path="/residual-details/:id" 
+                  element={<ResidualDetails />} 
+                />
+                <Route 
+                  path="/residual-upload" 
+                  element={<ResidualUpload />} 
+                />
+                <Route 
+                  path="/wireline-upload" 
+                  element={<WirelineUpload />} 
+                />
+                <Route 
+                  path="/raw-excel-upload" 
+                  element={<RawExcelUpload />} 
+                />
+                <Route 
+                  path="/won-services" 
+                  element={<WonServicesPage />} 
+                />
+                <Route 
+                  path="/master-residual-list" 
+                  element={<MasterResidualList />} 
+                />
+                <Route 
+                  path="/incoming-wireline-payments" 
+                  element={<IncomingWirelinePayments />} 
+                />
+                <Route
+                  path="/quotes"
+                  element={<QuoteList />}
+                />
+                {/* Redirect root to residual-check */}
+                <Route 
+                  path="/" 
+                  element={<ResidualCheck />} 
+                />
+                {/* Add catch-all route for 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AppLayout>} />
+          </Routes>
         </ProtectedRoute>
       </Router>
     </MsalProvider>

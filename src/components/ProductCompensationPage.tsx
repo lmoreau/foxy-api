@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Table, Tabs, Select, Space, Statistic, Row, Col, Card, Switch } from 'antd';
+import { Table, Tabs, Select, Space, Statistic, Row, Col, Card, Switch, ConfigProvider, theme } from 'antd';
 import { listWonServices } from '../utils/api';
 import { WonService } from '../types/wonServices';
 import { formatCurrency } from '../utils/formatters';
@@ -13,6 +13,7 @@ const ProductCompensationPage: React.FC = () => {
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
     const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
     const [usePerUnitCalculation, setUsePerUnitCalculation] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     useEffect(() => {
         const fetchUserAccess = async () => {
@@ -312,11 +313,69 @@ const ProductCompensationPage: React.FC = () => {
     ];
 
     return (
-        <Tabs 
-            defaultActiveKey="1" 
-            items={items}
-            style={{ background: 'white', padding: '24px' }}
-        />
+        <ConfigProvider
+            theme={{
+                algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                token: {
+                    borderRadius: 6,
+                }
+            }}
+        >
+            <div style={{ 
+                background: isDarkMode ? '#141414' : '#ffffff',
+                minHeight: '100vh',
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+                padding: '32px',
+            }}>
+                <div style={{ maxWidth: '100%', overflow: 'auto' }}>
+                    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            width: '100%', 
+                            marginBottom: '24px'
+                        }}>
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '12px'
+                            }}>
+                                <img 
+                                    src="/foxylogo.png" 
+                                    alt="Foxy Logo" 
+                                    style={{ 
+                                        height: '32px',
+                                        width: 'auto'
+                                    }} 
+                                />
+                                <h1 style={{ 
+                                    margin: 0,
+                                    fontSize: '24px',
+                                    fontWeight: 600,
+                                    color: isDarkMode ? '#ffffff' : '#000000'
+                                }}>
+                                    Product Profit Dashboard
+                                </h1>
+                            </div>
+                            <Switch
+                                checked={isDarkMode}
+                                onChange={setIsDarkMode}
+                                checkedChildren="🌙"
+                                unCheckedChildren="☀️"
+                            />
+                        </div>
+                        <Tabs 
+                            defaultActiveKey="1" 
+                            items={items}
+                        />
+                    </Space>
+                </div>
+            </div>
+        </ConfigProvider>
     );
 };
 
