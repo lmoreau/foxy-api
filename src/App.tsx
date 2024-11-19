@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import { MsalProvider } from '@azure/msal-react';
-import QuotePage from './components/QuotePage';
+import QuotePage from './components/Quote/QuotePage';
 import ProductsPage from './components/ProductsPage';
 import ResidualCheck from './components/ResidualCheck';
 import { ResidualDetails } from './components/ResidualDetails';
