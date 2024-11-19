@@ -314,6 +314,51 @@ const ProductCompensationPage: React.FC = () => {
         },
     ];
 
+    if (userAccess !== 'admin') {
+        return (
+            <div style={{ 
+                height: '100vh',
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: isDarkMode ? '#141414' : '#f0f2f5'
+            }}>
+                <img 
+                    src="/foxylogo.png" 
+                    alt="Foxy Logo" 
+                    style={{ 
+                        height: '60px', 
+                        marginBottom: '24px' 
+                    }} 
+                />
+                <div style={{
+                    padding: '24px',
+                    background: isDarkMode ? '#1f1f1f' : 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    textAlign: 'center',
+                    maxWidth: '400px'
+                }}>
+                    <h2 style={{ 
+                        margin: '0 0 16px 0',
+                        color: isDarkMode ? '#ffffff' : '#434343'
+                    }}>Access Restricted</h2>
+                    <p style={{ 
+                        margin: '0 0 8px 0',
+                        color: isDarkMode ? '#d9d9d9' : '#595959'
+                    }}>This page is only accessible to administrators.</p>
+                    <p style={{ 
+                        margin: '0',
+                        color: isDarkMode ? '#8c8c8c' : '#8c8c8c',
+                        fontSize: '14px'
+                    }}>Please contact your administrator if you believe this is an error.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <ConfigProvider
             theme={{
