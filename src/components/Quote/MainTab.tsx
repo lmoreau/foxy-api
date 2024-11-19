@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { EditOutlined } from '@ant-design/icons';
-import LocationsTable from '../LocationsTable';
+import LocationsTable from '../tables/LocationsTable';
 import QuoteActions from './QuoteActions';
 import QuoteSummary from './QuoteSummary';
 import { calculateTotals } from '../../utils/quoteUtils';
