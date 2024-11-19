@@ -216,7 +216,7 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
     console.log('[useQuoteData] Starting useEffect with ID:', id);
     setState(prev => ({ ...prev, loading: true }));
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, id]);
 
   return {
     ...state,
