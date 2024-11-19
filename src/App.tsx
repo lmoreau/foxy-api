@@ -5,7 +5,6 @@ import { MsalProvider } from '@azure/msal-react';
 import QuotePage from './components/Quote/QuotePage';
 import ProductsPage from './components/ProductsPage';
 import ResidualCheck from './components/ResidualCheck';
-import { ResidualDetails } from './components/ResidualDetails';
 import ProductCompensationPage from './components/ProductCompensationPage';
 import MasterResidualList from './components/MasterResidualList';
 import AppHeader from './components/Header';
@@ -203,10 +202,6 @@ function App() {
               <Route 
                 path="/residual-check" 
                 element={<LayoutWrapper element={<ResidualCheck />} />} 
-              />
-              <Route 
-                path="/residual-details/:id" 
-                element={<LayoutWrapper element={<ResidualDetails />} />} 
               />
               <Route 
                 path="/master-residual-list" 
