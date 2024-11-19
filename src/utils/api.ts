@@ -347,7 +347,7 @@ export const listQuoteLineItemByRow = async (locationId: string) => {
   console.log('[API] Fetching line items for location:', locationId);
   try {
     const headers = await getAuthHeaders();
-    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_foxyquoterequestlineitems?$filter=_foxy_foxyquoterequestlocation_value eq '${locationId}'`;
+    const url = `${DATAVERSE_URL}/api/data/v9.2/foxy_foxyquoterequestlineitems?$filter=_foxy_foxyquoterequestlocation_value eq ${locationId}`;
     console.log('[API] Request URL:', url);
     
     console.log('[API] Making request...');
