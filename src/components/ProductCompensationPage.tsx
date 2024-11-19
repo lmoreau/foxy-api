@@ -283,7 +283,9 @@ const ProductCompensationPage: React.FC = () => {
                             pageSize: 50,
                             showSizeChanger: true,
                             showTotal: (total) => `Total ${total} items`,
-                            showQuickJumper: true
+                        }}
+                        style={{
+                            backgroundColor: isDarkMode ? '#141414' : '#ffffff',
                         }}
                     />
                 </>
@@ -295,14 +297,15 @@ const ProductCompensationPage: React.FC = () => {
             children: (
                 <div style={{ 
                     padding: '20px', 
-                    background: '#f5f5f5', 
+                    background: isDarkMode ? '#141414' : '#f5f5f5', 
                     borderRadius: '4px',
                     overflow: 'auto'
                 }}>
                     <pre style={{ 
                         whiteSpace: 'pre-wrap',
                         wordWrap: 'break-word',
-                        margin: 0
+                        margin: 0,
+                        color: isDarkMode ? '#ffffff' : '#000000'
                     }}>
                         {JSON.stringify(filteredData, null, 2)}
                     </pre>
@@ -322,17 +325,23 @@ const ProductCompensationPage: React.FC = () => {
         >
             <style>
                 {`
-                    .dark-mode-table .ant-table-pagination.ant-pagination {
+                    .dark-mode-table .ant-pagination {
                         background-color: #141414 !important;
-                        margin-top: 0 !important;
-                        padding: 16px !important;
-                        border-top: 1px solid #303030 !important;
                     }
-                    .light-mode-table .ant-table-pagination.ant-pagination {
+                    .light-mode-table .ant-pagination {
                         background-color: #ffffff !important;
-                        margin-top: 0 !important;
-                        padding: 16px !important;
-                        border-top: 1px solid #f0f0f0 !important;
+                    }
+                    .dark-mode-table .ant-table {
+                        background-color: #141414 !important;
+                    }
+                    .light-mode-table .ant-table {
+                        background-color: #ffffff !important;
+                    }
+                    .dark-mode-table .ant-table-cell {
+                        background-color: #141414 !important;
+                    }
+                    .light-mode-table .ant-table-cell {
+                        background-color: #ffffff !important;
                     }
                 `}
             </style>
