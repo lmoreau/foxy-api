@@ -66,6 +66,11 @@ const NotFound = () => {
   );
 };
 
+// Wrapper component for routes that need the AppLayout
+const LayoutWrapper = ({ element }: { element: React.ReactNode }) => {
+  return <AppLayout>{element}</AppLayout>;
+};
+
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [_quoteRequestId, setQuoteRequestId] = useState<string | undefined>(undefined);
@@ -91,62 +96,58 @@ function App() {
               element={<ProductCompensationPage />} 
             />
             
-            {/* All other routes wrapped in AppLayout */}
-            <Route element={<AppLayout>
-              <Routes>
-                <Route 
-                  path="/quote/:id" 
-                  element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} 
-                />
-                <Route 
-                  path="/products" 
-                  element={<ProductsPage />} 
-                />
-                <Route 
-                  path="/residual-check" 
-                  element={<ResidualCheck />} 
-                />
-                <Route 
-                  path="/residual-details/:id" 
-                  element={<ResidualDetails />} 
-                />
-                <Route 
-                  path="/residual-upload" 
-                  element={<ResidualUpload />} 
-                />
-                <Route 
-                  path="/wireline-upload" 
-                  element={<WirelineUpload />} 
-                />
-                <Route 
-                  path="/raw-excel-upload" 
-                  element={<RawExcelUpload />} 
-                />
-                <Route 
-                  path="/won-services" 
-                  element={<WonServicesPage />} 
-                />
-                <Route 
-                  path="/master-residual-list" 
-                  element={<MasterResidualList />} 
-                />
-                <Route 
-                  path="/incoming-wireline-payments" 
-                  element={<IncomingWirelinePayments />} 
-                />
-                <Route
-                  path="/quotes"
-                  element={<QuoteList />}
-                />
-                {/* Redirect root to residual-check */}
-                <Route 
-                  path="/" 
-                  element={<ResidualCheck />} 
-                />
-                {/* Add catch-all route for 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AppLayout>} />
+            {/* Routes with AppLayout */}
+            <Route 
+              path="/quote/:id" 
+              element={<LayoutWrapper element={<QuotePage setQuoteRequestId={setQuoteRequestId} />} />} 
+            />
+            <Route 
+              path="/products" 
+              element={<LayoutWrapper element={<ProductsPage />} />} 
+            />
+            <Route 
+              path="/residual-check" 
+              element={<LayoutWrapper element={<ResidualCheck />} />} 
+            />
+            <Route 
+              path="/residual-details/:id" 
+              element={<LayoutWrapper element={<ResidualDetails />} />} 
+            />
+            <Route 
+              path="/residual-upload" 
+              element={<LayoutWrapper element={<ResidualUpload />} />} 
+            />
+            <Route 
+              path="/wireline-upload" 
+              element={<LayoutWrapper element={<WirelineUpload />} />} 
+            />
+            <Route 
+              path="/raw-excel-upload" 
+              element={<LayoutWrapper element={<RawExcelUpload />} />} 
+            />
+            <Route 
+              path="/won-services" 
+              element={<LayoutWrapper element={<WonServicesPage />} />} 
+            />
+            <Route 
+              path="/master-residual-list" 
+              element={<LayoutWrapper element={<MasterResidualList />} />} 
+            />
+            <Route 
+              path="/incoming-wireline-payments" 
+              element={<LayoutWrapper element={<IncomingWirelinePayments />} />} 
+            />
+            <Route
+              path="/quotes"
+              element={<LayoutWrapper element={<QuoteList />} />}
+            />
+            {/* Redirect root to residual-check */}
+            <Route 
+              path="/" 
+              element={<LayoutWrapper element={<ResidualCheck />} />} 
+            />
+            {/* Add catch-all route for 404 */}
+            <Route path="*" element={<LayoutWrapper element={<NotFound />} />} />
           </Routes>
         </ProtectedRoute>
       </Router>
