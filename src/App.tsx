@@ -212,10 +212,10 @@ function App() {
                 path="/quotes"
                 element={<LayoutWrapper element={<QuoteList />} />}
               />
-              {/* Redirect root to residual-check */}
+              {/* Redirect root to quotes */}
               <Route 
                 path="/" 
-                element={<LayoutWrapper element={<ResidualCheck />} />} 
+                element={<LayoutWrapper element={<QuoteList />} />} 
               />
               {/* Add catch-all route for 404 */}
               <Route path="*" element={<LayoutWrapper element={<NotFound />} />} />
