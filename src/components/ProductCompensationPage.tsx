@@ -11,6 +11,7 @@ const ProductCompensationPage: React.FC = () => {
     const [data, setData] = useState<WonService[]>([]);
     const [userAccess, setUserAccess] = useState<string>('none');
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+    const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchUserAccess = async () => {
@@ -58,11 +59,52 @@ const ProductCompensationPage: React.FC = () => {
         }));
     }, [data]);
 
-    // Filter data based on selected product
+    // Get unique terms for the filter
+    const termOptions = useMemo(() => {
+        const uniqueTerms = new Set(
+            data
+                .filter(item => item.foxy_term != null)
+                .map(item => item.foxy_term)
+        );
+        return Array.from(uniqueTerms)
+            .sort((a, b) => a - b)
+            .map(term => ({
+                label: `${term} months`,
+                value: term,
+            }));
+    }, [data]);
+
+    // Filter data based on selected filters
     const filteredData = useMemo(() => {
-        if (!selectedProduct) return data;
-        return data.filter(item => item.foxy_Product?.name === selectedProduct);
-    }, [data, selectedProduct]);
+        return data.filter(item => {
+            const matchesProduct = !selectedProduct || item.foxy_Product?.name === selectedProduct;
+            const matchesTerm = !selectedTerm || item.foxy_term === selectedTerm;
+            return matchesProduct && matchesTerm;
+        });
+    }, [data, selectedProduct, selectedTerm]);
+
+    // Calculate statistics for total payments
+    const paymentStats = useMemo(() => {
+        const payments = filteredData
+            .filter(item => item.foxy_totalinpayments != null && item.foxy_totalinpayments > 0)
+            .map(item => item.foxy_totalinpayments!);
+
+        if (payments.length === 0) {
+            return {
+                average: 0,
+                highest: 0,
+                lowest: 0,
+                count: 0
+            };
+        }
+
+        return {
+            average: payments.reduce((a, b) => a + b, 0) / payments.length,
+            highest: Math.max(...payments),
+            lowest: Math.min(...payments),
+            count: payments.length
+        };
+    }, [filteredData]);
 
     const columns = [
         {
@@ -114,27 +156,6 @@ const ProductCompensationPage: React.FC = () => {
         },
     ];
 
-    // Calculate statistics for total payments
-    const paymentStats = useMemo(() => {
-        const payments = filteredData
-            .map(item => item.foxy_totalinpayments || 0)
-            .filter(value => value > 0);
-
-        if (payments.length === 0) {
-            return {
-                average: 0,
-                highest: 0,
-                lowest: 0
-            };
-        }
-
-        return {
-            average: payments.reduce((a, b) => a + b, 0) / payments.length,
-            highest: Math.max(...payments),
-            lowest: Math.min(...payments)
-        };
-    }, [filteredData]);
-
     const items = [
         {
             key: '1',
@@ -143,23 +164,33 @@ const ProductCompensationPage: React.FC = () => {
                 <>
                     <div style={{ marginBottom: 16 }}>
                         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                            <Select
-                                showSearch
-                                allowClear
-                                style={{ width: 300 }}
-                                placeholder="Filter by Product"
-                                options={productOptions}
-                                onChange={setSelectedProduct}
-                                value={selectedProduct}
-                                filterOption={(input, option) =>
-                                    (option?.label?.toString() || '').toLowerCase().includes(input.toLowerCase())
-                                }
-                            />
+                            <Space size="large">
+                                <Select
+                                    showSearch
+                                    allowClear
+                                    style={{ width: 300 }}
+                                    placeholder="Filter by Product"
+                                    options={productOptions}
+                                    onChange={setSelectedProduct}
+                                    value={selectedProduct}
+                                    filterOption={(input, option) =>
+                                        (option?.label?.toString() || '').toLowerCase().includes(input.toLowerCase())
+                                    }
+                                />
+                                <Select
+                                    allowClear
+                                    style={{ width: 150 }}
+                                    placeholder="Filter by Term"
+                                    options={termOptions}
+                                    onChange={setSelectedTerm}
+                                    value={selectedTerm}
+                                />
+                            </Space>
                             <Row gutter={16}>
                                 <Col span={8}>
                                     <Card>
                                         <Statistic
-                                            title="Average Total Payment"
+                                            title={`Average Total Payment (${paymentStats.count} records)`}
                                             value={paymentStats.average}
                                             precision={2}
                                             formatter={(value) => formatCurrency(value as number)}
