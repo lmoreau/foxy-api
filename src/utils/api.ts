@@ -206,19 +206,7 @@ export const listResidualAuditByRows = async (accountId: string) => {
   return response.data;
 };
 
-let cachedAccounts: any = null;
-
-export const listAccountsForResidualCheck = async () => {
-  if (cachedAccounts) {
-    return cachedAccounts;
-  }
-
-  const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listAccountsForResidualCheck`;
-  const response = await axios.get(url, { headers });
-  cachedAccounts = response.data;
-  return response.data;
-};
+let cachedProducts: Product[] | null = null;
 
 export const listWonServices = async (startDate: string, endDate: string) => {
   const headers = await getAuthHeaders();
