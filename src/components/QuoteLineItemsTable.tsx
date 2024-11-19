@@ -9,7 +9,7 @@ import RevenueTypeModal from 'components/modals/RevenueTypeModal';
 import { formatCurrency } from 'utils/formatters';
 import { fetchProducts } from 'utils/api';
 import useQuoteLineItems from 'hooks/useQuoteLineItems';
-import CommentModal from './CommentModal';
+import CommentModal from './modals/CommentModal';
 import { revenueTypeMap } from '../utils/categoryMapper';
 import { SorterResult } from 'antd/es/table/interface';
 import { TablePaginationConfig } from 'antd/es/table';
