@@ -6,10 +6,7 @@ import QuotePage from './components/QuotePage';
 import ProductsPage from './components/ProductsPage';
 import ResidualCheck from './components/ResidualCheck';
 import { ResidualDetails } from './components/ResidualDetails';
-import ResidualUpload from './components/ResidualUpload';
-import WirelineUpload from './components/WirelineUpload';
 import ProductCompensationPage from './components/ProductCompensationPage';
-import RawExcelUpload from './components/RawExcelUpload';
 import MasterResidualList from './components/MasterResidualList';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -210,18 +207,6 @@ function App() {
               <Route 
                 path="/residual-details/:id" 
                 element={<LayoutWrapper element={<ResidualDetails />} />} 
-              />
-              <Route 
-                path="/residual-upload" 
-                element={<LayoutWrapper element={<ResidualUpload />} />} 
-              />
-              <Route 
-                path="/wireline-upload" 
-                element={<LayoutWrapper element={<WirelineUpload />} />} 
-              />
-              <Route 
-                path="/raw-excel-upload" 
-                element={<LayoutWrapper element={<RawExcelUpload />} />} 
               />
               <Route 
                 path="/master-residual-list" 
