@@ -10,10 +10,10 @@ const ProductCompensationPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<WonService[]>([]);
     const [userAccess, setUserAccess] = useState<string>('none');
-    const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<string>("Wireless Business Internet 50/10");
     const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
     const [usePerUnitCalculation, setUsePerUnitCalculation] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(true);
 
     useEffect(() => {
         const fetchUserAccess = async () => {
