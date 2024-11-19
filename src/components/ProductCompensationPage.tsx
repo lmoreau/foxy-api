@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tabs } from 'antd';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Table, Tabs, Select, Space } from 'antd';
 import { listWonServices } from '../utils/api';
 import { WonService } from '../types/wonServices';
 import { formatCurrency } from '../utils/formatters';
@@ -10,6 +10,7 @@ const ProductCompensationPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<WonService[]>([]);
     const [userAccess, setUserAccess] = useState<string>('none');
+    const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserAccess = async () => {
@@ -43,6 +44,25 @@ const ProductCompensationPage: React.FC = () => {
 
         fetchData();
     }, []);
+
+    // Get unique products for the filter
+    const productOptions = useMemo(() => {
+        const uniqueProducts = new Set(
+            data
+                .filter(item => item.foxy_Product?.name)
+                .map(item => item.foxy_Product.name)
+        );
+        return Array.from(uniqueProducts).map(name => ({
+            label: name,
+            value: name,
+        }));
+    }, [data]);
+
+    // Filter data based on selected product
+    const filteredData = useMemo(() => {
+        if (!selectedProduct) return data;
+        return data.filter(item => item.foxy_Product?.name === selectedProduct);
+    }, [data, selectedProduct]);
 
     const columns = [
         {
@@ -99,21 +119,39 @@ const ProductCompensationPage: React.FC = () => {
             key: '1',
             label: 'Table View',
             children: (
-                <Table
-                    columns={columns}
-                    dataSource={data}
-                    loading={loading}
-                    rowKey="foxy_wonserviceid"
-                    scroll={{ x: 'max-content', y: 'calc(100vh - 350px)' }}
-                    className="custom-table"
-                    size="middle"
-                    pagination={{ 
-                        pageSize: 50,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Total ${total} items`,
-                        showQuickJumper: true
-                    }}
-                />
+                <>
+                    <div style={{ marginBottom: 16 }}>
+                        <Space>
+                            <Select
+                                showSearch
+                                allowClear
+                                style={{ width: 300 }}
+                                placeholder="Filter by Product"
+                                options={productOptions}
+                                onChange={setSelectedProduct}
+                                value={selectedProduct}
+                                filterOption={(input, option) =>
+                                    (option?.label?.toString() || '').toLowerCase().includes(input.toLowerCase())
+                                }
+                            />
+                        </Space>
+                    </div>
+                    <Table
+                        columns={columns}
+                        dataSource={filteredData}
+                        loading={loading}
+                        rowKey="foxy_wonserviceid"
+                        scroll={{ x: 'max-content', y: 'calc(100vh - 350px)' }}
+                        className="custom-table"
+                        size="middle"
+                        pagination={{ 
+                            pageSize: 50,
+                            showSizeChanger: true,
+                            showTotal: (total) => `Total ${total} items`,
+                            showQuickJumper: true
+                        }}
+                    />
+                </>
             ),
         },
         {
@@ -132,7 +170,7 @@ const ProductCompensationPage: React.FC = () => {
                         wordWrap: 'break-word',
                         margin: 0
                     }}>
-                        {JSON.stringify(data, null, 2)}
+                        {JSON.stringify(filteredData, null, 2)}
                     </pre>
                 </div>
             ),
