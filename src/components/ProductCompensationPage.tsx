@@ -97,8 +97,10 @@ const ProductCompensationPage: React.FC = () => {
 
     // Calculate statistics for total payments
     const paymentStats = useMemo(() => {
-        const payments = filteredData
-            .filter(item => item.foxy_totalinpayments != null && item.foxy_totalinpayments > 0)
+        const validPayments = filteredData
+            .filter(item => item.foxy_totalinpayments != null && item.foxy_totalinpayments > 0);
+
+        const payments = validPayments
             .map(item => {
                 const payment = item.foxy_totalinpayments!;
                 if (usePerUnitCalculation && item.foxy_quantity && item.foxy_quantity > 0) {
@@ -112,7 +114,8 @@ const ProductCompensationPage: React.FC = () => {
                 average: 0,
                 highest: 0,
                 lowest: 0,
-                count: 0
+                count: 0,
+                total: 0
             };
         }
 
@@ -120,7 +123,9 @@ const ProductCompensationPage: React.FC = () => {
             average: payments.reduce((a, b) => a + b, 0) / payments.length,
             highest: Math.max(...payments),
             lowest: Math.min(...payments),
-            count: payments.length
+            count: payments.length,
+            // Always calculate total from original payments, not per-unit
+            total: validPayments.reduce((sum, item) => sum + item.foxy_totalinpayments!, 0)
         };
     }, [filteredData, usePerUnitCalculation]);
 
@@ -219,17 +224,28 @@ const ProductCompensationPage: React.FC = () => {
                                 </Space>
                             </Space>
                             <Row gutter={16}>
-                                <Col span={8}>
+                                <Col span={6}>
                                     <Card>
                                         <Statistic
-                                            title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Average Total Payment (${paymentStats.count} records)`}
+                                            title="Total Payments"
+                                            value={paymentStats.total}
+                                            precision={2}
+                                            formatter={(value) => formatCurrency(value as number)}
+                                            valueStyle={{ color: '#1890ff' }}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col span={6}>
+                                    <Card>
+                                        <Statistic
+                                            title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Average Payment (${paymentStats.count} records)`}
                                             value={paymentStats.average}
                                             precision={2}
                                             formatter={(value) => formatCurrency(value as number)}
                                         />
                                     </Card>
                                 </Col>
-                                <Col span={8}>
+                                <Col span={6}>
                                     <Card>
                                         <Statistic
                                             title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Highest Payment`}
@@ -240,7 +256,7 @@ const ProductCompensationPage: React.FC = () => {
                                         />
                                     </Card>
                                 </Col>
-                                <Col span={8}>
+                                <Col span={6}>
                                     <Card>
                                         <Statistic
                                             title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Lowest Payment`}
