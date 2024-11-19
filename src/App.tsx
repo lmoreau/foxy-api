@@ -13,6 +13,7 @@ import { msalInstance, initializeMsal } from './auth/authConfig';
 import { Link } from 'react-router-dom';
 import QuoteList from './pages/QuoteList';
 import { checkUserAccess } from './auth/authService';
+import './styles/tables.css';
 
 const { Content } = Layout;
 
