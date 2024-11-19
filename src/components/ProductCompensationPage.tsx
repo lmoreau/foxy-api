@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Table, Tabs, Select, Space } from 'antd';
+import { Table, Tabs, Select, Space, Statistic, Row, Col, Card } from 'antd';
 import { listWonServices } from '../utils/api';
 import { WonService } from '../types/wonServices';
 import { formatCurrency } from '../utils/formatters';
@@ -78,15 +78,15 @@ const ProductCompensationPage: React.FC = () => {
             },
         },
         {
-            title: 'Address',
-            dataIndex: ['foxy_AccountLocation', 'foxy_Building', 'foxy_fulladdress'],
-            key: 'address',
+            title: 'Account',
+            dataIndex: ['foxy_Account', 'name'],
+            key: 'account_name',
             width: 250,
             ellipsis: true,
             sorter: (a: WonService, b: WonService) => {
-                const aAddress = a.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
-                const bAddress = b.foxy_AccountLocation?.foxy_Building?.foxy_fulladdress || '';
-                return aAddress.localeCompare(bAddress);
+                const aName = a.foxy_Account?.name || '';
+                const bName = b.foxy_Account?.name || '';
+                return aName.localeCompare(bName);
             },
         },
         {
@@ -114,6 +114,27 @@ const ProductCompensationPage: React.FC = () => {
         },
     ];
 
+    // Calculate statistics for total payments
+    const paymentStats = useMemo(() => {
+        const payments = filteredData
+            .map(item => item.foxy_totalinpayments || 0)
+            .filter(value => value > 0);
+
+        if (payments.length === 0) {
+            return {
+                average: 0,
+                highest: 0,
+                lowest: 0
+            };
+        }
+
+        return {
+            average: payments.reduce((a, b) => a + b, 0) / payments.length,
+            highest: Math.max(...payments),
+            lowest: Math.min(...payments)
+        };
+    }, [filteredData]);
+
     const items = [
         {
             key: '1',
@@ -121,7 +142,7 @@ const ProductCompensationPage: React.FC = () => {
             children: (
                 <>
                     <div style={{ marginBottom: 16 }}>
-                        <Space>
+                        <Space direction="vertical" size="large" style={{ width: '100%' }}>
                             <Select
                                 showSearch
                                 allowClear
@@ -134,6 +155,40 @@ const ProductCompensationPage: React.FC = () => {
                                     (option?.label?.toString() || '').toLowerCase().includes(input.toLowerCase())
                                 }
                             />
+                            <Row gutter={16}>
+                                <Col span={8}>
+                                    <Card>
+                                        <Statistic
+                                            title="Average Total Payment"
+                                            value={paymentStats.average}
+                                            precision={2}
+                                            formatter={(value) => formatCurrency(value as number)}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col span={8}>
+                                    <Card>
+                                        <Statistic
+                                            title="Highest Payment"
+                                            value={paymentStats.highest}
+                                            precision={2}
+                                            formatter={(value) => formatCurrency(value as number)}
+                                            valueStyle={{ color: '#3f8600' }}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col span={8}>
+                                    <Card>
+                                        <Statistic
+                                            title="Lowest Payment"
+                                            value={paymentStats.lowest}
+                                            precision={2}
+                                            formatter={(value) => formatCurrency(value as number)}
+                                            valueStyle={{ color: '#cf1322' }}
+                                        />
+                                    </Card>
+                                </Col>
+                            </Row>
                         </Space>
                     </div>
                     <Table
