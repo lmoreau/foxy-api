@@ -7,7 +7,7 @@ import { deleteQuoteLocation } from '../../utils/quoteUtils';
 import { deleteQuoteLineItem, updateQuoteRequest } from '../../utils/api';
 import { checkUserAccess } from '../../auth/authService';
 import QuoteCPQHeader from '../QuoteCPQHeader';
-import AddLocationModal from '../AddLocationModal';
+import AddLocationModal from '../modals/AddLocationModal';
 import TimelineTab from './TimelineTab';
 import { QuotePageProps, RawQuoteData } from './types';
 import MainTab from './MainTab';
