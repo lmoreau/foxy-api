@@ -4,7 +4,6 @@ import { Layout } from 'antd';
 import { MsalProvider } from '@azure/msal-react';
 import QuotePage from './components/Quote/QuotePage';
 import ProductsPage from './components/ProductsPage';
-import ResidualCheck from './components/ResidualCheck';
 import ProductCompensationPage from './components/ProductCompensationPage';
 import MasterResidualList from './components/MasterResidualList';
 import AppHeader from './components/Header';
@@ -199,10 +198,6 @@ function App() {
               <Route 
                 path="/products" 
                 element={<LayoutWrapper element={<ProductsPage />} />} 
-              />
-              <Route 
-                path="/residual-check" 
-                element={<LayoutWrapper element={<ResidualCheck />} />} 
               />
               <Route 
                 path="/master-residual-list" 
