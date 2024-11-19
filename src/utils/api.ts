@@ -239,56 +239,6 @@ export const updateAccountWirelineResiduals = async (accountId: string, value: s
   }
 };
 
-interface UpdateWonServiceParams {
-  id: string;
-  foxy_expectedcomp?: number;
-  foxy_inpaymentstatus?: number;
-  foxyflow_internalnotes?: string | null;
-  foxyflow_claimnotes?: string;
-  crc9f_claimid?: string;
-}
-
-export const updateWonService = async ({ 
-  id, 
-  foxy_expectedcomp, 
-  foxy_inpaymentstatus, 
-  foxyflow_internalnotes, 
-  foxyflow_claimnotes, 
-  crc9f_claimid 
-}: UpdateWonServiceParams) => {
-  try {
-    const headers = await getAuthHeaders();
-    const formattedId = id.replace(/[{}]/g, '');
-    const url = `${API_BASE_URL}/updateWonService`;
-    
-    const updateData: any = {
-      id: formattedId,
-      ...(foxy_expectedcomp !== undefined && { foxy_expectedcomp }),
-      ...(foxy_inpaymentstatus !== undefined && { foxy_inpaymentstatus }),
-      ...(foxyflow_internalnotes !== undefined && { foxyflow_internalnotes }),
-      ...(foxyflow_claimnotes !== undefined && { foxyflow_claimnotes }),
-      ...(crc9f_claimid !== undefined && { crc9f_claimid })
-    };
-    
-    console.log('Making PATCH request to:', url);
-    console.log('Update data:', updateData);
-    console.log('Request headers:', {
-      ...headers,
-      Authorization: headers.Authorization ? 'Bearer [redacted]' : 'undefined'
-    });
-    
-    const response = await axios.patch(url, updateData, { headers });
-    console.log('Update successful:', response.status);
-    return { message: "Successfully updated won service" };
-  } catch (error) {
-    console.error('Failed to update won service. Error:', error);
-    if (error instanceof AxiosError) {
-      console.error('API Error details:', error.response?.data);
-    }
-    throw error;
-  }
-};
-
 export const updateIncomingPayment = async (paymentId: string, wonServiceId: string | null) => {
   try {
     const headers = await getAuthHeaders();
