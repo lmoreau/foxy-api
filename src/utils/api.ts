@@ -286,24 +286,6 @@ export const listIncomingWirelinePaymentsByWonService = async (wonServiceId: str
   return response.data;
 };
 
-export const recalculateWonServicePayments = async (wonServiceId: string) => {
-  try {
-    const headers = await getAuthHeaders();
-    const formattedId = wonServiceId.replace(/[{}]/g, '');
-    
-    const url = `${DATAVERSE_URL}/api/data/v9.2/CalculateRollupField(Target=@p1,FieldName=@p2)?` +
-      `@p1={'@odata.id':'foxy_wonservices(${formattedId})'}&` +
-      `@p2='foxy_totalinpayments'`;
-    
-    const response = await axios.get(url, { headers });
-    return response.data;
-  } catch (error) {
-    const err = error as AxiosError;
-    console.error('Failed to recalculate won service payments:', err.response?.data);
-    throw error;
-  }
-};
-
 export const updateQuoteRequest = async (id: string, data: any) => {
   try {
     const headers = await getAuthHeaders();
