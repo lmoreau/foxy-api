@@ -277,7 +277,7 @@ const ProductCompensationPage: React.FC = () => {
                         loading={loading}
                         rowKey="foxy_wonserviceid"
                         scroll={{ x: 'max-content' }}
-                        className="custom-table"
+                        className={`custom-table ${isDarkMode ? 'dark-mode-table' : 'light-mode-table'}`}
                         size="middle"
                         pagination={{ 
                             pageSize: 50,
@@ -320,6 +320,22 @@ const ProductCompensationPage: React.FC = () => {
                 }
             }}
         >
+            <style>
+                {`
+                    .dark-mode-table .ant-table-pagination.ant-pagination {
+                        background-color: #141414 !important;
+                        margin-top: 0 !important;
+                        padding: 16px !important;
+                        border-top: 1px solid #303030 !important;
+                    }
+                    .light-mode-table .ant-table-pagination.ant-pagination {
+                        background-color: #ffffff !important;
+                        margin-top: 0 !important;
+                        padding: 16px !important;
+                        border-top: 1px solid #f0f0f0 !important;
+                    }
+                `}
+            </style>
             <div style={{ 
                 background: isDarkMode ? '#141414' : '#ffffff',
                 minHeight: '100vh',
