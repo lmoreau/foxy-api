@@ -8,11 +8,9 @@ import ResidualCheck from './components/ResidualCheck';
 import { ResidualDetails } from './components/ResidualDetails';
 import ResidualUpload from './components/ResidualUpload';
 import WirelineUpload from './components/WirelineUpload';
-import WonServicesPage from './components/WonServicesPage';
 import ProductCompensationPage from './components/ProductCompensationPage';
 import RawExcelUpload from './components/RawExcelUpload';
 import MasterResidualList from './components/MasterResidualList';
-import IncomingWirelinePayments from './components/IncomingWirelinePayments';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -195,14 +193,6 @@ function App() {
                   </AdminRoute>
                 } 
               />
-              <Route 
-                path="/incoming-wireline-payments" 
-                element={
-                  <AdminRoute>
-                    <LayoutWrapper element={<IncomingWirelinePayments />} />
-                  </AdminRoute>
-                } 
-              />
               
               {/* Routes with AppLayout */}
               <Route 
@@ -232,10 +222,6 @@ function App() {
               <Route 
                 path="/raw-excel-upload" 
                 element={<LayoutWrapper element={<RawExcelUpload />} />} 
-              />
-              <Route 
-                path="/won-services" 
-                element={<LayoutWrapper element={<WonServicesPage />} />} 
               />
               <Route 
                 path="/master-residual-list" 
