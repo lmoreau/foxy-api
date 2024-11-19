@@ -60,6 +60,18 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
     try {
       // Get quote request data
       const quoteRequestData = await getQuoteRequestById(id);
+      console.log('Quote Request Data:', quoteRequestData);
+
+      // Safety check for foxy_Account
+      if (!quoteRequestData?.foxy_Account) {
+        console.error('Missing foxy_Account in quote request data:', quoteRequestData);
+        setState(prev => ({
+          ...prev,
+          error: 'Quote data is incomplete or malformed',
+          loading: false
+        }));
+        return;
+      }
 
       // Get locations
       const locationsResponse = await listQuoteLocationRows(id);
@@ -81,9 +93,9 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       setLineItems(lineItemsMap);
       setState(prev => ({
         ...prev,
-        accountName: quoteRequestData.foxy_Account.name,
-        accountId: quoteRequestData.foxy_Account.accountid,
-        quoteId: quoteRequestData.foxy_quoteid,
+        accountName: quoteRequestData.foxy_Account?.name || 'Unknown Account',
+        accountId: quoteRequestData.foxy_Account?.accountid || '',
+        quoteId: quoteRequestData.foxy_quoteid || '',
         locations,
         error: null,
         loading: false,
@@ -153,9 +165,9 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       setState(prev => ({
         ...prev,
         loading: false,
-        accountName: quoteData.foxy_Account.name,
-        accountId: quoteData.foxy_Account.accountid,
-        quoteId: quoteData.foxy_quoteid,
+        accountName: quoteData.foxy_Account?.name || 'Unknown Account',
+        accountId: quoteData.foxy_Account?.accountid || '',
+        quoteId: quoteData.foxy_quoteid || '',
         owninguser: quoteData.owninguser,
         rawQuoteData: {
           ...prev.rawQuoteData,
