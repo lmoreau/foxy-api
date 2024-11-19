@@ -59,10 +59,14 @@ const ProductCompensationPage: React.FC = () => {
         }));
     }, [data]);
 
-    // Get unique terms for the filter
+    // Get unique terms for the filter based on current product filter
     const termOptions = useMemo(() => {
+        const dataToFilter = selectedProduct 
+            ? data.filter(item => item.foxy_Product?.name === selectedProduct)
+            : data;
+
         const uniqueTerms = new Set(
-            data
+            dataToFilter
                 .filter(item => item.foxy_term != null)
                 .map(item => item.foxy_term)
         );
@@ -72,7 +76,14 @@ const ProductCompensationPage: React.FC = () => {
                 label: `${term} months`,
                 value: term,
             }));
-    }, [data]);
+    }, [data, selectedProduct]);
+
+    // Reset term selection if the selected term is no longer in the options
+    useEffect(() => {
+        if (selectedTerm && !termOptions.some(option => option.value === selectedTerm)) {
+            setSelectedTerm(null);
+        }
+    }, [termOptions, selectedTerm]);
 
     // Filter data based on selected filters
     const filteredData = useMemo(() => {
