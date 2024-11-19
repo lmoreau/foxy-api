@@ -276,7 +276,7 @@ const ProductCompensationPage: React.FC = () => {
                         dataSource={filteredData}
                         loading={loading}
                         rowKey="foxy_wonserviceid"
-                        scroll={{ x: 'max-content', y: 'calc(100vh - 350px)' }}
+                        scroll={{ x: 'max-content' }}
                         className="custom-table"
                         size="middle"
                         pagination={{ 
@@ -297,8 +297,7 @@ const ProductCompensationPage: React.FC = () => {
                     padding: '20px', 
                     background: '#f5f5f5', 
                     borderRadius: '4px',
-                    overflow: 'auto',
-                    maxHeight: 'calc(100vh - 350px)'
+                    overflow: 'auto'
                 }}>
                     <pre style={{ 
                         whiteSpace: 'pre-wrap',
@@ -325,19 +324,17 @@ const ProductCompensationPage: React.FC = () => {
                 background: isDarkMode ? '#141414' : '#ffffff',
                 minHeight: '100vh',
                 width: '100%',
-                maxWidth: '100%',
-                overflow: 'hidden',
                 boxSizing: 'border-box',
                 padding: '32px',
             }}>
-                <div style={{ maxWidth: '100%', overflow: 'auto' }}>
-                    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <div style={{ width: '100%' }}>
+                    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                         <div style={{ 
                             display: 'flex', 
                             justifyContent: 'space-between', 
                             alignItems: 'center',
                             width: '100%', 
-                            marginBottom: '24px'
+                            marginBottom: '16px'
                         }}>
                             <div style={{ 
                                 display: 'flex', 
