@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip, message } from 'antd';
 import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined, LoadingOutlined } from '@ant-design/icons';
-import QuoteLineItemsTable from './QuoteLineItemsTable';
+import QuoteLineItemsTable from './tables/QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { calculateTotals } from '../utils/quoteUtils';
 import { formatCurrency } from '../utils/formatters';
