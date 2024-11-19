@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Timeline, Card, Spin, Typography, Button, Row, Col } from 'antd';
 import { MessageOutlined, FileTextOutlined, PlusOutlined, FileOutlined } from '@ant-design/icons';
 import { useTimelineData } from '../../hooks/useTimelineData';
-import CreatePostModal from './CreatePostModal';
+import CreatePostModal from '../modals/CreatePostModal';
 import './timeline.css';
 
 const { Text } = Typography;
