@@ -11,7 +11,6 @@ import {
   DollarOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import CommandPalette from './CommandPalette';
 import { checkUserAccess, UserAccessLevel } from '../auth/authService';
 
 const { Header } = Layout;
@@ -138,17 +137,6 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
             Foxy Ledger
           </div>
         </Link>
-      </div>
-
-      {/* Command palette section - centered */}
-      <div style={{ 
-        flex: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        maxWidth: '600px',
-        margin: '0 auto'
-      }}>
-        <CommandPalette />
       </div>
 
       {/* Avatar section */}
