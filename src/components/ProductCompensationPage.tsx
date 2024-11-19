@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Table, Tabs, Select, Space, Statistic, Row, Col, Card } from 'antd';
+import { Table, Tabs, Select, Space, Statistic, Row, Col, Card, Switch } from 'antd';
 import { listWonServices } from '../utils/api';
 import { WonService } from '../types/wonServices';
 import { formatCurrency } from '../utils/formatters';
@@ -12,6 +12,7 @@ const ProductCompensationPage: React.FC = () => {
     const [userAccess, setUserAccess] = useState<string>('none');
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
     const [selectedTerm, setSelectedTerm] = useState<number | null>(null);
+    const [usePerUnitCalculation, setUsePerUnitCalculation] = useState(false);
 
     useEffect(() => {
         const fetchUserAccess = async () => {
@@ -98,7 +99,13 @@ const ProductCompensationPage: React.FC = () => {
     const paymentStats = useMemo(() => {
         const payments = filteredData
             .filter(item => item.foxy_totalinpayments != null && item.foxy_totalinpayments > 0)
-            .map(item => item.foxy_totalinpayments!);
+            .map(item => {
+                const payment = item.foxy_totalinpayments!;
+                if (usePerUnitCalculation && item.foxy_quantity && item.foxy_quantity > 0) {
+                    return payment / item.foxy_quantity;
+                }
+                return payment;
+            });
 
         if (payments.length === 0) {
             return {
@@ -115,7 +122,7 @@ const ProductCompensationPage: React.FC = () => {
             lowest: Math.min(...payments),
             count: payments.length
         };
-    }, [filteredData]);
+    }, [filteredData, usePerUnitCalculation]);
 
     const columns = [
         {
@@ -141,6 +148,13 @@ const ProductCompensationPage: React.FC = () => {
                 const bName = b.foxy_Account?.name || '';
                 return aName.localeCompare(bName);
             },
+        },
+        {
+            title: 'Quantity',
+            dataIndex: 'foxy_quantity',
+            key: 'foxy_quantity',
+            width: 100,
+            sorter: (a: WonService, b: WonService) => (a.foxy_quantity || 0) - (b.foxy_quantity || 0),
         },
         {
             title: 'MRR',
@@ -196,12 +210,19 @@ const ProductCompensationPage: React.FC = () => {
                                     onChange={setSelectedTerm}
                                     value={selectedTerm}
                                 />
+                                <Space>
+                                    <Switch
+                                        checked={usePerUnitCalculation}
+                                        onChange={setUsePerUnitCalculation}
+                                    />
+                                    <span>Calculate per-unit payments</span>
+                                </Space>
                             </Space>
                             <Row gutter={16}>
                                 <Col span={8}>
                                     <Card>
                                         <Statistic
-                                            title={`Average Total Payment (${paymentStats.count} records)`}
+                                            title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Average Total Payment (${paymentStats.count} records)`}
                                             value={paymentStats.average}
                                             precision={2}
                                             formatter={(value) => formatCurrency(value as number)}
@@ -211,7 +232,7 @@ const ProductCompensationPage: React.FC = () => {
                                 <Col span={8}>
                                     <Card>
                                         <Statistic
-                                            title="Highest Payment"
+                                            title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Highest Payment`}
                                             value={paymentStats.highest}
                                             precision={2}
                                             formatter={(value) => formatCurrency(value as number)}
@@ -222,7 +243,7 @@ const ProductCompensationPage: React.FC = () => {
                                 <Col span={8}>
                                     <Card>
                                         <Statistic
-                                            title="Lowest Payment"
+                                            title={`${usePerUnitCalculation ? 'Per-Unit ' : ''}Lowest Payment`}
                                             value={paymentStats.lowest}
                                             precision={2}
                                             formatter={(value) => formatCurrency(value as number)}
