@@ -171,13 +171,6 @@ export const listQuoteLineItemByRow = async (locationId: string) => {
   return response.data;
 };
 
-export const listMasterResidualRows = async () => {
-  const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listMasterResidualRows`;
-  const response = await axios.get(url, { headers });
-  return response.data.value;
-};
-
 export const listRogersWirelineRecords = async (accountId: string) => {
   const headers = await getAuthHeaders();
   const url = `${API_BASE_URL}/listRogersWirelineRecords?accountId=${accountId}`;
