@@ -7,7 +7,8 @@ import {
   UnorderedListOutlined, 
   UploadOutlined, 
   CloudUploadOutlined,
-  SearchOutlined 
+  SearchOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import CommandPalette from './CommandPalette';
@@ -50,13 +51,20 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       }
     ];
 
-    // Only show Incoming Wireline Payments for admin users
+    // Only show Incoming Wireline Payments and Product Profit Dashboard for admin users
     if (userAccess === 'admin') {
-      baseItems.push({
-        key: 'incoming-wireline-payments',
-        label: <Link to="/incoming-wireline-payments">Callidus Wireline Payments</Link>,
-        icon: <UnorderedListOutlined />,
-      });
+      baseItems.push(
+        {
+          key: 'incoming-wireline-payments',
+          label: <Link to="/incoming-wireline-payments">Callidus Wireline Payments</Link>,
+          icon: <UnorderedListOutlined />,
+        },
+        {
+          key: 'product-compensation',
+          label: <Link to="/product-compensation">Product Profit Dashboard</Link>,
+          icon: <DollarOutlined />,
+        }
+      );
     }
 
     const menuItems = [...baseItems];
