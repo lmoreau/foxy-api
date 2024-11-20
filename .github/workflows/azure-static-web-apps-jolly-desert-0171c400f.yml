@@ -26,6 +26,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Manage Preview URL
+        if: github.event_name == 'pull_request'
+        run: |
+          PREVIEW_URL="https://${{ github.event.pull_request.head.ref }}-${{ github.event.repository.name }}.azurestaticapps.net"
+          ACTION="add"
+          if [ "${{ github.event.action }}" = "closed" ]; then
+            ACTION="remove"
+          fi
+          ./dev-utils/manage-preview-urls.sh "$PREVIEW_URL" "$ACTION"
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
