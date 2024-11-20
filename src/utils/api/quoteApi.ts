@@ -2,6 +2,10 @@ import axios, { AxiosError } from 'axios';
 import { API_BASE_URL, DATAVERSE_URL, getAuthHeaders } from './config';
 import { Product } from '../../types';
 
+// Performance measurement utilities
+const _now = () => performance.now();
+const _formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
+
 // Quote Request Operations
 export const createQuoteRequest = async (data: any) => {
   try {
@@ -23,26 +27,45 @@ export const createQuoteRequest = async (data: any) => {
       })
     };
 
-    console.log('Creating quote request with:', requestBody);
+    console.log('[API] Creating quote request with:', requestBody);
     const response = await axios.post(url, requestBody, { headers });
     return response.data;
   } catch (error) {
     const err = error as AxiosError;
-    console.error('Failed to create quote request:', err.response?.data);
+    console.error('[API] Failed to create quote request:', err.response?.data);
     throw error;
   }
 };
 
 export const getQuoteRequestById = async (id: string) => {
-  const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/getQuoteRequestById?id=${id}`;
-
+  const startTime = _now();
+  console.log(`[API] Starting getQuoteRequestById for ID: ${id}`);
+  
   try {
+    const authStartTime = _now();
+    const headers = await getAuthHeaders();
+    console.log(`[API] Auth headers obtained in ${_formatDuration(authStartTime, _now())}`);
+
+    const url = `${API_BASE_URL}/getQuoteRequestById?id=${id}`;
+    console.log(`[API] Fetching quote request from: ${url}`);
+
+    const requestStartTime = _now();
     const response = await axios.get(url, { headers });
+    console.log(`[API] Quote request fetch completed in ${_formatDuration(requestStartTime, _now())}`);
+    console.log(`[API] Response size: ${JSON.stringify(response.data).length} bytes`);
+
+    const totalTime = _formatDuration(startTime, _now());
+    console.log(`[API] Total getQuoteRequestById operation completed in ${totalTime}`);
+    
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error('[API] Error details:', error.response?.data);
+      console.error('[API] getQuoteRequestById error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        duration: _formatDuration(startTime, _now())
+      });
     }
     throw error;
   }
@@ -58,7 +81,7 @@ export const updateQuoteRequest = async (id: string, data: any) => {
     return response.data;
   } catch (error) {
     const err = error as AxiosError;
-    console.error('Failed to update quote request:', err.response?.data);
+    console.error('[API] Failed to update quote request:', err.response?.data);
     throw error;
   }
 };
@@ -73,10 +96,38 @@ export const listQuoteRequests = async (stages: number[]) => {
 
 // Quote Location Operations
 export const listQuoteLocationRows = async (id: string) => {
-  const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listQuoteLocationRows?id=${id}`;
-  const response = await axios.get(url, { headers });
-  return response.data;
+  const startTime = _now();
+  console.log(`[API] Starting listQuoteLocationRows for ID: ${id}`);
+
+  try {
+    const authStartTime = _now();
+    const headers = await getAuthHeaders();
+    console.log(`[API] Auth headers obtained in ${_formatDuration(authStartTime, _now())}`);
+
+    const url = `${API_BASE_URL}/listQuoteLocationRows?id=${id}`;
+    console.log(`[API] Fetching quote locations from: ${url}`);
+
+    const requestStartTime = _now();
+    const response = await axios.get(url, { headers });
+    console.log(`[API] Quote locations fetch completed in ${_formatDuration(requestStartTime, _now())}`);
+    console.log(`[API] Found ${response.data.value?.length || 0} locations`);
+    console.log(`[API] Response size: ${JSON.stringify(response.data).length} bytes`);
+
+    const totalTime = _formatDuration(startTime, _now());
+    console.log(`[API] Total listQuoteLocationRows operation completed in ${totalTime}`);
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('[API] listQuoteLocationRows error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        duration: _formatDuration(startTime, _now())
+      });
+    }
+    throw error;
+  }
 };
 
 export const createFoxyQuoteRequestLocation = async (buildingId: string, quoteRequestId: string, accountLocationId: string) => {
@@ -100,6 +151,41 @@ export const deleteQuoteLocation = async (locationId: string): Promise<void> => 
 };
 
 // Quote Line Item Operations
+export const listQuoteLineItemByRow = async (locationId: string) => {
+  const startTime = _now();
+  console.log(`[API] Starting listQuoteLineItemByRow for location ID: ${locationId}`);
+
+  try {
+    const authStartTime = _now();
+    const headers = await getAuthHeaders();
+    console.log(`[API] Auth headers obtained in ${_formatDuration(authStartTime, _now())}`);
+
+    const url = `${API_BASE_URL}/listQuoteLineItemByRow?id=${locationId}`;
+    console.log(`[API] Fetching quote line items from: ${url}`);
+
+    const requestStartTime = _now();
+    const response = await axios.get(url, { headers });
+    console.log(`[API] Quote line items fetch completed in ${_formatDuration(requestStartTime, _now())}`);
+    console.log(`[API] Found ${response.data.value?.length || 0} line items for location`);
+    console.log(`[API] Response size: ${JSON.stringify(response.data).length} bytes`);
+
+    const totalTime = _formatDuration(startTime, _now());
+    console.log(`[API] Total listQuoteLineItemByRow operation completed in ${totalTime}`);
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('[API] listQuoteLineItemByRow error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        duration: _formatDuration(startTime, _now())
+      });
+    }
+    throw error;
+  }
+};
+
 export const createQuoteLineItem = async (data: {
   _foxy_foxyquoterequestlocation_value: string;
   _foxy_product_value: string;
@@ -121,7 +207,7 @@ export const createQuoteLineItem = async (data: {
     return response.data;
   } catch (error) {
     const err = error as AxiosError;
-    console.error('Failed to create quote line item:', err.response?.data);
+    console.error('[API] Failed to create quote line item:', err.response?.data);
     throw error;
   }
 };
@@ -135,16 +221,9 @@ export const updateQuoteLineItem = async (data: { id: string; [key: string]: any
     return response.data;
   } catch (error) {
     const err = error as AxiosError;
-    console.error('Failed to update quote line item:', err.response?.data);
+    console.error('[API] Failed to update quote line item:', err.response?.data);
     throw error;
   }
-};
-
-export const listQuoteLineItemByRow = async (locationId: string) => {
-  const headers = await getAuthHeaders();
-  const url = `${API_BASE_URL}/listQuoteLineItemByRow?id=${locationId}`;
-  const response = await axios.get(url, { headers });
-  return response.data;
 };
 
 export const deleteQuoteLineItem = async (id: string): Promise<void> => {
@@ -154,7 +233,7 @@ export const deleteQuoteLineItem = async (id: string): Promise<void> => {
     await axios.delete(url, { headers });
   } catch (error) {
     const err = error as AxiosError;
-    console.error('Failed to delete quote line item:', err.response?.data);
+    console.error('[API] Failed to delete quote line item:', err.response?.data);
     throw error;
   }
 };
