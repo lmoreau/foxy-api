@@ -109,10 +109,6 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_148B303F11CB4AAABAF10FD5FE201B46 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
 
-      - name: Set Function App Settings
-        run: |
-          az functionapp config appsettings set --name foxycpq --resource-group cpq --settings WEBSITE_RUN_FROM_PACKAGE=1 FUNCTIONS_EXTENSION_VERSION=~4
-
       - name: 'Deploy to Flex Plan App'
         uses: Azure/functions-action@v1
         id: fa-flex
@@ -120,7 +116,5 @@ jobs:
           app-name: 'foxycpq'
           slot-name: 'Production'
           package: 'api'
-          scm-do-build-during-deployment: false
-          enable-oryx-build: false
-          respect-funcignore: true
-          deployment-method: 'runFromPackage'
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
