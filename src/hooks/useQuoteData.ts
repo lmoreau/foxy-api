@@ -3,6 +3,10 @@ import { message } from 'antd';
 import { QuoteLocation, QuoteLineItem } from '../types';
 import { getQuoteRequestById, listQuoteLocationRows, listQuoteLineItemByRow } from '../utils/api';
 
+// Add performance measurement utilities
+const now = () => performance.now();
+const formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
+
 interface OwningUser {
   fullname: string;
   internalemailaddress: string;
@@ -33,9 +37,11 @@ export interface QuoteDataReturn extends QuoteDataState {
 }
 
 export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
+  const startTime = now();
   console.log('[useQuoteData] Hook initialized with ID:', id);
   console.log('[useQuoteData] Environment:', process.env.NODE_ENV);
   console.log('[useQuoteData] API endpoint:', process.env.REACT_APP_API_ENDPOINT);
+  console.log('[useQuoteData] Hook initialization time:', formatDuration(startTime, now()));
   
   const [lineItems, setLineItems] = useState<{ [key: string]: QuoteLineItem[] }>({});
   const [state, setState] = useState<QuoteDataState>({
@@ -55,6 +61,7 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
   });
 
   const fetchData = useCallback(async () => {
+    const fetchStartTime = now();
     console.log('[useQuoteData] Starting fetchData');
     
     if (!id || !/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i.test(id)) {
@@ -64,9 +71,12 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
     }
 
     try {
+      // Fetch quote request data
       console.log('[useQuoteData] Fetching quote request data for ID:', id);
+      const quoteRequestStartTime = now();
       const quoteRequestData = await getQuoteRequestById(id);
-      console.log('[useQuoteData] Quote request data received:', quoteRequestData);
+      console.log('[useQuoteData] Quote request data received in:', formatDuration(quoteRequestStartTime, now()));
+      console.log('[useQuoteData] Quote request data:', quoteRequestData);
 
       if (!quoteRequestData?.foxy_Account) {
         console.error('[useQuoteData] Missing foxy_Account in quote request data:', quoteRequestData);
@@ -78,19 +88,25 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
         return;
       }
 
+      // Fetch locations
       console.log('[useQuoteData] Fetching locations');
+      const locationsStartTime = now();
       const locationsResponse = await listQuoteLocationRows(id);
       const locations = locationsResponse.value || [];
-      console.log('[useQuoteData] Locations fetched:', locations.length);
+      console.log('[useQuoteData] Locations fetched in:', formatDuration(locationsStartTime, now()));
+      console.log('[useQuoteData] Locations count:', locations.length);
 
+      // Fetch line items for each location
       console.log('[useQuoteData] Fetching line items for each location');
+      const lineItemsStartTime = now();
       const lineItemsMap: { [key: string]: QuoteLineItem[] } = {};
       for (const location of locations) {
         try {
-          console.log('[useQuoteData] Fetching line items for location:', location.foxy_foxyquoterequestlocationid);
+          const locationStartTime = now();
+          console.log(`[useQuoteData] Fetching line items for location: ${location.foxy_foxyquoterequestlocationid}`);
           const lineItemsResponse = await listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid);
           lineItemsMap[location.foxy_foxyquoterequestlocationid] = lineItemsResponse.value || [];
-          console.log('[useQuoteData] Line items fetched for location:', {
+          console.log(`[useQuoteData] Line items fetched for location in: ${formatDuration(locationStartTime, now())}`, {
             locationId: location.foxy_foxyquoterequestlocationid,
             count: lineItemsResponse.value?.length || 0
           });
@@ -100,7 +116,10 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
           lineItemsMap[location.foxy_foxyquoterequestlocationid] = [];
         }
       }
+      console.log('[useQuoteData] All line items fetched in:', formatDuration(lineItemsStartTime, now()));
 
+      // Update state
+      const stateUpdateStartTime = now();
       console.log('[useQuoteData] Updating state with fetched data');
       setLineItems(lineItemsMap);
       setState(prev => ({
@@ -118,7 +137,8 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
           quoteRequest: quoteRequestData
         }
       }));
-      console.log('[useQuoteData] State updated successfully');
+      console.log('[useQuoteData] State updated in:', formatDuration(stateUpdateStartTime, now()));
+      console.log('[useQuoteData] Total fetch operation completed in:', formatDuration(fetchStartTime, now()));
     } catch (error) {
       console.error('[useQuoteData] Error in fetchData:', error);
       setState(prev => ({

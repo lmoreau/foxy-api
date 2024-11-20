@@ -6,6 +6,13 @@ import { getDynamicsAccessToken } from '../auth/authService';
 const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || 'http://localhost:7071/api';
 const DATAVERSE_URL = 'https://foxy.crm3.dynamics.com';
 
+// Performance monitoring utilities
+const now = () => performance.now();
+const formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
+
+// Keep track of first request time to detect cold starts
+let firstRequestTime: number | null = null;
+
 const getAuthHeaders = async () => {
   try {
     const token = await getDynamicsAccessToken();
@@ -143,15 +150,29 @@ export const getAccountById = async (id: string) => {
 };
 
 export const getQuoteRequestById = async (id: string) => {
+  const startTime = now();
+  if (!firstRequestTime) {
+    firstRequestTime = startTime;
+    console.log('[API] First request detected - potential cold start');
+  }
+
   const headers = await getAuthHeaders();
   const url = `${API_BASE_URL}/getQuoteRequestById?id=${id}`;
+  console.log('[API] Calling getQuoteRequestById:', { url });
 
   try {
     const response = await axios.get(url, { headers });
+    const endTime = now();
+    console.log(`[API] getQuoteRequestById completed in: ${formatDuration(startTime, endTime)}`);
+    if (firstRequestTime === startTime) {
+      console.log(`[API] Cold start time: ${formatDuration(firstRequestTime, endTime)}`);
+    }
     return response.data;
   } catch (error) {
+    const endTime = now();
+    console.error(`[API] getQuoteRequestById failed after ${formatDuration(startTime, endTime)}:`, error);
     if (axios.isAxiosError(error)) {
-      console.error('Error fetching quote request:', error.response?.data);
+      console.error('[API] Error details:', error.response?.data);
     }
     throw error;
   }
