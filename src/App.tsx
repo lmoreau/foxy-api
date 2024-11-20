@@ -4,7 +4,6 @@ import { Layout } from 'antd';
 import { MsalProvider } from '@azure/msal-react';
 import QuotePage from './components/Quote/QuotePage';
 import ProductsPage from './components/ProductsPage';
-import ProductCompensationPage from './components/ProductCompensationPage';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -180,14 +179,14 @@ function App() {
           <DomainHandler>
             <Routes>
               {/* Admin-only routes */}
-              <Route 
+              {/* <Route 
                 path="/product-compensation" 
                 element={
                   <AdminRoute>
                     <ProductCompensationPage />
                   </AdminRoute>
                 } 
-              />
+              /> */}
               
               {/* Routes with AppLayout */}
               <Route 
