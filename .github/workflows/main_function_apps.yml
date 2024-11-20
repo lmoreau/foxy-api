@@ -111,7 +111,6 @@ jobs:
 
       - name: Set Function App Settings
         run: |
-          az functionapp config set --name foxycpq --resource-group cpq --linux-fx-version "NODE|20"
           az functionapp config appsettings set --name foxycpq --resource-group cpq --settings WEBSITE_RUN_FROM_PACKAGE=1 FUNCTIONS_EXTENSION_VERSION=~4
 
       - name: 'Deploy to Flex Plan App'
