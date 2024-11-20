@@ -4,8 +4,8 @@ import { QuoteLocation, QuoteLineItem } from '../types';
 import { getQuoteRequestById, listQuoteLocationRows, listQuoteLineItemByRow } from '../utils/api';
 
 // Add performance measurement utilities
-const now = () => performance.now();
-const formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
+const _now = () => performance.now();
+const _formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
 
 interface OwningUser {
   fullname: string;
@@ -37,12 +37,6 @@ export interface QuoteDataReturn extends QuoteDataState {
 }
 
 export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
-  const startTime = now();
-  console.log('[useQuoteData] Hook initialized with ID:', id);
-  console.log('[useQuoteData] Environment:', process.env.NODE_ENV);
-  console.log('[useQuoteData] API endpoint:', process.env.REACT_APP_API_ENDPOINT);
-  console.log('[useQuoteData] Hook initialization time:', formatDuration(startTime, now()));
-  
   const [lineItems, setLineItems] = useState<{ [key: string]: QuoteLineItem[] }>({});
   const [state, setState] = useState<QuoteDataState>({
     accountName: '',
@@ -61,25 +55,16 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
   });
 
   const fetchData = useCallback(async () => {
-    const fetchStartTime = now();
-    console.log('[useQuoteData] Starting fetchData');
-    
     if (!id || !/^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i.test(id)) {
-      console.error('[useQuoteData] Invalid quote ID:', id);
       setState(prev => ({ ...prev, error: 'Invalid quote ID. Please provide a valid GUID.', loading: false }));
       return;
     }
 
     try {
       // Fetch quote request data
-      console.log('[useQuoteData] Fetching quote request data for ID:', id);
-      const quoteRequestStartTime = now();
       const quoteRequestData = await getQuoteRequestById(id);
-      console.log('[useQuoteData] Quote request data received in:', formatDuration(quoteRequestStartTime, now()));
-      console.log('[useQuoteData] Quote request data:', quoteRequestData);
 
       if (!quoteRequestData?.foxy_Account) {
-        console.error('[useQuoteData] Missing foxy_Account in quote request data:', quoteRequestData);
         setState(prev => ({
           ...prev,
           error: 'Quote data is incomplete or malformed',
@@ -89,38 +74,22 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       }
 
       // Fetch locations
-      console.log('[useQuoteData] Fetching locations');
-      const locationsStartTime = now();
       const locationsResponse = await listQuoteLocationRows(id);
       const locations = locationsResponse.value || [];
-      console.log('[useQuoteData] Locations fetched in:', formatDuration(locationsStartTime, now()));
-      console.log('[useQuoteData] Locations count:', locations.length);
 
       // Fetch line items for each location
-      console.log('[useQuoteData] Fetching line items for each location');
-      const lineItemsStartTime = now();
       const lineItemsMap: { [key: string]: QuoteLineItem[] } = {};
       for (const location of locations) {
         try {
-          const locationStartTime = now();
-          console.log(`[useQuoteData] Fetching line items for location: ${location.foxy_foxyquoterequestlocationid}`);
           const lineItemsResponse = await listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid);
           lineItemsMap[location.foxy_foxyquoterequestlocationid] = lineItemsResponse.value || [];
-          console.log(`[useQuoteData] Line items fetched for location in: ${formatDuration(locationStartTime, now())}`, {
-            locationId: location.foxy_foxyquoterequestlocationid,
-            count: lineItemsResponse.value?.length || 0
-          });
         } catch (error) {
-          console.error('[useQuoteData] Error fetching line items:', error);
           message.error(`Failed to load line items for location ${location.foxy_locationid}`);
           lineItemsMap[location.foxy_foxyquoterequestlocationid] = [];
         }
       }
-      console.log('[useQuoteData] All line items fetched in:', formatDuration(lineItemsStartTime, now()));
 
       // Update state
-      const stateUpdateStartTime = now();
-      console.log('[useQuoteData] Updating state with fetched data');
       setLineItems(lineItemsMap);
       setState(prev => ({
         ...prev,
@@ -137,8 +106,6 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
           quoteRequest: quoteRequestData
         }
       }));
-      console.log('[useQuoteData] State updated in:', formatDuration(stateUpdateStartTime, now()));
-      console.log('[useQuoteData] Total fetch operation completed in:', formatDuration(fetchStartTime, now()));
     } catch (error) {
       console.error('[useQuoteData] Error in fetchData:', error);
       setState(prev => ({
@@ -150,64 +117,45 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
   }, [id]);
 
   const refetchLocations = useCallback(async () => {
-    console.log('[useQuoteData] Starting refetchLocations with ID:', id);
     if (!id) return;
 
     try {
-      console.log('[useQuoteData] Refetching locations');
       const locationsResponse = await listQuoteLocationRows(id);
       const locations = locationsResponse.value || [];
-      console.log('[useQuoteData] Locations refetched:', locations.length);
 
-      console.log('[useQuoteData] Refetching line items for each location');
       const lineItemsMap: { [key: string]: QuoteLineItem[] } = {};
       for (const location of locations) {
         try {
-          console.log('[useQuoteData] Refetching line items for location:', location.foxy_foxyquoterequestlocationid);
           const lineItemsResponse = await listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid);
           lineItemsMap[location.foxy_foxyquoterequestlocationid] = lineItemsResponse.value || [];
-          console.log('[useQuoteData] Line items refetched for location:', {
-            locationId: location.foxy_foxyquoterequestlocationid,
-            count: lineItemsResponse.value?.length || 0
-          });
         } catch (error) {
-          console.error('[useQuoteData] Error refetching line items:', error);
           message.error(`Failed to load line items for location ${location.foxy_locationid}`);
           lineItemsMap[location.foxy_foxyquoterequestlocationid] = [];
         }
       }
 
-      console.log('[useQuoteData] Updating state with refetched data');
       setLineItems(lineItemsMap);
       setState(prev => ({
         ...prev,
         locations,
-        error: null,
         rawQuoteData: {
-          lineItems: lineItemsMap,
+          ...prev.rawQuoteData,
           locations,
-          quoteRequest: prev.rawQuoteData.quoteRequest
+          lineItems: lineItemsMap
         }
       }));
-      console.log('[useQuoteData] State updated successfully');
     } catch (error) {
       console.error('[useQuoteData] Error in refetchLocations:', error);
-      setState(prev => ({
-        ...prev,
-        error: 'Failed to refetch locations',
-      }));
+      message.error('Failed to refresh locations');
     }
   }, [id]);
 
-  const refetch = async () => {
-    console.log('[useQuoteData] Starting refetch with ID:', id);
+  const refetch = useCallback(async () => {
     if (!id) return;
     
     setState(prev => ({ ...prev, loading: true }));
     try {
-      console.log('[useQuoteData] Refetching quote request data');
       const quoteData = await getQuoteRequestById(id);
-      console.log('[useQuoteData] Quote request data refetched:', quoteData);
 
       setState(prev => ({
         ...prev,
@@ -221,7 +169,6 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
           quoteRequest: quoteData
         }
       }));
-      console.log('[useQuoteData] State updated successfully');
     } catch (error) {
       console.error('[useQuoteData] Error in refetch:', error);
       setState(prev => ({
@@ -230,19 +177,38 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
         loading: false
       }));
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    console.log('[useQuoteData] Starting useEffect with ID:', id);
-    setState(prev => ({ ...prev, loading: true }));
     fetchData();
   }, [fetchData, id]);
+
+  if (!id) {
+    return {
+      accountName: '',
+      accountId: '',
+      quoteId: '',
+      locations: [],
+      lineItems: {},
+      error: 'No ID provided',
+      loading: false,
+      owninguser: undefined,
+      rawQuoteData: {
+        lineItems: {},
+        locations: [],
+        quoteRequest: {}
+      },
+      refetchLocations,
+      setLineItems,
+      refetch
+    };
+  }
 
   return {
     ...state,
     lineItems,
-    setLineItems,
     refetchLocations,
+    setLineItems,
     refetch
   };
 };
