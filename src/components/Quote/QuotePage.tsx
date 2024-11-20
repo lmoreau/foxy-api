@@ -227,6 +227,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
         quoteRequestId={id || ''}
         accountId={accountId}
         onRefresh={refetchLocations}
+        existingLocations={locations}
       />
     </Layout>
   );

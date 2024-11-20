@@ -55,6 +55,7 @@ interface AddLocationModalProps {
   quoteRequestId: string;
   accountId?: string;
   onRefresh: () => void;
+  existingLocations?: { foxy_Building: { foxy_buildingid: string } }[];
 }
 
 interface Location {
@@ -70,10 +71,21 @@ interface Location {
 // Get token from environment variable
 const MAPBOX_ACCESS_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN || '';
 
-const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, onCancel, quoteRequestId, accountId, onRefresh }) => {
+const AddLocationModal: React.FC<AddLocationModalProps> = ({ 
+  isVisible, 
+  onOk, 
+  onCancel, 
+  quoteRequestId, 
+  accountId, 
+  onRefresh,
+  existingLocations = []
+}) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  // Create a Set of existing building IDs for efficient lookup
+  const existingBuildingIds = new Set(existingLocations.map(loc => loc.foxy_Building.foxy_buildingid));
 
   const fetchLocations = useCallback(async () => {
     if (!accountId) {
@@ -130,6 +142,10 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
     }
   };
 
+  const isLocationDisabled = (location: Location) => {
+    return existingBuildingIds.has(location.foxy_Building.foxy_buildingid);
+  };
+
   return (
     <Modal 
       title="Add Location" 
@@ -147,14 +163,19 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
               onChange={setSelectedLocationId}
               value={selectedLocationId}
             >
-              {locations.map((location) => (
-                <Select.Option 
-                  key={location.foxy_accountlocationid} 
-                  value={location.foxy_accountlocationid}
-                >
-                  {location.foxy_Building.foxy_fulladdress}
-                </Select.Option>
-              ))}
+              {locations.map((location) => {
+                const isDisabled = isLocationDisabled(location);
+                return (
+                  <Select.Option 
+                    key={location.foxy_accountlocationid} 
+                    value={location.foxy_accountlocationid}
+                    disabled={isDisabled}
+                  >
+                    {location.foxy_Building.foxy_fulladdress}
+                    {isDisabled && ' (Already added)'}
+                  </Select.Option>
+                );
+              })}
             </Select>
 
             <div style={{ height: '400px', width: '100%' }}>
@@ -176,6 +197,7 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
                 <MapBoundsSetter locations={locations} />
                 {locations.map((location) => {
                   if (location.foxy_Building.foxy_latitude && location.foxy_Building.foxy_longitude) {
+                    const isDisabled = isLocationDisabled(location);
                     return (
                       <Marker
                         key={location.foxy_accountlocationid}
@@ -184,11 +206,13 @@ const AddLocationModal: React.FC<AddLocationModalProps> = ({ isVisible, onOk, on
                           location.foxy_Building.foxy_longitude
                         ]}
                         eventHandlers={{
-                          click: () => setSelectedLocationId(location.foxy_accountlocationid)
+                          click: () => !isDisabled && setSelectedLocationId(location.foxy_accountlocationid)
                         }}
+                        opacity={isDisabled ? 0.5 : 1}
                       >
                         <Popup>
                           {location.foxy_Building.foxy_fulladdress}
+                          {isDisabled && <div style={{ color: 'red' }}>(Already added)</div>}
                         </Popup>
                       </Marker>
                     );
