@@ -90,6 +90,7 @@ jobs:
     needs: build
     permissions:
       id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -108,6 +109,22 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_44E74BDD63A84E7DA86409083922FD2D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_148B303F11CB4AAABAF10FD5FE201B46 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
+          enable-AzPSSession: true
+
+      - name: Set Azure CLI default subscription
+        run: |
+          az account set --subscription ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
+
+      - name: Verify Function App Exists
+        run: |
+          # Check if function app exists and get its details
+          FUNC_APP=$(az functionapp show --name foxycpq --resource-group cpq --query id --output tsv || echo "")
+          if [ -z "$FUNC_APP" ]; then
+            echo "Error: Function App 'foxycpq' not found in resource group 'cpq'"
+            exit 1
+          fi
+          # Ensure runtime settings are correct
+          az functionapp config appsettings set --name foxycpq --resource-group cpq --settings FUNCTIONS_WORKER_RUNTIME=node FUNCTIONS_EXTENSION_VERSION=~4
 
       - name: 'Deploy to Flex Plan App'
         uses: Azure/functions-action@v1
@@ -118,5 +135,3 @@ jobs:
           package: 'api'
           scm-do-build-during-deployment: true
           enable-oryx-build: true
-          resource-group: 'cpq'
-          region: 'East US 2'
