@@ -2,7 +2,6 @@ import React from 'react';
 import { Button, Tag } from 'antd';
 import { PlusOutlined, TeamOutlined } from '@ant-design/icons';
 import { AccountData } from '../types/residualTypes';
-import { getWirelineResidualsLabel } from '../utils/wirelineResidualsMapper';
 import { serviceColors } from '../utils/constants/serviceColors';
 
 interface AccountHeaderProps {
@@ -27,10 +26,6 @@ export const AccountHeader: React.FC<AccountHeaderProps> = ({ accountData, onEdi
     </div>
 
     <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span>Wireline Residuals:</span>
-        <Tag color="blue">{getWirelineResidualsLabel(accountData.foxyflow_wirelineresiduals)}</Tag>
-      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span>Services:</span>
         {accountData.foxy_cable && <Tag color={serviceColors.Cable}>Cable</Tag>}

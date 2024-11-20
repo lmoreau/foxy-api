@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip, message } from 'antd';
-import { DeleteOutlined, PlusOutlined, AppstoreAddOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../../types';
 import { calculateTotals } from '../../utils/quoteUtils';
@@ -120,15 +120,6 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                             onClick={() => handleAddProduct(location.foxy_foxyquoterequestlocationid)}
                             type="text"
                             style={{ color: '#1890ff' }}
-                            disabled={isDeleting}
-                          />
-                        </Tooltip>
-                        <Tooltip title="Product Catalogue">
-                          <Button
-                            icon={<AppstoreAddOutlined />}
-                            onClick={() => {/* Product Catalogue functionality */}}
-                            type="text"
-                            style={{ color: '#52c41a' }}
                             disabled={isDeleting}
                           />
                         </Tooltip>

@@ -4,7 +4,6 @@ import { Layout } from 'antd';
 import { MsalProvider } from '@azure/msal-react';
 import QuotePage from './components/Quote/QuotePage';
 import ProductsPage from './components/ProductsPage';
-import ProductCompensationPage from './components/ProductCompensationPage';
 import AppHeader from './components/Header';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { msalInstance, initializeMsal } from './auth/authConfig';
@@ -59,7 +58,7 @@ const DomainHandler = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Admin route wrapper component
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+const _AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const [userAccess, setUserAccess] = useState<string>('none');
   const [loading, setLoading] = useState(true);
 
@@ -180,14 +179,14 @@ function App() {
           <DomainHandler>
             <Routes>
               {/* Admin-only routes */}
-              <Route 
+              {/* <Route 
                 path="/product-compensation" 
                 element={
-                  <AdminRoute>
+                  <_AdminRoute>
                     <ProductCompensationPage />
-                  </AdminRoute>
+                  </_AdminRoute>
                 } 
-              />
+              /> */}
               
               {/* Routes with AppLayout */}
               <Route 
