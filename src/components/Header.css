@@ -38,8 +38,11 @@
 }
 */
 
+/* Import Barriecito font */
+@import url('https://fonts.googleapis.com/css2?family=Barriecito&display=swap');
+
 .app-header {
-  background: linear-gradient(to right, #002050 0%, #003275 100%);
+  background: linear-gradient(to right, #001233 0%, #001947 100%);
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -108,11 +111,11 @@
 
 .logo-text {
   color: #fff;
-  font-size: 20px;
-  font-weight: 500;
-  font-family: 'Genos', sans-serif;
-  font-style: italic;
-  letter-spacing: 0.5px;
+  font-size: 32px;
+  font-family: 'Barriecito', cursive;
+  letter-spacing: 1px;
+  line-height: 48px;
+  transform: translateY(-1px);
 }
 
 /* Right section with avatar */

@@ -109,12 +109,10 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
             <AppstoreOutlined />
           </div>
         </Dropdown>
-        <Link to="/residual-check" className="logo-link">
-          <div className="logo">
-            <div className="logo-container">
-              <img src="/foxylogo.png" alt="Foxy Logo" className="logo-image" />
-              <span className="logo-text">Foxy CPQ</span>
-            </div>
+        <Link to="/" className="logo-link">
+          <div className="logo-container">
+            <img src="/foxylogo.png" alt="Foxy Logo" className="logo-image" />
+            <span className="logo-text">CPQ</span>
           </div>
         </Link>
       </div>
