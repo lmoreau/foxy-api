@@ -118,3 +118,5 @@ jobs:
           package: 'api'
           scm-do-build-during-deployment: true
           enable-oryx-build: true
+          resource-group: 'cpq'
+          region: 'East US 2'
