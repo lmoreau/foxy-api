@@ -29,7 +29,7 @@ echo "Getting current redirect URIs..."
 CURRENT_URIS=$(az ad app show --id "$APP_ID" --query "web.redirectUris" -o tsv)
 
 # Build new URI list
-NEW_URIS="$PROD_URL $PROD_URL/silent-refresh.html $PREVIEW_URL $PREVIEW_URL/silent-refresh.html"
+NEW_URIS="$PROD_URL $PREVIEW_URL"
 if [ ! -z "$CURRENT_URIS" ]; then
     NEW_URIS="$CURRENT_URIS $NEW_URIS"
 fi

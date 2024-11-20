@@ -28,12 +28,12 @@ az functionapp cors remove \
 echo "Getting current redirect URIs..."
 CURRENT_URIS=$(az ad app show --id "$APP_ID" --query "web.redirectUris" -o tsv)
 
-# Remove preview URL and its silent refresh variant
-FILTERED_URIS=$(echo "$CURRENT_URIS" | tr ' ' '\n' | grep -v "^$PREVIEW_URL\(/silent-refresh\.html\)\?$" | tr '\n' ' ')
+# Remove preview URL
+FILTERED_URIS=$(echo "$CURRENT_URIS" | tr ' ' '\n' | grep -v "^$PREVIEW_URL$" | tr '\n' ' ')
 
-# If no URIs left, set default production URLs
+# If no URIs left, set default production URL
 if [ -z "$FILTERED_URIS" ]; then
-    FILTERED_URIS="$PROD_URL $PROD_URL/silent-refresh.html"
+    FILTERED_URIS="$PROD_URL"
 fi
 
 echo "Updating redirect URIs..."
