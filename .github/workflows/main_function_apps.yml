@@ -114,7 +114,4 @@ jobs:
         id: fa-flex
         with:
           app-name: 'foxycpq'
-          slot-name: 'Production'
           package: 'api'
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
