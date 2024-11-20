@@ -80,5 +80,8 @@ jobs:
         with:
           app-name: 'foxycpq'
           package: 'api'
-          scm-do-build-during-deployment: false  # Disable Kudu build
-          enable-oryx-build: false  # Disable Oryx build
+          scm-do-build-during-deployment: false
+          enable-oryx-build: false
+          deployment-method: zip  # Force ZIP deployment instead of Kudu
+          respect-pom-xml: false  # Disable any Maven/Java specific handling
+          respect-funcignore: false  # Disable .funcignore processing to avoid Kudu behavior
