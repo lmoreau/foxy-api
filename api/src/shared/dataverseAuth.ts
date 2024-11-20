@@ -9,11 +9,12 @@ export interface DataverseHeaders {
     'Accept': string;
     'Content-Type': string;
     'Prefer': string;
+    'Cache-Control'?: string;
 }
 
 /**
  * Get headers for Dataverse API using user's token
- * @param authHeader The Authorization header from the request
+ * @param authHeader The authorization header from the request
  * @returns {DataverseHeaders} The headers object
  */
 export function getDataverseHeaders(authHeader: string): DataverseHeaders {
@@ -27,7 +28,8 @@ export function getDataverseHeaders(authHeader: string): DataverseHeaders {
         'OData-Version': '4.0',
         'Accept': 'application/json',
         'Content-Type': 'application/json; charset=utf-8',
-        'Prefer': 'return=representation'
+        'Prefer': 'odata.maxpagesize=1000,return=representation',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
     };
 }
 
