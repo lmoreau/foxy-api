@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { API_BASE_URL, DATAVERSE_URL, getAuthHeaders, now, formatDuration, requestTimeTracker } from './config';
+import { API_BASE_URL, DATAVERSE_URL, getAuthHeaders } from './config';
 import { Product } from '../../types';
 
 // Quote Request Operations

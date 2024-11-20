@@ -4,8 +4,8 @@ import { QuoteLocation, QuoteLineItem } from '../types';
 import { getQuoteRequestById, listQuoteLocationRows, listQuoteLineItemByRow } from '../utils/api';
 
 // Add performance measurement utilities
-const now = () => performance.now();
-const formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
+const _now = () => performance.now();
+const _formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
 
 interface OwningUser {
   fullname: string;

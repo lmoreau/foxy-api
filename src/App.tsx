@@ -58,7 +58,7 @@ const DomainHandler = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Admin route wrapper component
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+const _AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const [userAccess, setUserAccess] = useState<string>('none');
   const [loading, setLoading] = useState(true);
 
@@ -182,9 +182,9 @@ function App() {
               {/* <Route 
                 path="/product-compensation" 
                 element={
-                  <AdminRoute>
+                  <_AdminRoute>
                     <ProductCompensationPage />
-                  </AdminRoute>
+                  </_AdminRoute>
                 } 
               /> */}
               
