@@ -115,16 +115,16 @@ jobs:
         run: |
           az account set --subscription ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
 
-      - name: Verify Function App Exists
+      - name: Assign Required Permissions
         run: |
-          # Check if function app exists and get its details
-          FUNC_APP=$(az functionapp show --name foxycpq --resource-group cpq --query id --output tsv || echo "")
-          if [ -z "$FUNC_APP" ]; then
-            echo "Error: Function App 'foxycpq' not found in resource group 'cpq'"
-            exit 1
-          fi
-          # Ensure runtime settings are correct
-          az functionapp config appsettings set --name foxycpq --resource-group cpq --settings FUNCTIONS_WORKER_RUNTIME=node FUNCTIONS_EXTENSION_VERSION=~4
+          # Get the current user's Object ID (service principal)
+          SP_ID=$(az ad sp show --id ${{ secrets.AZUREAPPSERVICE_CLIENTID_44E74BDD63A84E7DA86409083922FD2D }} --query id -o tsv)
+          
+          # Assign Contributor role at the function app level
+          az role assignment create \
+            --assignee $SP_ID \
+            --role "Contributor" \
+            --scope "/subscriptions/${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}/resourceGroups/cpq/providers/Microsoft.Web/sites/foxycpq"
 
       - name: 'Deploy to Flex Plan App'
         uses: Azure/functions-action@v1
