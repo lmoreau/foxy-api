@@ -29,9 +29,9 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_44E74BDD63A84E7DA86409083922FD2D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_148B303F11CB4AAABAF10FD5FE201B46 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
       - name: Manage Preview URL
         if: github.event_name == 'pull_request'
         run: |

@@ -3,7 +3,7 @@
 # Configuration
 FUNCTION_APP_NAME="foxy-cpq"
 RESOURCE_GROUP="rg-foxy-cpq"
-APP_ID="your-app-id"  # Replace with your Entra ID app registration ID
+APP_ID="ba25e11f-f889-42a7-a3b1-d8e282fe5cc0"  # Entra ID application ID
 PROD_URL="https://foxyledger.infusion-it.com"
 
 # Arguments
