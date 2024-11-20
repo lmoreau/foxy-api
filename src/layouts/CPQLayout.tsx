@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseLayout from './BaseLayout';
-import QuoteCPQHeader from '../components/QuoteCPQHeader';
+import Header from '../components/Header';
 
 interface CPQLayoutProps {
   children: React.ReactNode;
@@ -8,7 +8,7 @@ interface CPQLayoutProps {
 
 const CPQLayout: React.FC<CPQLayoutProps> = ({ children }) => {
   return (
-    <BaseLayout header={<QuoteCPQHeader />}>
+    <BaseLayout header={<Header />}>
       {children}
     </BaseLayout>
   );

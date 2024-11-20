@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Dropdown } from 'antd';
+import { Layout, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { 
   UserOutlined, 
@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { checkUserAccess, UserAccessLevel } from '../auth/authService';
+import './Header.css';
 
 const { Header } = Layout;
 
@@ -22,6 +23,7 @@ interface AppHeaderProps {
 
 const AppHeader: React.FC<AppHeaderProps> = () => {
   const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserAccess = async () => {
@@ -50,7 +52,6 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
       }
     ];
 
-    // Only show Incoming Wireline Payments and Product Profit Dashboard for admin users
     if (userAccess === 'admin') {
       baseItems.push(
         {
@@ -68,7 +69,6 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
 
     const menuItems = [...baseItems];
 
-    // Only show upload options for admin users
     if (userAccess === 'admin') {
       menuItems.push(
         {
@@ -96,56 +96,37 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
   };
 
   return (
-    <Header style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      padding: '0 16px', 
-      height: '48px', 
-      lineHeight: '48px',
-      justifyContent: 'space-between'
-    }}>
+    <Header className="app-header">
       {/* Menu and Logo section */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        minWidth: '200px'
-      }}>
+      <div className="header-left">
         <Dropdown 
           menu={{ items: getMenuItems() }}
           trigger={['click']}
           placement="bottomLeft"
+          onOpenChange={setIsMenuOpen}
         >
-          <AppstoreOutlined 
-            style={{ 
-              fontSize: '20px', 
-              color: 'white',
-              marginRight: '16px',
-              cursor: 'pointer'
-            }} 
-          />
+          <div className={`menu-icon ${isMenuOpen ? 'open' : ''}`}>
+            <AppstoreOutlined />
+          </div>
         </Dropdown>
-        <Link to="/residual-check" style={{ textDecoration: 'none' }}>
-          <div className="logo" style={{ 
-            color: 'white', 
-            fontSize: '18px', 
-            fontWeight: 'bold',
-            display: 'flex', 
-            alignItems: 'center',
-            fontFamily: '"Source Sans Pro", "Nunito Sans", Helvetica, sans-serif'
-          }}>
-            <img src="/foxylogo.png" alt="Foxy Logo" style={{ height: '30px', marginRight: '8px' }} />
-            Foxy Ledger
+        <Link to="/residual-check" className="logo-link">
+          <div className="logo">
+            <div className="logo-container">
+              <img src="/foxylogo.png" alt="Foxy Logo" className="logo-image" />
+              <span className="logo-text">Foxy CPQ</span>
+            </div>
           </div>
         </Link>
       </div>
 
       {/* Avatar section */}
-      <div style={{ 
-        minWidth: '200px',
-        display: 'flex',
-        justifyContent: 'flex-end'
-      }}>
-        <UserOutlined style={{ color: 'white', fontSize: '18px' }} />
+      <div className="header-right">
+        <div className="user-avatar">
+          <Avatar 
+            icon={<UserOutlined />} 
+            className="avatar-icon"
+          />
+        </div>
       </div>
     </Header>
   );

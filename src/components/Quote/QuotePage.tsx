@@ -6,7 +6,7 @@ import { useModal } from '../../hooks/useModal';
 import { deleteQuoteLocation } from '../../utils/quoteUtils';
 import { deleteQuoteLineItem, updateQuoteRequest } from '../../utils/api';
 import { checkUserAccess } from '../../auth/authService';
-import QuoteCPQHeader from '../QuoteCPQHeader';
+import Header from '../Header';
 import AddLocationModal from '../modals/AddLocationModal';
 import TimelineTab from './TimelineTab';
 import { QuotePageProps, RawQuoteData } from './types';
@@ -215,7 +215,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <QuoteCPQHeader />
+      <Header />
       <Content style={{ padding: '20px 50px' }}>
         <LazyTabs items={visibleTabs} />
       </Content>
