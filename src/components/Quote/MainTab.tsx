@@ -3,6 +3,7 @@ import { EditOutlined } from '@ant-design/icons';
 import LocationsTable from '../tables/LocationsTable';
 import QuoteActions from './QuoteActions';
 import QuoteSummary from './QuoteSummary';
+import WirelessQuoteMessage from './WirelessQuoteMessage';
 import { calculateTotals } from '../../utils/quoteUtils';
 import {
   Row,
@@ -60,6 +61,8 @@ const MainTab: React.FC<MainTabProps> = ({
   handleDeleteLineItem,
   updateQuoteRequest,
 }) => {
+  const isWirelessQuote = rawQuoteData.quoteRequest?.foxy_quotetype === 612100001;
+
   return (
     <Row gutter={[0, 16]}>
       <Col span={24} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -162,16 +165,20 @@ const MainTab: React.FC<MainTabProps> = ({
         </Col>
       )}
       <Col span={24}>
-        <LocationsTable
-          data={locations}
-          lineItems={lineItems}
-          onAddLine={handleAddLineItem}
-          expandAll={expandAll}
-          onDeleteLocation={handleDeleteLocation}
-          onUpdateLineItem={handleUpdateLineItem}
-          onDeleteLineItem={handleDeleteLineItem}
-          quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
-        />
+        {isWirelessQuote ? (
+          <WirelessQuoteMessage />
+        ) : (
+          <LocationsTable
+            data={locations}
+            lineItems={lineItems}
+            onAddLine={handleAddLineItem}
+            expandAll={expandAll}
+            onDeleteLocation={handleDeleteLocation}
+            onUpdateLineItem={handleUpdateLineItem}
+            onDeleteLineItem={handleDeleteLineItem}
+            quoteStage={rawQuoteData.quoteRequest?.foxy_quotestage}
+          />
+        )}
       </Col>
     </Row>
   );
