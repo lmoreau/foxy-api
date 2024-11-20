@@ -19,11 +19,13 @@ const useQuoteLineItems = (
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [form] = Form.useForm();
 
   const isEditing = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === editingKey;
   const isSaving = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === savingId;
+  const isDeleting = (record: QuoteLineItem) => record.foxy_foxyquoterequestlineitemid === deletingId;
 
   const edit = (record: QuoteLineItem) => {
     const formValues = {
@@ -147,6 +149,7 @@ const useQuoteLineItems = (
 
   const confirmDelete = async () => {
     if (itemToDelete) {
+      setDeletingId(itemToDelete);
       try {
         await deleteQuoteLineItem(itemToDelete);
         // Update local state first
@@ -168,6 +171,7 @@ const useQuoteLineItems = (
       } finally {
         setDeleteModalVisible(false);
         setItemToDelete(null);
+        setDeletingId(null);
       }
     }
   };
@@ -218,6 +222,7 @@ const useQuoteLineItems = (
     form,
     isEditing,
     isSaving,
+    isDeleting,
     edit,
     cancel,
     save,

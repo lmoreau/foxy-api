@@ -55,6 +55,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     form,
     isEditing,
     isSaving,
+    isDeleting,
     edit,
     cancel,
     save,
@@ -405,6 +406,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       render: (_: unknown, record: QuoteLineItem) => {
         const editable = isEditing(record);
         const saving = isSaving(record);
+        const deleting = isDeleting(record);
         const iconColor = record.foxy_comment ? '#1890ff' : '#d9d9d9';
         return (
           <Space>
@@ -450,9 +452,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                 <Tooltip title="Delete">
                   <Button
                     onClick={() => handleDelete(record.foxy_foxyquoterequestlineitemid)}
-                    icon={<DeleteOutlined />}
+                    icon={deleting ? <LoadingOutlined /> : <DeleteOutlined />}
                     type="link"
                     style={{ color: '#ff4d4f', marginRight: 8 }}
+                    loading={deleting}
+                    disabled={deleting}
                   />
                 </Tooltip>
                 <Tooltip title="Notes">
