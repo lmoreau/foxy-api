@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write
       contents: read
     steps:
       - uses: actions/checkout@v3
@@ -26,21 +26,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_44E74BDD63A84E7DA86409083922FD2D }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_148B303F11CB4AAABAF10FD5FE201B46 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
-      - name: Manage Preview URL
-        if: github.event_name == 'pull_request'
-        run: |
-          PREVIEW_URL="https://${{ github.event.pull_request.head.ref }}-${{ github.event.repository.name }}.azurestaticapps.net"
-          ACTION="add"
-          if [ "${{ github.event.action }}" = "closed" ]; then
-            ACTION="remove"
-          fi
-          ./dev-utils/manage-preview-urls.sh "$PREVIEW_URL" "$ACTION"
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
