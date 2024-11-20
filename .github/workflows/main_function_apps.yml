@@ -88,6 +88,7 @@ jobs:
   deploy-flex:
     runs-on: ubuntu-latest
     needs: build
+    environment: production
     permissions:
       id-token: write
       contents: read
@@ -102,36 +103,13 @@ jobs:
         run: |
           mkdir api
           unzip release.zip -d api
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_44E74BDD63A84E7DA86409083922FD2D }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_148B303F11CB4AAABAF10FD5FE201B46 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
-          enable-AzPSSession: true
-
-      - name: Set Azure CLI default subscription
-        run: |
-          az account set --subscription ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}
-
-      - name: Assign Required Permissions
-        run: |
-          # Get the current user's Object ID (service principal)
-          SP_ID=$(az ad sp show --id ${{ secrets.AZUREAPPSERVICE_CLIENTID_44E74BDD63A84E7DA86409083922FD2D }} --query id -o tsv)
-          
-          # Assign Contributor role at the function app level
-          az role assignment create \
-            --assignee $SP_ID \
-            --role "Contributor" \
-            --scope "/subscriptions/${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_62E67BA2EDB44797875DA808A64B499B }}/resourceGroups/cpq/providers/Microsoft.Web/sites/foxycpq"
 
       - name: 'Deploy to Flex Plan App'
         uses: Azure/functions-action@v1
         id: fa-flex
         with:
           app-name: 'foxycpq'
-          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_FLEX }}
           package: 'api'
           scm-do-build-during-deployment: true
           enable-oryx-build: true
