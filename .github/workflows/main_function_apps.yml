@@ -120,6 +120,7 @@ jobs:
           app-name: 'foxycpq'
           slot-name: 'Production'
           package: 'api'
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
+          scm-do-build-during-deployment: false
+          enable-oryx-build: false
           respect-funcignore: true
+          deployment-method: 'runFromPackage'
