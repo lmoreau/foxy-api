@@ -6,7 +6,7 @@ import { updateQuoteLineItem } from '../../utils/api';
 
 interface RevenueTypeModalProps {
   open: boolean;
-  onOk: () => void;
+  onOk: (updatedItem: QuoteLineItem) => void;
   onCancel: () => void;
   initialValues?: QuoteLineItem;
 }
@@ -38,7 +38,7 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
       // Format the date properly for the API
       const formattedValues = {
         ...values,
-        foxy_renewaldate: values.foxy_renewaldate?.toISOString(),
+        foxy_renewaldate: values.foxy_renewaldate?.format('YYYY-MM-DD'),
       };
 
       // Send the update to the API
@@ -47,8 +47,18 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
         ...formattedValues
       });
 
+      // Create updated item with all fields for parent component
+      const updatedItem: QuoteLineItem = {
+        ...initialValues!,
+        foxy_renewaltype: values.foxy_renewaltype,
+        foxy_renewaldate: values.foxy_renewaldate?.toDate(), // Keep as Date object for UI
+        foxy_existingqty: values.foxy_existingqty,
+        foxy_existingmrr: values.foxy_existingmrr,
+        foxy_foxyquoterequestlineitemid: initialValues?.foxy_foxyquoterequestlineitemid!,
+      };
+
       message.success('Revenue type updated successfully');
-      onOk();
+      onOk(updatedItem);
     } catch (error) {
       message.error('Failed to update revenue type');
       console.error('Error updating revenue type:', error);
@@ -102,7 +112,7 @@ const RevenueTypeModal: React.FC<RevenueTypeModalProps> = ({
             min={0}
             step={0.01}
             precision={2}
-            style={{ width: '100%' }}
+            style={{ width: '100%' }} 
           />
         </Form.Item>
       </Form>

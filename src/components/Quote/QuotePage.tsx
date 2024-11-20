@@ -210,8 +210,9 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
     }
   ];
 
-  // Show only the first two tabs for non-admin users (Quote and Notes)
-  const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1]];
+  // Show first three tabs for non-admin users (Quote, Details, and Notes)
+  // Show all tabs for admin users (including Compensation and Raw Data)
+  const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1], tabItems[2]];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

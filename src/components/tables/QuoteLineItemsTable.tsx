@@ -198,8 +198,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                              record.foxy_renewaltype && 
                              record.foxy_existingqty && 
                              record.foxy_existingqty > 0 && 
-                             record.foxy_existingmrr !== undefined && 
-                             record.foxy_existingmrr > 0;
+                             record.foxy_existingmrr !== undefined;
         
         const iconColor = isDataComplete ? '#52c41a' : '#ff4d4f';
         
@@ -584,15 +583,23 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
       />
       <RevenueTypeModal
         open={revenueTypeModalVisible}
-        onOk={() => {
-          form.validateFields().then(values => {
-            const updatedItem = { ...currentRecord, ...values };
-            onUpdateLineItem(updatedItem);
-            setRevenueTypeModalVisible(false);
-          });
-        }}
         onCancel={() => setRevenueTypeModalVisible(false)}
         initialValues={currentRecord}
+        onOk={(updatedItem) => {
+          // Update local state
+          const newData = lineItems.map(item =>
+            item.foxy_foxyquoterequestlineitemid === updatedItem.foxy_foxyquoterequestlineitemid
+              ? updatedItem
+              : item
+          );
+          setLineItems(newData);
+          
+          // Notify parent
+          onUpdateLineItem(updatedItem);
+          
+          // Close modal
+          setRevenueTypeModalVisible(false);
+        }}
       />
       <CommentModal
         open={commentModalVisible}

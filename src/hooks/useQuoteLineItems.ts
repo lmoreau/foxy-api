@@ -114,9 +114,13 @@ const useQuoteLineItems = (
           try {
             await updateQuoteLineItem(updatedItem);
             const updatedItemWithProduct = {
-              ...updatedItem,
-              foxy_Product: item.foxy_Product // Preserve the existing product information
+              ...item, // Start with all existing item fields
+              ...updatedItem, // Override with updated fields
+              foxy_Product: item.foxy_Product, // Preserve the product information
+              foxy_foxyquoterequestlineitemid: item.foxy_foxyquoterequestlineitemid // Ensure ID is preserved
             };
+            newData[index] = updatedItemWithProduct; // Update local state
+            setLineItems(newData); // Set the updated state
             onUpdateLineItem(updatedItemWithProduct);
             message.success({ content: 'Line item updated successfully', key: 'saveLineItem' });
           } catch (error) {
