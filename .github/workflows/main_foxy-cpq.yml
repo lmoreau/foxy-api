@@ -87,8 +87,10 @@ jobs:
           app-name: 'foxy-cpq'
           slot-name: 'Production'
           package: 'api'
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
+          scm-do-build-during-deployment: false
+          enable-oryx-build: false
+          respect-pom-xml: false
+          respect-funcignore: true
 
       - name: 'Start Azure Function App'
         uses: Azure/cli@v1
