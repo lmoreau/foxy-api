@@ -94,6 +94,17 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
     setSortedInfo(currentSorter);
   };
 
+  const handleDoubleClick = (record: QuoteLineItem) => {
+    if (editingKey === '' && !record.foxy_foxyquoterequestlineitemid.startsWith('temp-')) {
+      form.setFieldsValue({
+        ...record,
+        foxy_term: record.foxy_term || 36,
+        foxy_quantity: record.foxy_quantity || 1
+      });
+      edit(record);
+    }
+  };
+
   const productNameColumns = [
     {
       title: 'Product Name',
@@ -162,7 +173,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                 </Select>
               </Form.Item>
             ) : (
-              <>
+              <div onDoubleClick={() => handleDoubleClick(record)} style={{ cursor: 'pointer' }}>
                 {text}
                 {record.foxy_Product?.crc9f_requiresconfiguration && (
                   <Tooltip title="Configuration Required">
@@ -174,7 +185,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                     />
                   </Tooltip>
                 )}
-              </>
+              </div>
             )}
           </Space>
         );
@@ -221,7 +232,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                 </Select>
               </Form.Item>
             ) : (
-              <>
+              <div onDoubleClick={() => handleDoubleClick(record)} style={{ cursor: 'pointer' }}>
                 <span style={{ minWidth: '80px', display: 'inline-block' }}>{revenueType}</span>
                 {showIcon && (
                   <Tooltip title={isDataComplete ? "Configuration Complete" : "Configuration Required"}>
@@ -236,7 +247,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                     />
                   </Tooltip>
                 )}
-              </>
+              </div>
             )}
           </Space>
         );
@@ -264,7 +275,9 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             />
           </Form.Item>
         ) : (
-          record.foxy_term || 36
+          <div onDoubleClick={() => handleDoubleClick(record)} style={{ cursor: 'pointer' }}>
+            {record.foxy_term || 36}
+          </div>
         );
       }
     },
@@ -290,7 +303,9 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             />
           </Form.Item>
         ) : (
-          record.foxy_quantity || 1
+          <div onDoubleClick={() => handleDoubleClick(record)} style={{ cursor: 'pointer' }}>
+            {record.foxy_quantity || 1}
+          </div>
         );
       }
     },
@@ -339,7 +354,9 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             />
           </Form.Item>
         ) : (
-          formatCurrency(record.foxy_each || 0)
+          <div onDoubleClick={() => handleDoubleClick(record)} style={{ cursor: 'pointer' }}>
+            {formatCurrency(record.foxy_each || 0)}
+          </div>
         );
       }
     },
@@ -405,7 +422,9 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             />
           </Form.Item>
         ) : (
-          quoteStage === 612100009 ? `${record.foxy_margin || 0}%` : null
+          <div onDoubleClick={() => handleDoubleClick(record)} style={{ cursor: 'pointer' }}>
+            {quoteStage === 612100009 ? `${record.foxy_margin || 0}%` : null}
+          </div>
         );
       }
     },
