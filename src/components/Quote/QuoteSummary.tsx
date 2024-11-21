@@ -128,7 +128,7 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
         <Col flex="1">
           <div>
             <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: '14px', marginBottom: '8px' }}>Quote Stage</div>
-            <Tag color={getQuoteStageColor(quoteStage)} style={{ margin: 0, fontWeight: 'bold' }}>
+            <Tag color={getQuoteStageColor(quoteStage)} style={{ margin: 0, fontWeight: 'bold', color: quoteStage === 612100009 ? '#52c41a' : undefined }}>
               {getQuoteStageLabel(quoteStage)}
             </Tag>
           </div>
