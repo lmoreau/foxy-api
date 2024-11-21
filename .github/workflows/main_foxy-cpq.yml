@@ -78,7 +78,7 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            az functionapp stop --name foxy-cpq --resource-group foxy-cpq_group
+            az functionapp stop --name foxy-cpq --resource-group cpq
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
@@ -94,4 +94,4 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            az functionapp start --name foxy-cpq --resource-group foxy-cpq_group
+            az functionapp start --name foxy-cpq --resource-group cpq
