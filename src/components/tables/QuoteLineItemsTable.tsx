@@ -257,7 +257,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             initialValue={36}
             rules={[{ required: true, message: 'Term is required' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} />
+            <InputNumber 
+              min={0} 
+              style={{ width: '100%' }} 
+              onPressEnter={() => save(record.foxy_foxyquoterequestlineitemid)}
+            />
           </Form.Item>
         ) : (
           record.foxy_term || 36
@@ -279,7 +283,11 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
             initialValue={1}
             rules={[{ required: true, message: 'Quantity is required' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} />
+            <InputNumber 
+              min={0} 
+              style={{ width: '100%' }} 
+              onPressEnter={() => save(record.foxy_foxyquoterequestlineitemid)}
+            />
           </Form.Item>
         ) : (
           record.foxy_quantity || 1
@@ -305,6 +313,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
               step={0.01}
               precision={2}
               style={{ width: '100%' }}
+              onPressEnter={() => save(record.foxy_foxyquoterequestlineitemid)}
               onChange={(value) => {
                 const quantity = form.getFieldValue('foxy_quantity') || 1;
                 const each = value || 0;
@@ -392,6 +401,7 @@ const QuoteLineItemsTable: React.FC<QuoteLineItemsTableProps> = ({
                 return isNaN(parsed) ? 0 : parsed;
               }}
               style={{ width: '100%' }}
+              onPressEnter={() => save(record.foxy_foxyquoterequestlineitemid)}
             />
           </Form.Item>
         ) : (

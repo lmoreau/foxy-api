@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Row, Col, Card, Statistic, Button, Space, Input, message, Tag } from 'antd';
-import { UserOutlined, EditOutlined } from '@ant-design/icons';
+import { UserOutlined, EditOutlined, LinkOutlined } from '@ant-design/icons';
 import { getQuoteStageLabel } from '../../utils/quoteStageMapper';
 import { getQuoteTypeLabel } from '../../utils/quoteTypeMapper';
 import { QuoteSummaryProps } from './types';
@@ -103,9 +103,15 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({
                     type="text"
                     icon={<EditOutlined />}
                     onClick={handleEditStart}
-                    style={{ marginLeft: 8 }}
                     disabled={quoteStage === 612100000}
                   />
+                  {opticQuote && (
+                    <Button
+                      type="text"
+                      icon={<LinkOutlined />}
+                      onClick={() => window.open(`https://rogersb2b.lightning.force.com/_ui/search/ui/UnifiedSearchResults?str=${opticQuote}`, '_blank')}
+                    />
+                  )}
                 </Space>
               )}
             </div>

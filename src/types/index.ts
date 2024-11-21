@@ -35,6 +35,9 @@ export interface QuoteLocation {
   foxy_Building: {
     foxy_buildingid: string;
     foxy_fulladdress: string;
+    foxy_rogersfibre?: number;
+    foxy_rogerscable?: number;
+    foxy_gpon?: number;
   };
 }
 
