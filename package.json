@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "homepage": ".",
+  "type": "module",
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@azure/msal-browser": "^3.5.0",
@@ -38,7 +39,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build:ci": "CI=false react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios|@azure)/\"",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
