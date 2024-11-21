@@ -38,8 +38,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:ci": "CI=false react-scripts build",
-    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios|@azure)/\"",
+    "build:ci": "CI=false SKIP_PREFLIGHT_CHECK=true react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
