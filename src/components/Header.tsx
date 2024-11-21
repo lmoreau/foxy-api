@@ -18,7 +18,7 @@ interface AppHeaderProps {
 }
 
 const AppHeader: React.FC<AppHeaderProps> = () => {
-  const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
+  const [_userAccess, setUserAccess] = useState<UserAccessLevel>('none');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { id } = useParams<{ id: string }>();
 

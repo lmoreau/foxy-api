@@ -9,7 +9,15 @@ const _formatDuration = (start: number, end: number) => `${(end - start).toFixed
 
 // Add cache utilities
 const CACHE_PREFIX = 'foxy_quote_cache_';
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const CACHE_EXPIRY = 30 * 1000; // Reduced to 30 seconds
+
+const clearCache = (key: string): void => {
+  try {
+    localStorage.removeItem(CACHE_PREFIX + key);
+  } catch (error) {
+    console.error('[Cache] Error clearing cache:', error);
+  }
+};
 
 interface CacheEntry<T> {
   data: T;
@@ -215,6 +223,9 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
   const refetchLocations = useCallback(async () => {
     if (!id) return;
 
+    // Clear cache before refetching
+    clearCache(id);
+    
     const startTime = _now();
     console.log(`[QuoteData] Starting location refetch for quote ID: ${id}`);
 
@@ -243,16 +254,23 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       console.log(`[QuoteData] All line items refetched in ${_formatDuration(lineItemsStartTime, _now())}`);
 
       const updateStartTime = _now();
-      setLineItems(lineItemsMap);
-      setState(prev => ({
-        ...prev,
+      const newState = {
+        ...state,
         locations,
+        lineItems: lineItemsMap,
         rawQuoteData: {
-          ...prev.rawQuoteData,
+          ...state.rawQuoteData,
           locations,
           lineItems: lineItemsMap
         }
-      }));
+      };
+      
+      setLineItems(lineItemsMap);
+      setState(newState);
+      
+      // Update cache with new data
+      setToCache(id, newState);
+      
       console.log(`[QuoteData] Refetch state update completed in ${_formatDuration(updateStartTime, _now())}`);
       console.log(`[QuoteData] Total refetch operation completed in ${_formatDuration(startTime, _now())}`);
 
@@ -261,10 +279,13 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       console.error('[QuoteData] Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');
       message.error('Failed to refresh locations');
     }
-  }, [id]);
+  }, [id, state]);
 
   const refetch = useCallback(async () => {
     if (!id) return;
+    
+    // Clear cache before refetching
+    clearCache(id);
     
     const startTime = _now();
     console.log(`[QuoteData] Starting quote data refetch for ID: ${id}`);
@@ -276,20 +297,29 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       console.log(`[QuoteData] Quote data refetch completed in ${_formatDuration(quoteStartTime, _now())}`);
 
       const updateStartTime = _now();
-      setState(prev => ({
-        ...prev,
+      const newState = {
+        ...state,
         loading: false,
         accountName: quoteData.foxy_Account?.name || 'Unknown Account',
         accountId: quoteData.foxy_Account?.accountid || '',
         quoteId: quoteData.foxy_quoteid || '',
         owninguser: quoteData.owninguser,
         rawQuoteData: {
-          ...prev.rawQuoteData,
+          ...state.rawQuoteData,
           quoteRequest: quoteData
         }
-      }));
+      };
+      
+      setState(newState);
+      
+      // Update cache with new data
+      setToCache(id, newState);
+      
       console.log(`[QuoteData] Refetch state update completed in ${_formatDuration(updateStartTime, _now())}`);
       console.log(`[QuoteData] Total refetch operation completed in ${_formatDuration(startTime, _now())}`);
+
+      // After updating quote data, also refresh locations and line items
+      await refetchLocations();
 
     } catch (error) {
       console.error('[QuoteData] Error in refetch:', error);
@@ -300,7 +330,7 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
         loading: false
       }));
     }
-  }, [id]);
+  }, [id, refetchLocations, state]);
 
   useEffect(() => {
     fetchData();
