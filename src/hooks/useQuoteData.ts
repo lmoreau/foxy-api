@@ -144,7 +144,7 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
       console.log(`[QuoteData] Starting parallel line items fetch for ${locations.length} locations`);
       const lineItemsStartTime = _now();
       
-      const lineItemsPromises = locations.map(location => 
+      const lineItemsPromises = locations.map((location: QuoteLocation) => 
         listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid)
           .then(response => ({
             locationId: location.foxy_foxyquoterequestlocationid,
