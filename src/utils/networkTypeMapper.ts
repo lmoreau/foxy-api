@@ -22,11 +22,13 @@ export const foxy_gpon: Record<number, string> = {
 };
 
 export const getFoxyRogersFibreLabel = (value: number): string => {
-  return foxy_rogersfibre[value] || 'Unknown';
+  const label = foxy_rogersfibre[value];
+  return label ? `Fibre ${label}` : 'Unknown';
 };
 
 export const getFoxyRogersCableLabel = (value: number): string => {
-  return foxy_rogerscable[value] || 'Unknown';
+  const label = foxy_rogerscable[value];
+  return label ? `Cable ${label}` : 'Unknown';
 };
 
 export const getFoxyGponLabel = (value: number): string => {

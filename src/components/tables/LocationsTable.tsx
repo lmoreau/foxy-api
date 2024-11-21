@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip, message, Tag } from 'antd';
-import { DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, LoadingOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../../types';
 import { calculateTotals } from '../../utils/quoteUtils';
@@ -99,31 +99,31 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                     {location.foxy_Building?.foxy_fulladdress || location.foxy_locationid}
                   </Title>
                   <Space size={4}>
-                    {typeof location.foxy_Building?.foxy_rogersfibre === 'number' && (
+                    {typeof location.foxy_Building?.foxy_rogersfibre === 'number' && 
+                     location.foxy_Building.foxy_rogersfibre !== 612100004 && (
                       <Tag 
-                        color={location.foxy_Building.foxy_rogersfibre === 612100004 ? 'red' : 
-                              location.foxy_Building.foxy_rogersfibre === 612100000 ? 'green' : 'blue'} 
-                        style={{ margin: 0 }}
+                        color={[612100001, 755280001].includes(location.foxy_Building.foxy_rogersfibre) ? 'green' : 'blue'}
+                        style={{ margin: 0, fontWeight: 'bold' }}
                       >
-                        <b>Fibre:</b> {getFoxyRogersFibreLabel(location.foxy_Building.foxy_rogersfibre)}
+                        {getFoxyRogersFibreLabel(location.foxy_Building.foxy_rogersfibre)}
                       </Tag>
                     )}
-                    {typeof location.foxy_Building?.foxy_rogerscable === 'number' && (
+                    {typeof location.foxy_Building?.foxy_rogerscable === 'number' && 
+                     !([612100002, 612100003] as number[]).includes(location.foxy_Building.foxy_rogerscable) && (
                       <Tag 
-                        color={location.foxy_Building.foxy_rogerscable === 612100002 || location.foxy_Building.foxy_rogerscable === 612100003 ? 'red' : 
-                              location.foxy_Building.foxy_rogerscable === 612100000 ? 'green' : 'cyan'} 
-                        style={{ margin: 0 }}
+                        color={[612100001, 947760001].includes(location.foxy_Building.foxy_rogerscable) ? 'green' : 'blue'}
+                        style={{ margin: 0, fontWeight: 'bold' }}
                       >
-                        <b>Cable:</b> {getFoxyRogersCableLabel(location.foxy_Building.foxy_rogerscable)}
+                        {getFoxyRogersCableLabel(location.foxy_Building.foxy_rogerscable)}
                       </Tag>
                     )}
-                    {typeof location.foxy_Building?.foxy_gpon === 'number' && (
+                    {typeof location.foxy_Building?.foxy_gpon === 'number' && 
+                     !([612100003, 947760001] as number[]).includes(location.foxy_Building.foxy_gpon) && (
                       <Tag 
-                        color={location.foxy_Building.foxy_gpon === 612100003 ? 'red' : 
-                              location.foxy_Building.foxy_gpon === 612100000 ? 'green' : 'cyan'} 
-                        style={{ margin: 0 }}
+                        color={[612100001].includes(location.foxy_Building.foxy_gpon) ? 'green' : 'blue'}
+                        style={{ margin: 0, fontWeight: 'bold' }}
                       >
-                        <b>GPON:</b> {getFoxyGponLabel(location.foxy_Building.foxy_gpon)}
+                        {getFoxyGponLabel(location.foxy_Building.foxy_gpon)}
                       </Tag>
                     )}
                   </Space>
