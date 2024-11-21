@@ -7,9 +7,14 @@ import { Group } from "@microsoft/microsoft-graph-types";
 const _now = () => performance.now();
 const _formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
 
-// Cache for tokens to reduce auth requests
+// Cache for tokens and groups to reduce auth requests
 interface TokenCache {
   token: string;
+  expiresAt: number;
+}
+
+interface GroupsCache {
+  groups: string[];
   expiresAt: number;
 }
 
@@ -18,21 +23,39 @@ const tokenCache: Record<'dynamics' | 'graph', TokenCache | undefined> = {
   graph: undefined
 };
 
+const groupsCache: { cache: GroupsCache | undefined } = {
+  cache: undefined
+};
+
 // Define group IDs - these should match your Azure AD group IDs
 const ADMIN_GROUP = 'FOXY_LEDGER_ADMIN';
 const USER_GROUP = 'FOXY_LEDGER_USER';
 
-// Token cache helper functions
+// Token and groups cache helper functions
 const isTokenValid = (cache?: TokenCache): boolean => {
   if (!cache) return false;
   // Consider token expired 5 minutes before actual expiration to be safe
   return cache.expiresAt > Date.now() + 5 * 60 * 1000;
 };
 
+const isGroupsCacheValid = (cache?: GroupsCache): boolean => {
+  if (!cache) return false;
+  // Cache groups for 1 hour since they rarely change
+  return cache.expiresAt > Date.now();
+};
+
 const cacheToken = (type: 'dynamics' | 'graph', response: AuthenticationResult) => {
   tokenCache[type] = {
     token: response.accessToken,
-    expiresAt: response.expiresOn?.getTime() || (Date.now() + 3600 * 1000) // Default 1 hour if no expiration
+    expiresAt: response.expiresOn?.getTime() || (Date.now() + 3600 * 1000)
+  };
+};
+
+const cacheGroups = (groups: string[]) => {
+  groupsCache.cache = {
+    groups,
+    // Cache groups for 1 hour
+    expiresAt: Date.now() + 60 * 60 * 1000
   };
 };
 
@@ -147,6 +170,12 @@ export const getUserGroups = async (): Promise<string[]> => {
   console.log('[Auth] Starting user groups fetch');
 
   try {
+    // Check groups cache first
+    if (groupsCache.cache && isGroupsCacheValid(groupsCache.cache)) {
+      console.log('[Auth] Using cached groups data');
+      return groupsCache.cache.groups;
+    }
+
     const tokenStart = _now();
     const accessToken = await getGraphAccessToken();
     console.log(`[Auth] Graph token obtained in ${_formatDuration(tokenStart, _now())}`);
@@ -162,7 +191,9 @@ export const getUserGroups = async (): Promise<string[]> => {
     const result = await client.api('/me/memberOf').get();
     console.log(`[Auth] Groups fetch completed in ${_formatDuration(clientStart, _now())}`);
     
-    return (result.value as Group[]).map(group => group.displayName || '');
+    const groups = (result.value as Group[]).map(group => group.displayName || '');
+    cacheGroups(groups);
+    return groups;
   } catch (error) {
     console.error('[Auth] Error fetching user groups:', error);
     console.error('[Auth] Stack trace:', error instanceof Error ? error.stack : 'No stack trace available');

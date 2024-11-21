@@ -7,6 +7,45 @@ import { getQuoteRequestById, listQuoteLocationRows, listQuoteLineItemByRow } fr
 const _now = () => performance.now();
 const _formatDuration = (start: number, end: number) => `${(end - start).toFixed(2)}ms`;
 
+// Add cache utilities
+const CACHE_PREFIX = 'foxy_quote_cache_';
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const getFromCache = <T>(key: string): T | null => {
+  try {
+    const cached = localStorage.getItem(CACHE_PREFIX + key);
+    if (!cached) return null;
+
+    const entry: CacheEntry<T> = JSON.parse(cached);
+    if (Date.now() - entry.timestamp > CACHE_EXPIRY) {
+      localStorage.removeItem(CACHE_PREFIX + key);
+      return null;
+    }
+
+    return entry.data;
+  } catch (error) {
+    console.error('[Cache] Error reading from cache:', error);
+    return null;
+  }
+};
+
+const setToCache = <T>(key: string, data: T): void => {
+  try {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry));
+  } catch (error) {
+    console.error('[Cache] Error writing to cache:', error);
+  }
+};
+
 interface OwningUser {
   fullname: string;
   internalemailaddress: string;
@@ -65,10 +104,25 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
     }
 
     try {
+      // Check cache first
+      const cachedData = getFromCache<QuoteDataState>(id);
+      if (cachedData) {
+        console.log('[QuoteData] Using cached data');
+        setState(cachedData);
+        setLineItems(cachedData.lineItems);
+        return;
+      }
+
       // Fetch quote request data
       console.log(`[QuoteData] Fetching quote request data for ID: ${id}`);
       const quoteRequestStartTime = _now();
-      const quoteRequestData = await getQuoteRequestById(id);
+      
+      // Fetch quote request and locations in parallel
+      const [quoteRequestData, locationsResponse] = await Promise.all([
+        getQuoteRequestById(id),
+        listQuoteLocationRows(id)
+      ]);
+      
       console.log(`[QuoteData] Quote request data fetch completed in ${_formatDuration(quoteRequestStartTime, _now())}`);
       console.log(`[QuoteData] Quote request data:`, quoteRequestData);
 
@@ -82,45 +136,47 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
         return;
       }
 
-      // Fetch locations
-      console.log(`[QuoteData] Fetching locations for quote ID: ${id}`);
-      const locationsStartTime = _now();
-      const locationsResponse = await listQuoteLocationRows(id);
+      // Process locations
       const locations = locationsResponse.value || [];
-      console.log(`[QuoteData] Locations fetch completed in ${_formatDuration(locationsStartTime, _now())}`);
       console.log(`[QuoteData] Found ${locations.length} locations`);
 
-      // Fetch line items for each location
-      console.log(`[QuoteData] Starting line items fetch for ${locations.length} locations`);
-      const lineItemsMap: { [key: string]: QuoteLineItem[] } = {};
+      // Fetch line items for all locations in parallel
+      console.log(`[QuoteData] Starting parallel line items fetch for ${locations.length} locations`);
       const lineItemsStartTime = _now();
+      
+      const lineItemsPromises = locations.map(location => 
+        listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid)
+          .then(response => ({
+            locationId: location.foxy_foxyquoterequestlocationid,
+            items: response.value || []
+          }))
+          .catch(error => {
+            console.error(`[QuoteData] Failed to load line items for location ${location.foxy_locationid}:`, error);
+            message.error(`Failed to load line items for location ${location.foxy_locationid}`);
+            return {
+              locationId: location.foxy_foxyquoterequestlocationid,
+              items: []
+            };
+          })
+      );
 
-      for (const location of locations) {
-        const locationStartTime = _now();
-        try {
-          console.log(`[QuoteData] Fetching line items for location: ${location.foxy_foxyquoterequestlocationid}`);
-          const lineItemsResponse = await listQuoteLineItemByRow(location.foxy_foxyquoterequestlocationid);
-          lineItemsMap[location.foxy_foxyquoterequestlocationid] = lineItemsResponse.value || [];
-          console.log(`[QuoteData] Found ${lineItemsMap[location.foxy_foxyquoterequestlocationid].length} line items for location ${location.foxy_locationid} in ${_formatDuration(locationStartTime, _now())}`);
-        } catch (error) {
-          console.error(`[QuoteData] Failed to load line items for location ${location.foxy_locationid}:`, error);
-          message.error(`Failed to load line items for location ${location.foxy_locationid}`);
-          lineItemsMap[location.foxy_foxyquoterequestlocationid] = [];
-        }
-      }
+      const lineItemsResults = await Promise.all(lineItemsPromises);
+      const lineItemsMap = lineItemsResults.reduce((acc, { locationId, items }) => {
+        acc[locationId] = items;
+        return acc;
+      }, {} as { [key: string]: QuoteLineItem[] });
 
-      console.log(`[QuoteData] All line items fetched in ${_formatDuration(lineItemsStartTime, _now())}`);
+      console.log(`[QuoteData] All line items fetched in parallel in ${_formatDuration(lineItemsStartTime, _now())}`);
       console.log(`[QuoteData] Total line items:`, Object.values(lineItemsMap).flat().length);
 
       // Update state
       const updateStartTime = _now();
-      setLineItems(lineItemsMap);
-      setState(prev => ({
-        ...prev,
+      const newState = {
         accountName: quoteRequestData.foxy_Account?.name || 'Unknown Account',
         accountId: quoteRequestData.foxy_Account?.accountid || '',
         quoteId: quoteRequestData.foxy_quoteid || '',
         locations,
+        lineItems: lineItemsMap,
         error: null,
         loading: false,
         owninguser: quoteRequestData.owninguser,
@@ -129,14 +185,17 @@ export const useQuoteData = (id: string | undefined): QuoteDataReturn => {
           locations,
           quoteRequest: quoteRequestData
         }
-      }));
+      };
+
+      setToCache(id, newState);
+      setLineItems(lineItemsMap);
+      setState(newState);
       console.log(`[QuoteData] State update completed in ${_formatDuration(updateStartTime, _now())}`);
 
       const totalTime = _formatDuration(startTime, _now());
       console.log(`[QuoteData] Total fetch operation completed in ${totalTime}`);
       console.log(`[QuoteData] Performance breakdown:
-        - Quote Request: ${_formatDuration(quoteRequestStartTime, locationsStartTime)}
-        - Locations: ${_formatDuration(locationsStartTime, lineItemsStartTime)}
+        - Quote Request and Locations: ${_formatDuration(quoteRequestStartTime, lineItemsStartTime)}
         - Line Items: ${_formatDuration(lineItemsStartTime, updateStartTime)}
         - State Update: ${_formatDuration(updateStartTime, _now())}
         - Total: ${totalTime}
