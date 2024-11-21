@@ -111,3 +111,125 @@ app.http('helloWorld', {
 ```
 
 This can be tested by accessing: `https://[app-name].azurewebsites.net/api/hello?name=Test`
+```
+
+This can be tested by accessing: `https://[app-name].azurewebsites.net/api/hello?name=Test`
+
+## Linux Flex Consumption Plan Deployment
+
+### Key Differences
+Flex Consumption plans handle deployment differently from regular Consumption plans. The main differences are:
+1. Build process happens locally instead of remotely
+2. Deployment uses ZIP deployment method
+3. Oryx build and SCM build are disabled to prevent interference
+
+### GitHub Actions Deployment for Flex Plan
+
+Here's the recommended workflow configuration for Flex Consumption plans:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 'Resolve Project Dependencies Using Npm'
+        shell: bash
+        run: |
+          pushd './api'
+          npm install
+          npm run build:ci
+          npm run test --if-present
+          popd
+
+      - name: Zip artifact for deployment
+        run: |
+          cd ./api
+          zip -r ../release.zip .
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: release.zip
+
+  deploy-flex:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app
+
+      - name: 'Deploy to Flex Plan App'
+        uses: Azure/functions-action@v1
+        with:
+          app-name: 'your-app-name'
+          package: 'api'
+          scm-do-build-during-deployment: false
+          enable-oryx-build: false
+          deployment-method: zip
+          respect-funcignore: false
+```
+
+### Key Configuration Differences for Flex Plan
+
+1. **Local Build Process**:
+   - Build and compile TypeScript locally before deployment
+   - Package the compiled code into a ZIP file
+   - Use artifact storage between jobs
+
+2. **Deployment Settings**:
+   - `scm-do-build-during-deployment: false` - Prevents remote building
+   - `enable-oryx-build: false` - Disables Oryx builder
+   - `deployment-method: zip` - Forces ZIP deployment
+   - `respect-funcignore: false` - Prevents Kudu's default processing
+
+3. **Authentication**:
+   - Uses Azure's OIDC-based authentication
+   - Requires appropriate secrets in GitHub repository settings
+
+## Project Structure Requirements
+
+Regardless of the deployment plan, ensure proper v4 function registration in TypeScript files:
+```typescript
+app.http('functionName', {
+    methods: ['GET', 'OPTIONS'],
+    authLevel: 'anonymous',
+    handler: functionHandler
+});
+```
+
+## Choosing Between Plans
+
+1. **Consumption Plan** is better when:
+   - You need automatic scaling to zero
+   - Have variable, unpredictable workloads
+   - Want to pay only for actual usage
+
+2. **Flex Consumption Plan** is better when:
+   - You need more predictable performance
+   - Want more control over the deployment process
+   - Need additional features like VNet integration
+   - Have more complex build requirements
+
+## Troubleshooting
+
+### Consumption Plan
+- If functions don't appear, verify remote build settings
+- Check function logs for compilation errors
+- Ensure all dependencies are properly listed
+
+### Flex Plan
+- Verify local build output before deployment
+- Check ZIP file contents match expected structure
+- Monitor deployment logs for ZIP extraction issues
+- Ensure authentication credentials are properly configured
