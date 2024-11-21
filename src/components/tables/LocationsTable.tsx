@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Space, Row, Col, Modal, Tooltip, message, Tag } from 'antd';
-import { DeleteOutlined, PlusOutlined, LoadingOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import QuoteLineItemsTable from './QuoteLineItemsTable';
 import { QuoteLocation, QuoteLineItem } from '../../types';
 import { calculateTotals } from '../../utils/quoteUtils';
 import { formatCurrency } from '../../utils/formatters';
-import { foxy_rogersfibre, foxy_rogerscable, foxy_gpon, getFoxyRogersFibreLabel, getFoxyRogersCableLabel, getFoxyGponLabel } from '../../utils/networkTypeMapper';
+import { getFoxyRogersFibreLabel, getFoxyRogersCableLabel, getFoxyGponLabel } from '../../utils/networkTypeMapper';
 import './LocationsTable.css';
 
 const { Title } = Typography;
