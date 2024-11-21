@@ -34,6 +34,11 @@ jobs:
           npm run test --if-present
           popd
 
+      - name: 'Display build output'
+        run: |
+          echo "Contents of api/dist directory:"
+          ls -R ./api/dist
+
       - name: Zip artifact for deployment
         run: |
           cd ./api
@@ -69,31 +74,12 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DB27508A8364B2FAF9AEE18EEB14EE7 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06DF1C6253D14A74AE27C640FC46EAC5 }}
 
-      # Set required app settings
-      - name: 'Configure Function App Settings'
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings WEBSITE_RUN_FROM_PACKAGE=1
-            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings FUNCTIONS_WORKER_RUNTIME=node
-            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings FUNCTIONS_EXTENSION_VERSION=~4
-
-      # Simple deployment using functions-action
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: 'foxy-cpq'
+          slot-name: 'Production'
           package: 'api'
           scm-do-build-during-deployment: true
           enable-oryx-build: true
-
-      # Verify deployment
-      - name: 'Verify Deployment'
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            echo "Checking function app status..."
-            az functionapp list -g cpq --query "[?name=='foxy-cpq'].{Name:name, State:state}" -o table
-            echo "Listing functions..."
-            az functionapp function list -g cpq -n foxy-cpq -o table
