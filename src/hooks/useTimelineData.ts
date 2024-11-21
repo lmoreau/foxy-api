@@ -49,7 +49,11 @@ export const useTimelineData = (id: string) => {
       const annotations = annotationsResponse.data.value.map((note: any) => ({
         id: note.annotationid,
         type: 'note' as const,
-        text: note.notetext || note.subject || '',
+        text: note.subject ? 
+          note.notetext ? 
+            `${note.subject}\n\n${note.notetext}` : 
+            note.subject
+          : note.notetext || '',
         modifiedOn: note.modifiedon,
         createdBy: note.createdby?.fullname || 'Unknown User'
       }));
