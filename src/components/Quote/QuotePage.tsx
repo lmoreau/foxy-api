@@ -8,7 +8,6 @@ import { deleteQuoteLineItem, updateQuoteRequest } from '../../utils/api';
 import { checkUserAccess } from '../../auth/authService';
 import Header from '../Header';
 import AddLocationModal from '../modals/AddLocationModal';
-import TimelineTab from './TimelineTab';
 import { QuotePageProps, RawQuoteData } from './types';
 import MainTab from './MainTab';
 import {
@@ -24,7 +23,7 @@ const RawDataTab = lazy(() => import('./RawDataTab'));
 const CompensationTab = lazy(() => import('./CompensationTab'));
 
 // Add this new component
-const RawDataTabs: React.FC<{ data: any }> = ({ data }) => {
+const _RawDataTabs: React.FC<{ data: any }> = ({ data }) => {
   const items = [
     {
       key: 'lineItems',
@@ -63,7 +62,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
   } = useQuoteData(id);
   const { isVisible, show, hide } = useModal();
   const [expandAll, setExpandAll] = useState(true);
-  const [rawData, setRawData] = useState<RawQuoteData>({
+  const [_rawData, setRawData] = useState<RawQuoteData>({
     lineItems: {},
     locations: [],
     quoteRequest: {}
@@ -186,11 +185,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
       ),
     },
     {
-      key: '3',
-      label: 'Notes',
-      children: <TimelineTab id={id || ''} />,
-    },
-    {
       key: '4',
       label: 'Compensation',
       children: (
@@ -198,21 +192,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
           <CompensationTab lineItems={lineItems} locations={locations} />
         </Suspense>
       ),
-    },
-    {
-      key: '5',
-      label: 'Raw Data',
-      children: (
-        <Suspense fallback={<Spin size="large" />}>
-          <RawDataTabs data={rawData} />
-        </Suspense>
-      ),
     }
   ];
 
-  // Show first three tabs for non-admin users (Quote, Details, and Notes)
-  // Show all tabs for admin users (including Compensation and Raw Data)
-  const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1], tabItems[2]];
+  // Show only Quote and Details tabs for non-admin users
+  // Show all tabs (including Compensation) for admin users
+  const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1]];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
