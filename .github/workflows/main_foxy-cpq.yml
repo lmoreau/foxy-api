@@ -74,26 +74,19 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DB27508A8364B2FAF9AEE18EEB14EE7 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06DF1C6253D14A74AE27C640FC46EAC5 }}
 
-      - name: 'Create staging slot if it does not exist'
+      - name: 'Clean existing deployment'
         uses: Azure/cli@v1
         continue-on-error: true
         with:
           inlineScript: |
-            az functionapp deployment slot create --name foxy-cpq --resource-group cpq --slot staging
+            az functionapp deployment source clean --name foxy-cpq --resource-group cpq
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: 'foxy-cpq'
-          slot-name: 'staging'
           package: 'api'
           scm-do-build-during-deployment: false
           enable-oryx-build: false
           respect-funcignore: true
-
-      - name: 'Swap slots'
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az functionapp deployment slot swap --name foxy-cpq --resource-group cpq --slot staging --target-slot production
