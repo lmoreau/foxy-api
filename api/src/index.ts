@@ -1,4 +1,6 @@
 import { app } from "@azure/functions";
+
+// Import all functions
 import "./functions/deleteQuoteLocation";
 import "./functions/getAccountById";
 import "./functions/getOpportunityById";
@@ -23,14 +25,30 @@ import "./functions/getBlobSasToken";
 import "./functions/listQuoteRequests";
 import "./functions/updateQuoteRequest";
 
+// Export all functions to ensure they're included in the build
+export * from "./functions/deleteQuoteLocation";
+export * from "./functions/getAccountById";
+export * from "./functions/getOpportunityById";
+export * from "./functions/getQuoteLineItemById";
+export * from "./functions/getQuoteLocationById";
+export * from "./functions/getQuoteRequestById";
+export * from "./functions/listAccountLocationRows";
+export * from "./functions/listOpportunityRows";
+export * from "./functions/listProductByRow";
+export * from "./functions/listQuoteLineItemByRow";
+export * from "./functions/listQuoteLocationRows";
+export * from "./functions/createQuoteLineItem";
+export * from "./functions/updateQuoteLineItem";
+export * from "./functions/createQuoteRequest";
+export * from "./functions/deleteQuoteLineItem";
 export * from "./functions/listPosts";
-export * from "./functions/createPost";
 export * from "./functions/listAnnotations";
+export * from "./functions/createPost";
 export * from "./functions/listUsers";
+export * from "./functions/createFoxyQuoteRequestLocation";
 export * from "./functions/getBlobSasToken";
+export * from "./functions/listQuoteRequests";
+export * from "./functions/updateQuoteRequest";
 
-// Initialize the app
-const functionApp = app;
-
-// Export the initialized app
-export default functionApp;
+// Export the app instance
+export default app;

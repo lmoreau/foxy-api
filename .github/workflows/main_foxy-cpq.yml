@@ -34,10 +34,15 @@ jobs:
           npm run test --if-present
           popd
 
-      - name: 'Display build output'
+      - name: 'Verify Build Output'
+        shell: bash
         run: |
-          echo "Contents of api/dist directory:"
+          echo "Verifying dist folder structure..."
           ls -R ./api/dist
+          echo "Checking for function registrations..."
+          grep -r "app.http" ./api/dist || true
+          echo "Checking index.js exports..."
+          cat ./api/dist/index.js || true
 
       - name: Zip artifact for deployment
         run: |
@@ -84,3 +89,13 @@ jobs:
           scm-do-build-during-deployment: true
           enable-oryx-build: true
           respect-funcignore: true
+
+      # Add a verification step after deployment
+      - name: 'Verify Function App Status'
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            echo "Checking function app status..."
+            az functionapp list -g cpq --query "[?name=='foxy-cpq'].{Name:name, State:state, Functions:numberOfFunctions}" -o table
+            echo "Listing functions..."
+            az functionapp function list -g cpq -n foxy-cpq -o table
