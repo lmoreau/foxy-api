@@ -3,14 +3,10 @@ import { Layout, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { 
   UserOutlined, 
-  AppstoreOutlined, 
-  UnorderedListOutlined, 
-  UploadOutlined, 
-  CloudUploadOutlined,
-  SearchOutlined,
-  DollarOutlined
+  AppstoreOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { checkUserAccess, UserAccessLevel } from '../auth/authService';
 import './Header.css';
 
@@ -24,6 +20,7 @@ interface AppHeaderProps {
 const AppHeader: React.FC<AppHeaderProps> = () => {
   const [userAccess, setUserAccess] = useState<UserAccessLevel>('none');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     const fetchUserAccess = async () => {
@@ -36,63 +33,19 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
   const getMenuItems = (): Required<MenuProps>['items'] => {
     const baseItems: Required<MenuProps>['items'] = [
       {
-        key: 'residual-check',
-        label: <Link to="/residual-check">Residual Account List</Link>,
-        icon: <UnorderedListOutlined />,
-      },
-      {
-        key: 'master-residual',
-        label: <Link to="/master-residual-list">Search by Rogers Account</Link>,
-        icon: <SearchOutlined />,
-      },
-      {
-        key: 'won-services',
-        label: <Link to="/won-services">Won Services</Link>,
-        icon: <UnorderedListOutlined />,
+        key: 'view-in-crm',
+        label: (
+          <a 
+            href={`https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=foxy_foxyquoterequest&id=${id}`}
+          >
+            View in Foxy CRM
+          </a>
+        ),
+        icon: <TeamOutlined />,
       }
     ];
 
-    if (userAccess === 'admin') {
-      baseItems.push(
-        {
-          key: 'incoming-wireline-payments',
-          label: <Link to="/incoming-wireline-payments">Callidus Wireline Payments</Link>,
-          icon: <UnorderedListOutlined />,
-        },
-        {
-          key: 'product-compensation',
-          label: <Link to="/product-compensation">Product Profit Dashboard</Link>,
-          icon: <DollarOutlined />,
-        }
-      );
-    }
-
-    const menuItems = [...baseItems];
-
-    if (userAccess === 'admin') {
-      menuItems.push(
-        {
-          type: 'divider',
-        },
-        {
-          key: 'residual-upload',
-          label: <Link to="/residual-upload">Residual Statement Upload</Link>,
-          icon: <UploadOutlined />,
-        },
-        {
-          key: 'wireline-upload',
-          label: <Link to="/wireline-upload">Wireline Statement Upload</Link>,
-          icon: <CloudUploadOutlined />,
-        },
-        {
-          key: 'callidus-upload',
-          label: <Link to="/raw-excel-upload">Callidus Statement Upload</Link>,
-          icon: <CloudUploadOutlined />,
-        }
-      );
-    }
-
-    return menuItems;
+    return baseItems;
   };
 
   return (
@@ -109,12 +62,10 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
             <AppstoreOutlined />
           </div>
         </Dropdown>
-        <Link to="/" className="logo-link">
-          <div className="logo-container">
-            <img src="/foxylogo.png" alt="Foxy Logo" className="logo-image" />
-            <span className="logo-text">CPQ</span>
-          </div>
-        </Link>
+        <div className="logo-container">
+          <img src="/foxylogo.png" alt="Foxy Logo" className="logo-image" />
+          <span className="logo-text">CPQ</span>
+        </div>
       </div>
 
       {/* Avatar section */}

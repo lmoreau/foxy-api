@@ -192,11 +192,20 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
           <CompensationTab lineItems={lineItems} locations={locations} />
         </Suspense>
       ),
+    },
+    {
+      key: '5',
+      label: 'Raw Data',
+      children: (
+        <Suspense fallback={<Spin size="large" />}>
+          <RawDataTab data={rawQuoteData} />
+        </Suspense>
+      ),
     }
   ];
 
   // Show only Quote and Details tabs for non-admin users
-  // Show all tabs (including Compensation) for admin users
+  // Show all tabs (including Compensation and Raw Data) for admin users
   const visibleTabs = isAdmin ? tabItems : [tabItems[0], tabItems[1]];
 
   return (
