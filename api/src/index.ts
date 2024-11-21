@@ -1,6 +1,9 @@
 import { app } from "@azure/functions";
 
-// Import all functions
+// Import test function first to verify deployment
+import "./functions/testFunction";
+
+// Import all other functions
 import "./functions/deleteQuoteLocation";
 import "./functions/getAccountById";
 import "./functions/getOpportunityById";
@@ -25,7 +28,10 @@ import "./functions/getBlobSasToken";
 import "./functions/listQuoteRequests";
 import "./functions/updateQuoteRequest";
 
-// Export all functions to ensure they're included in the build
+// Export test function first
+export * from "./functions/testFunction";
+
+// Export all other functions
 export * from "./functions/deleteQuoteLocation";
 export * from "./functions/getAccountById";
 export * from "./functions/getOpportunityById";

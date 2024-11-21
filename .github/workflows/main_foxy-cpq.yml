@@ -79,6 +79,15 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DB27508A8364B2FAF9AEE18EEB14EE7 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06DF1C6253D14A74AE27C640FC46EAC5 }}
 
+      # Ensure correct app settings
+      - name: 'Configure Function App Settings'
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings FUNCTIONS_WORKER_RUNTIME=node
+            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings FUNCTIONS_EXTENSION_VERSION=~4
+            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings WEBSITE_RUN_FROM_PACKAGE=1
+
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
@@ -90,7 +99,7 @@ jobs:
           enable-oryx-build: true
           respect-funcignore: true
 
-      # Add a verification step after deployment
+      # Add verification steps after deployment
       - name: 'Verify Function App Status'
         uses: Azure/cli@v1
         with:
@@ -99,3 +108,16 @@ jobs:
             az functionapp list -g cpq --query "[?name=='foxy-cpq'].{Name:name, State:state, Functions:numberOfFunctions}" -o table
             echo "Listing functions..."
             az functionapp function list -g cpq -n foxy-cpq -o table
+            echo "Checking application settings..."
+            az functionapp config appsettings list --name foxy-cpq --resource-group cpq --query "[?name=='FUNCTIONS_WORKER_RUNTIME' || name=='FUNCTIONS_EXTENSION_VERSION' || name=='WEBSITE_RUN_FROM_PACKAGE']" -o table
+
+      # Try to invoke test function
+      - name: 'Test Function Endpoint'
+        uses: Azure/cli@v1
+        continue-on-error: true
+        with:
+          inlineScript: |
+            echo "Waiting for function app to be ready..."
+            sleep 30
+            echo "Testing function endpoint..."
+            curl -v "https://foxy-cpq.azurewebsites.net/api/test" || true
