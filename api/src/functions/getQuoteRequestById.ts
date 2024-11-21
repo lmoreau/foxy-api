@@ -35,7 +35,7 @@ export async function getQuoteRequestById(request: HttpRequest, context: Invocat
     try {
         const formattedId = id.replace(/[{}]/g, '');
         const headers = getDataverseHeaders(authHeader);
-        const apiUrl = `https://foxy.crm3.dynamics.com/api/data/v9.2/foxy_foxyquoterequests(${formattedId})?$expand=foxy_Account($select=name,foxy_duns,foxy_basecustomer),owninguser($select=fullname),foxy_Opportunity($select=foxy_opportunitytype,estimatedclosedate,foxy_sfdcoppid,name)`;
+        const apiUrl = `https://foxy.crm3.dynamics.com/api/data/v9.2/foxy_foxyquoterequests(${formattedId})?$select=foxy_quoteid,foxy_subject,foxy_quotestage,foxy_quotetype,foxy_foxyquoterequestid,foxy_opticquote,foxy_primaryquote,createdon,foxyflow_submittedon,_foxy_account_value,_foxy_opportunity_value&$expand=foxy_Account($select=name,foxy_duns,foxy_basecustomer),owninguser($select=fullname),foxy_Opportunity($select=foxy_opportunitytype,estimatedclosedate,foxy_sfdcoppid,name)`;
 
         context.log(`[Performance] Starting Dynamics CRM request at ${new Date().toISOString()} (${Date.now() - startTime}ms elapsed)`);
         context.log(`[Debug] Requesting URL: ${apiUrl}`);
