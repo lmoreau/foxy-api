@@ -75,6 +75,18 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
     }
   };
 
+  const formatTagContent = (text: string) => {
+    const parts = text.split(' ');
+    const label = parts[0];
+    const value = parts.slice(1).join(' ');
+    return (
+      <>
+        {label}{' '}
+        <span style={{ fontWeight: 'bold' }}>{value}</span>
+      </>
+    );
+  };
+
   return (
     <div className="locations-container">
       {data.map(location => {
@@ -101,29 +113,20 @@ const LocationsTable: React.FC<LocationsTableProps> = ({
                   <Space size={4}>
                     {typeof location.foxy_Building?.foxy_rogersfibre === 'number' && 
                      location.foxy_Building.foxy_rogersfibre !== 612100004 && (
-                      <Tag 
-                        color={[612100001, 755280001].includes(location.foxy_Building.foxy_rogersfibre) ? 'green' : 'blue'}
-                        style={{ margin: 0, fontWeight: 'bold' }}
-                      >
-                        {getFoxyRogersFibreLabel(location.foxy_Building.foxy_rogersfibre)}
+                      <Tag style={{ margin: 0 }}>
+                        {formatTagContent(getFoxyRogersFibreLabel(location.foxy_Building.foxy_rogersfibre))}
                       </Tag>
                     )}
                     {typeof location.foxy_Building?.foxy_rogerscable === 'number' && 
                      !([612100002, 612100003] as number[]).includes(location.foxy_Building.foxy_rogerscable) && (
-                      <Tag 
-                        color={[612100001, 947760001].includes(location.foxy_Building.foxy_rogerscable) ? 'green' : 'blue'}
-                        style={{ margin: 0, fontWeight: 'bold' }}
-                      >
-                        {getFoxyRogersCableLabel(location.foxy_Building.foxy_rogerscable)}
+                      <Tag style={{ margin: 0 }}>
+                        {formatTagContent(getFoxyRogersCableLabel(location.foxy_Building.foxy_rogerscable))}
                       </Tag>
                     )}
                     {typeof location.foxy_Building?.foxy_gpon === 'number' && 
                      !([612100003, 947760001] as number[]).includes(location.foxy_Building.foxy_gpon) && (
-                      <Tag 
-                        color={[612100001].includes(location.foxy_Building.foxy_gpon) ? 'green' : 'blue'}
-                        style={{ margin: 0, fontWeight: 'bold' }}
-                      >
-                        {getFoxyGponLabel(location.foxy_Building.foxy_gpon)}
+                      <Tag style={{ margin: 0 }}>
+                        {formatTagContent(getFoxyGponLabel(location.foxy_Building.foxy_gpon))}
                       </Tag>
                     )}
                   </Space>
