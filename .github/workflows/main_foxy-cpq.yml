@@ -41,19 +41,21 @@ jobs:
           ls -R ./api/dist
           echo "Checking for function registrations..."
           grep -r "app.http" ./api/dist || true
-          echo "Checking index.js exports..."
-          cat ./api/dist/index.js || true
 
-      - name: Zip artifact for deployment
+      # Create package file (zip) for deployment
+      - name: Create package for deployment
         run: |
           cd ./api
-          zip -r ../release.zip .
+          zip -r ../package.zip . -x "node_modules/*"
+          cd ..
+          echo "Created deployment package"
+          ls -lh package.zip
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: package.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -67,11 +69,6 @@ jobs:
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
-        run: |
-          mkdir api
-          unzip release.zip -d api
-      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -79,45 +76,55 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DB27508A8364B2FAF9AEE18EEB14EE7 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06DF1C6253D14A74AE27C640FC46EAC5 }}
 
-      # Ensure correct app settings
+      # Configure app settings before deployment
       - name: 'Configure Function App Settings'
         uses: Azure/cli@v1
         with:
           inlineScript: |
+            echo "Configuring app settings..."
+            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings WEBSITE_RUN_FROM_PACKAGE=1
             az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings FUNCTIONS_WORKER_RUNTIME=node
             az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings FUNCTIONS_EXTENSION_VERSION=~4
-            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings WEBSITE_RUN_FROM_PACKAGE=1
+            az functionapp config appsettings set --name foxy-cpq --resource-group cpq --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true
+            echo "Configured app settings"
 
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
+      # Stop the function app before deployment
+      - name: 'Stop Function App'
+        uses: Azure/cli@v1
         with:
-          app-name: 'foxy-cpq'
-          slot-name: 'Production'
-          package: 'api'
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
-          respect-funcignore: true
+          inlineScript: |
+            echo "Stopping function app..."
+            az functionapp stop --name foxy-cpq --resource-group cpq
+            echo "Waiting for app to stop..."
+            sleep 10
 
-      # Add verification steps after deployment
-      - name: 'Verify Function App Status'
+      # Deploy the package
+      - name: 'Deploy Function App Package'
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            echo "Deploying package..."
+            az functionapp deployment source config-zip -g cpq -n foxy-cpq --src package.zip
+            echo "Deployment completed"
+
+      # Start the function app after deployment
+      - name: 'Start Function App'
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            echo "Starting function app..."
+            az functionapp start --name foxy-cpq --resource-group cpq
+            echo "Waiting for app to start..."
+            sleep 30
+
+      # Verify deployment
+      - name: 'Verify Deployment'
         uses: Azure/cli@v1
         with:
           inlineScript: |
             echo "Checking function app status..."
-            az functionapp list -g cpq --query "[?name=='foxy-cpq'].{Name:name, State:state, Functions:numberOfFunctions}" -o table
+            az functionapp list -g cpq --query "[?name=='foxy-cpq'].{Name:name, State:state}" -o table
             echo "Listing functions..."
             az functionapp function list -g cpq -n foxy-cpq -o table
-            echo "Checking application settings..."
-            az functionapp config appsettings list --name foxy-cpq --resource-group cpq --query "[?name=='FUNCTIONS_WORKER_RUNTIME' || name=='FUNCTIONS_EXTENSION_VERSION' || name=='WEBSITE_RUN_FROM_PACKAGE']" -o table
-
-      # Try to invoke test function
-      - name: 'Test Function Endpoint'
-        uses: Azure/cli@v1
-        continue-on-error: true
-        with:
-          inlineScript: |
-            echo "Waiting for function app to be ready..."
-            sleep 30
             echo "Testing function endpoint..."
             curl -v "https://foxy-cpq.azurewebsites.net/api/test" || true
