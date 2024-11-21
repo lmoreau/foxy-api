@@ -74,12 +74,12 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DB27508A8364B2FAF9AEE18EEB14EE7 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06DF1C6253D14A74AE27C640FC46EAC5 }}
 
-      - name: 'Deploy to Azure Functions'
+      - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
           app-name: 'foxy-cpq'
+          slot-name: 'Production'
           package: 'api'
-          scm-do-build-during-deployment: false
-          enable-oryx-build: false
-          respect-funcignore: false
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
