@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 export async function getQuoteLineItemById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
@@ -52,10 +52,12 @@ export async function getQuoteLineItemById(request: HttpRequest, context: Invoca
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
+    } catch (error: unknown) {
         context.log(`Error retrieving quote line item: ${error}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        const message = axios.isAxiosError(error) 
+            ? error.response?.data?.error?.message || error.message 
+            : error instanceof Error ? error.message : String(error);
         return { 
             ...corsResponse,
             status, 

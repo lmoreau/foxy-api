@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl, getDataverseHeaders } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 export async function listPosts(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);

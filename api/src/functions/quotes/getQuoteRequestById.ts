@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { getDataverseHeaders } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { getDataverseHeaders } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 export async function getQuoteRequestById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const startTime = Date.now();

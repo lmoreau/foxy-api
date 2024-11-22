@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { corsHandler } from "../shared/cors";
+import { corsHandler } from "../../shared/cors";
 
 interface GraphUser {
     displayName: string;

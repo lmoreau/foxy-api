@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl, getDataverseHeaders } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 export async function getQuoteLocationById(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
@@ -42,10 +42,12 @@ export async function getQuoteLocationById(request: HttpRequest, context: Invoca
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
-        context.log(`Error retrieving quote location: ${error.message}`);
+    } catch (error: unknown) {
+        context.log(`Error retrieving quote location: ${error instanceof Error ? error.message : String(error)}`);
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        const message = axios.isAxiosError(error) 
+            ? error.response?.data?.error?.message || error.message 
+            : error instanceof Error ? error.message : String(error);
         return { 
             ...corsResponse,
             status, 

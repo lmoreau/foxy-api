@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 interface CreatePostRequest {
     regardingobjectid: string;
@@ -80,14 +80,16 @@ export async function createPost(request: HttpRequest, context: InvocationContex
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
+    } catch (error: unknown) {
         context.log(`Error creating post: ${error}`);
         if (axios.isAxiosError(error)) {
             context.log('Error response status:', error.response?.status);
             context.log('Error response data:', JSON.stringify(error.response?.data));
         }
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        const message = axios.isAxiosError(error) 
+            ? error.response?.data?.error?.message || error.message 
+            : error instanceof Error ? error.message : String(error);
         return { 
             ...corsResponse,
             status, 

@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 export async function listAccountLocationRows(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
@@ -53,10 +53,19 @@ export async function listAccountLocationRows(request: HttpRequest, context: Inv
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
-        context.log(`Error retrieving account locations: ${error}`);
-        const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+    } catch (error: unknown) {
+        context.log(`Error retrieving account locations:`, error);
+        
+        let status = 500;
+        let message = 'An unknown error occurred';
+        
+        if (axios.isAxiosError(error)) {
+            status = error.response?.status || 500;
+            message = error.response?.data?.error?.message || error.message;
+        } else if (error instanceof Error) {
+            message = error.message;
+        }
+        
         return { 
             ...corsResponse,
             status, 

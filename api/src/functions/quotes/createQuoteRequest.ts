@@ -1,11 +1,11 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 interface QuoteRequestBody {
-    _foxy_account_value: string;
-    _foxy_opportunity_value: string;
+    _foxy_account_value?: string;
+    _foxy_opportunity_value?: string;
     [key: string]: any;
 }
 
@@ -46,13 +46,13 @@ export async function createQuoteRequest(request: HttpRequest, context: Invocati
             ...(body._foxy_opportunity_value && {
                 "foxy_Opportunity@odata.bind": `/opportunities(${body._foxy_opportunity_value})`
             })
-        };
+        } as Record<string, any>;
 
         // Remove the original properties
-        if (modifiedRequestBody._foxy_account_value) {
+        if ('_foxy_account_value' in modifiedRequestBody) {
             delete modifiedRequestBody._foxy_account_value;
         }
-        if (modifiedRequestBody._foxy_opportunity_value) {
+        if ('_foxy_opportunity_value' in modifiedRequestBody) {
             delete modifiedRequestBody._foxy_opportunity_value;
         }
 
@@ -98,7 +98,9 @@ export async function createQuoteRequest(request: HttpRequest, context: Invocati
             context.log('Error response data:', JSON.stringify(error.response?.data));
         }
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        const message = axios.isAxiosError(error) 
+            ? error.response?.data?.error?.message || (error as Error).message 
+            : (error as Error).message || 'An unknown error occurred';
         return { 
             ...corsResponse,
             status, 

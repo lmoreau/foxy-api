@@ -49,14 +49,21 @@ export async function listProductByRow(request: HttpRequest, context: Invocation
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
-        context.log(`Error retrieving products: ${error}`);
+    } catch (error: unknown) {
+        context.log(`Error retrieving products:`, error);
+        
+        let status = 500;
+        let message = 'An unknown error occurred';
+        
         if (axios.isAxiosError(error)) {
             context.log('Error response status:', error.response?.status);
             context.log('Error response data:', JSON.stringify(error.response?.data));
+            status = error.response?.status || 500;
+            message = error.response?.data?.error?.message || error.message;
+        } else if (error instanceof Error) {
+            message = error.message;
         }
-        const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        
         return { 
             ...corsResponse,
             status, 
