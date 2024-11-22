@@ -27,7 +27,11 @@ import "./functions/quotes/listQuoteRequests";
 import "./functions/quotes/updateQuoteRequest";
 import "./functions/checkDuplicateBuildings";
 import "./functions/ledger/createResidualScrubAudit";
-import "./functions/ledger/getAccountById";
+import "./functions/ledger/recalculateWonServicePayments";
+import "./functions/ledger/listWonServicesForComp";
+import "./functions/ledger/listResidualAuditByRows";
+import "./functions/ledger/listAccountsForResidualCheck";
+import "./functions/ledger/listIncomingWirelinePayments";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -56,7 +60,11 @@ export * from "./functions/quotes/listQuoteRequests";
 export * from "./functions/quotes/updateQuoteRequest";
 export * from "./functions/checkDuplicateBuildings";
 export * from "./functions/ledger/createResidualScrubAudit";
-export * from "./functions/ledger/getAccountById";
+export * from "./functions/ledger/recalculateWonServicePayments";
+export * from "./functions/ledger/listWonServicesForComp";
+export * from "./functions/ledger/listResidualAuditByRows";
+export * from "./functions/ledger/listAccountsForResidualCheck";
+export * from "./functions/ledger/listIncomingWirelinePayments";
 
 // Export the app instance
 export default app;

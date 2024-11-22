@@ -3,8 +3,7 @@ import axios from "axios";
 import { dataverseUrl, getDataverseHeaders } from "../../shared/dataverseAuth";
 import { corsHandler } from "../../shared/cors";
 
-// Define the function
-const httpFunction = async function(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function listAccountsForResidualCheck(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
         return corsResponse;
@@ -20,21 +19,10 @@ const httpFunction = async function(request: HttpRequest, context: InvocationCon
         };
     }
 
-    const searchParams = new URL(request.url).searchParams;
-    const id = searchParams.get('id');
-    if (!id) {
-        return { 
-            ...corsResponse,
-            status: 400, 
-            body: "Please provide a GUID for the account" 
-        };
-    }
-
     try {
-        // Format the GUID properly for Dataverse
-        const formattedId = id.replace(/[{}]/g, '');
         const headers = getDataverseHeaders(authHeader);
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts(${formattedId})`;
+        // Use proper OData query for Dataverse with all required fields
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/accounts?$select=crc9f_totalwonoppstcv,crc9f_residuallastscrub,accountid,name,foxy_duns,foxy_cable,foxy_datacentre,foxy_fibreinternet,foxy_gpon,foxy_microsoft365,foxy_res,foxy_sip,foxy_unison,foxyflow_residualstotal,foxyflow_residualsnotes,foxy_ritaresidualnotes,foxy_wirelinemrr,foxyflow_wirelineresiduals&$filter=statecode eq 0 and foxy_basecustomer eq 612100001`;
 
         context.log('Using auth header:', authHeader.substring(0, 50) + '...');
         context.log('Calling URL:', apiUrl);
@@ -49,8 +37,8 @@ const httpFunction = async function(request: HttpRequest, context: InvocationCon
                 ...corsResponse?.headers
             }
         };
-    } catch (error: unknown) {
-        context.error('Error in getAccountById:', error);
+    } catch (error) {
+        context.error('Error in listAccountsForResidualCheck:', error);
         if (axios.isAxiosError(error)) {
             context.log('Axios error response:', error.response?.data);
             return {
@@ -66,15 +54,14 @@ const httpFunction = async function(request: HttpRequest, context: InvocationCon
             ...corsResponse,
             status: 500, 
             body: JSON.stringify({
-                error: error instanceof Error ? error.message : 'An unknown error occurred'
+                error: (error as Error).message
             })
         };
     }
-};
+}
 
-// Register the function with the app
-app.http('getAccountById', {
+app.http('listAccountsForResidualCheck', {
     methods: ['GET', 'OPTIONS'],
     authLevel: 'anonymous',
-    handler: httpFunction
+    handler: listAccountsForResidualCheck
 });
