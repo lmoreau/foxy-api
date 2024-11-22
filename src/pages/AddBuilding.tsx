@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Card, Space, Typography, Spin, Alert, List } from 'antd';
+import { Card, Space, Typography, Spin, Alert, List, Button } from 'antd';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import { LoadingOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -15,12 +15,7 @@ interface Location {
 }
 
 interface DuplicateBuilding {
-  foxy_name: string;
-  foxy_streetnumber: string;
-  foxy_streetname: string;
-  foxy_city: string;
-  foxy_province: string;
-  foxy_country: string;
+  [key: string]: any;  // Allow any field since we're not sure of exact field names yet
 }
 
 type MapTypeId = 'roadmap' | 'satellite' | 'hybrid';
@@ -31,7 +26,6 @@ const AddBuilding: React.FC = () => {
   const [mapType, setMapType] = useState<MapTypeId>('roadmap');
   const [duplicateBuildings, setDuplicateBuildings] = useState<DuplicateBuilding[]>([]);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [duplicateError, setDuplicateError] = useState<string | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   
@@ -162,6 +156,22 @@ const AddBuilding: React.FC = () => {
     return <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />;
   }
 
+  const formatBuildingAddress = (building: DuplicateBuilding) => {
+    // Try to use the fields we expect, but fall back to a simple stringification if not found
+    try {
+      const parts = [];
+      if (building.foxy_streetnumber) parts.push(building.foxy_streetnumber);
+      if (building.foxy_streetname) parts.push(building.foxy_streetname);
+      if (building.foxy_city) parts.push(building.foxy_city);
+      if (building.foxy_province) parts.push(building.foxy_province);
+      
+      return parts.length > 0 ? parts.join(' ') : JSON.stringify(building);
+    } catch (error) {
+      console.warn('Error formatting building address:', error);
+      return 'Address formatting error';
+    }
+  };
+
   return (
     <Space direction="vertical" size="large" style={{ width: '100%', padding: '24px' }}>
       <Title level={2}>Add a Building</Title>
@@ -198,15 +208,6 @@ const AddBuilding: React.FC = () => {
             />
           )}
 
-          {error && (
-            <Alert
-              message="Error"
-              description={error}
-              type="error"
-              showIcon
-            />
-          )}
-
           {duplicateError && (
             <Alert
               message="Error Checking Duplicates"
@@ -225,7 +226,7 @@ const AddBuilding: React.FC = () => {
                   dataSource={duplicateBuildings}
                   renderItem={building => (
                     <List.Item>
-                      {building.foxy_name} - {building.foxy_streetnumber} {building.foxy_streetname}, {building.foxy_city}, {building.foxy_province}
+                      {formatBuildingAddress(building)}
                     </List.Item>
                   )}
                 />
@@ -239,9 +240,9 @@ const AddBuilding: React.FC = () => {
             title="Location View"
             extra={
               <Space>
-                <a onClick={() => setMapType('roadmap')}>Map</a>
-                <a onClick={() => setMapType('satellite')}>Satellite</a>
-                <a onClick={() => setMapType('hybrid')}>Hybrid</a>
+                <Button type="link" onClick={() => setMapType('roadmap')}>Map</Button>
+                <Button type="link" onClick={() => setMapType('satellite')}>Satellite</Button>
+                <Button type="link" onClick={() => setMapType('hybrid')}>Hybrid</Button>
               </Space>
             }
           >

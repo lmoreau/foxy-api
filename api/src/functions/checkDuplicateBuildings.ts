@@ -47,9 +47,9 @@ export async function checkDuplicateBuildings(request: HttpRequest, context: Inv
     // Use the user's token directly
     const accessToken = userToken.replace('Bearer ', '');
 
-    // Build the URL with filter - using just street number and name for now
-    const filterQuery = encodeURIComponent(`foxy_streetnumber eq '${streetNumber}' and foxy_streetname eq '${streetName}'`);
-    const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_buildings?$filter=${filterQuery}`;
+    // Format the filter query with proper string value formatting
+    const filterQuery = `foxy_streetnumber eq '${streetNumber}' and foxy_streetname eq '${streetName}'`;
+    const apiUrl = `${dataverseUrl}/api/data/v9.1/foxy_buildings?$filter=${encodeURIComponent(filterQuery)}`;
 
     context.log('Making request to Dataverse:', { 
       url: apiUrl,
@@ -73,10 +73,15 @@ export async function checkDuplicateBuildings(request: HttpRequest, context: Inv
       data: response.data
     });
 
+    // If we get a successful response, log the first result to see the field names
+    if (response.data?.value?.length > 0) {
+      context.log('Sample building data:', response.data.value[0]);
+    }
+
     return {
       ...corsResponse,
       body: JSON.stringify({
-        duplicates: response.data.value
+        duplicates: response.data.value || []
       }),
       headers: {
         "Content-Type": "application/json",
