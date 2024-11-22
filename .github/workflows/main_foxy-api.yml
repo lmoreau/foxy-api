@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js project to Azure Function App - foxy-cpq
+name: Build and deploy Node.js project to Azure Function App - foxy-api
 
 on:
   push:
@@ -70,15 +70,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6A899B372ABB40BE9456CA05200CC88F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0DB27508A8364B2FAF9AEE18EEB14EE7 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_06DF1C6253D14A74AE27C640FC46EAC5 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F6D22F609261490D845BD635A954526E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_12B06BB340EB442A891726077D041F94 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_88F707CE560C44778CFD7E7064D7580F }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'foxy-cpq'
+          app-name: 'foxy-api'
           slot-name: 'Production'
           package: 'api'
           scm-do-build-during-deployment: true

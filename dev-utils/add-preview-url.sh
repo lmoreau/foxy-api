@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-FUNCTION_APP_NAME="foxy-cpq"
+FUNCTION_APP_NAME="foxy-api"
 RESOURCE_GROUP="cpq"
 APP_ID="ba25e11f-f889-42a7-a3b1-d8e282fe5cc0"
 PROD_URL="https://foxyledger.infusion-it.com"
