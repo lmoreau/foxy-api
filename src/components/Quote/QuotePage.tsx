@@ -181,6 +181,7 @@ const QuotePage: React.FC<QuotePageProps> = ({ setQuoteRequestId }) => {
           opportunityId={rawQuoteData.quoteRequest?._foxy_opportunity_value}
           quoteId={id}
           foxyQuoteId={rawQuoteData.quoteRequest?.foxy_quoteid}
+          submittedOn={rawQuoteData.quoteRequest?.foxyflow_submittedon}
         />
       ),
     },

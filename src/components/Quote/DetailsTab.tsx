@@ -22,6 +22,7 @@ interface DetailsTabProps {
   opportunityId?: string;
   quoteId?: string;
   foxyQuoteId?: string;
+  submittedOn?: string;
 }
 
 const labelStyle = {
@@ -34,7 +35,8 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
   subject, 
   opportunityId,
   quoteId,
-  foxyQuoteId 
+  foxyQuoteId,
+  submittedOn
 }) => {
   const opportunityUrl = opportunityId ? 
     `https://foxy.crm3.dynamics.com/main.aspx?appid=a5e9eec5-dda4-eb11-9441-000d3a848fc5&forceUCI=1&pagetype=entityrecord&etn=opportunity&id=${opportunityId}` 
@@ -139,6 +141,15 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
                   ) : (
                     <Text>{foxyQuoteId || '-'}</Text>
                   )}
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item label={<span style={labelStyle}>Submitted On</span>}>
+                  <Text>
+                    {submittedOn 
+                      ? dayjs(submittedOn).format('MMMM D, YYYY h:mm A')
+                      : '-'}
+                  </Text>
                 </Form.Item>
               </Col>
             </Row>
