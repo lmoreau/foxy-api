@@ -24,6 +24,25 @@ export const getAuthHeaders = async () => {
     
     return {
       Authorization: bearerToken,
+      'Content-Type': 'application/json'
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getDataverseHeaders = async () => {
+  try {
+    const token = await getDynamicsAccessToken();
+    
+    if (!token) {
+      throw new Error('No authentication token available');
+    }
+    
+    const bearerToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    
+    return {
+      Authorization: bearerToken,
       'Content-Type': 'application/json',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'OData-MaxVersion': '4.0',

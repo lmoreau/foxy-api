@@ -24,6 +24,7 @@ import "./functions/createFoxyQuoteRequestLocation";
 import "./functions/getBlobSasToken";
 import "./functions/listQuoteRequests";
 import "./functions/updateQuoteRequest";
+import "./functions/checkDuplicateBuildings";
 
 // Export all other functions
 export * from "./functions/deleteQuoteLocation";
@@ -49,6 +50,7 @@ export * from "./functions/createFoxyQuoteRequestLocation";
 export * from "./functions/getBlobSasToken";
 export * from "./functions/listQuoteRequests";
 export * from "./functions/updateQuoteRequest";
+export * from "./functions/checkDuplicateBuildings";
 
 // Export the app instance
 export default app;
