@@ -26,6 +26,8 @@ import "./functions/storage/getBlobSasToken";
 import "./functions/quotes/listQuoteRequests";
 import "./functions/quotes/updateQuoteRequest";
 import "./functions/checkDuplicateBuildings";
+import "./functions/ledger/createResidualScrubAudit";
+import "./functions/ledger/getAccountById";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -53,6 +55,8 @@ export * from "./functions/storage/getBlobSasToken";
 export * from "./functions/quotes/listQuoteRequests";
 export * from "./functions/quotes/updateQuoteRequest";
 export * from "./functions/checkDuplicateBuildings";
+export * from "./functions/ledger/createResidualScrubAudit";
+export * from "./functions/ledger/getAccountById";
 
 // Export the app instance
 export default app;
