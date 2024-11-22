@@ -128,11 +128,6 @@ const AddBuilding: React.FC = () => {
     height: '400px',
   };
 
-  const defaultCenter = {
-    lat: 56.1304,  // Center of Canada
-    lng: -106.3468,
-  };
-
   const formatBuildingAddress = (building: DuplicateBuilding) => {
     try {
       const parts = [];
