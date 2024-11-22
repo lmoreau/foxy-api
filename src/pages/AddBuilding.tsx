@@ -1,11 +1,14 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Card, Space, Typography, Spin, Alert, List, Button } from 'antd';
+import { Card, Space, Typography, Spin, Alert, List, Button, Select, Row, Col } from 'antd';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import { LoadingOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { API_BASE_URL, getAuthHeaders } from '../utils/api/config';
+import { buildingTypeMap } from '../utils/buildingTypeMapper';
+import { foxy_rogersfibre, foxy_rogerscable, foxy_gpon } from '../utils/networkTypeMapper';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const libraries: ("places")[] = ["places"];
 
@@ -27,6 +30,10 @@ const AddBuilding: React.FC = () => {
   const [duplicateBuildings, setDuplicateBuildings] = useState<DuplicateBuilding[]>([]);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const [duplicateError, setDuplicateError] = useState<string | null>(null);
+  const [buildingType, setBuildingType] = useState<number>();
+  const [fibreType, setFibreType] = useState<number>();
+  const [cableType, setCableType] = useState<number>();
+  const [gponType, setGponType] = useState<number>();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   
   const { isLoaded } = useJsApiLoader({
@@ -48,7 +55,6 @@ const AddBuilding: React.FC = () => {
       }
     });
 
-    console.log('Extracted address components:', { streetNumber, streetName });
     return { streetNumber, streetName };
   };
 
@@ -58,14 +64,8 @@ const AddBuilding: React.FC = () => {
     setDuplicateBuildings([]);
 
     try {
-      console.log('Checking duplicates for:', { streetNumber, streetName });
       const headers = await getAuthHeaders();
-      
       const url = `${API_BASE_URL}/checkDuplicateBuildings`;
-      console.log('Making request to:', url, {
-        params: { streetNumber, streetName },
-        headers
-      });
       
       const response = await axios.get(url, {
         params: {
@@ -73,32 +73,19 @@ const AddBuilding: React.FC = () => {
           streetName
         },
         headers,
-        validateStatus: null // Don't throw on any status code
-      });
-
-      console.log('Received response:', {
-        status: response.status,
-        data: response.data
+        validateStatus: null
       });
 
       if (response.status === 200 && response.data?.duplicates) {
         setDuplicateBuildings(response.data.duplicates);
-        if (response.data.duplicates.length > 0) {
-          console.log('Found duplicate buildings:', response.data.duplicates);
-        } else {
-          console.log('No duplicate buildings found');
-        }
       } else {
-        // Handle non-200 responses or missing data
         const errorMessage = response.data?.error || 
                            response.data?.details?.error?.message ||
                            response.data?.message ||
                            'Failed to check for duplicate buildings';
-        console.error('Error response:', errorMessage);
         setDuplicateError(errorMessage);
       }
     } catch (error: any) {
-      console.error('Error checking duplicates:', error);
       const errorMessage = error.response?.data?.error || 
                           error.response?.data?.details?.error?.message ||
                           error.message ||
@@ -117,27 +104,21 @@ const AddBuilding: React.FC = () => {
   const onPlaceChanged = () => {
     if (autocompleteRef.current) {
       const place = autocompleteRef.current.getPlace();
-      console.log('Place selected:', place);
 
       if (place.geometry?.location) {
         const location = {
           lat: place.geometry.location.lat(),
           lng: place.geometry.location.lng(),
         };
-        console.log('Location set:', location);
         setSelectedLocation(location);
         setAddress(place.formatted_address || '');
 
-        // Check for duplicates when an address is selected
         const { streetNumber, streetName } = extractAddressComponents(place);
         if (streetNumber && streetName) {
           checkDuplicates(streetNumber, streetName);
         } else {
-          console.warn('Could not extract street information from:', place);
           setDuplicateError('Could not extract street information from the selected address');
         }
-      } else {
-        console.warn('No geometry information in place result:', place);
       }
     }
   };
@@ -152,12 +133,7 @@ const AddBuilding: React.FC = () => {
     lng: -106.3468,
   };
 
-  if (!isLoaded) {
-    return <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />;
-  }
-
   const formatBuildingAddress = (building: DuplicateBuilding) => {
-    // Try to use the fields we expect, but fall back to a simple stringification if not found
     try {
       const parts = [];
       if (building.foxy_streetnumber) parts.push(building.foxy_streetnumber);
@@ -167,10 +143,15 @@ const AddBuilding: React.FC = () => {
       
       return parts.length > 0 ? parts.join(' ') : JSON.stringify(building);
     } catch (error) {
-      console.warn('Error formatting building address:', error);
       return 'Address formatting error';
     }
   };
+
+  if (!isLoaded) {
+    return <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />;
+  }
+
+  const showDropdowns = !checkingDuplicates && !duplicateError && duplicateBuildings.length === 0 && selectedLocation;
 
   return (
     <Space direction="vertical" size="large" style={{ width: '100%', padding: '24px' }}>
@@ -235,30 +216,117 @@ const AddBuilding: React.FC = () => {
               showIcon
             />
           )}
+
+          {showDropdowns && (
+            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+              <Col span={12}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Typography.Text strong>Building Type</Typography.Text>
+                  <Select
+                    style={{ width: '100%', marginTop: '8px' }}
+                    placeholder="Select Building Type"
+                    value={buildingType}
+                    onChange={setBuildingType}
+                  >
+                    {Object.entries(buildingTypeMap).map(([value, label]) => (
+                      <Option key={value} value={Number(value)}>{label}</Option>
+                    ))}
+                  </Select>
+                </div>
+              </Col>
+              <Col span={12}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Typography.Text strong>Fibre Status</Typography.Text>
+                  <Select
+                    style={{ width: '100%', marginTop: '8px' }}
+                    placeholder="Select Fibre Status"
+                    value={fibreType}
+                    onChange={setFibreType}
+                  >
+                    {Object.entries(foxy_rogersfibre).map(([value, label]) => (
+                      <Option key={value} value={Number(value)}>{label}</Option>
+                    ))}
+                  </Select>
+                </div>
+              </Col>
+              <Col span={12}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Typography.Text strong>Cable Status</Typography.Text>
+                  <Select
+                    style={{ width: '100%', marginTop: '8px' }}
+                    placeholder="Select Cable Status"
+                    value={cableType}
+                    onChange={setCableType}
+                  >
+                    {Object.entries(foxy_rogerscable).map(([value, label]) => (
+                      <Option key={value} value={Number(value)}>{label}</Option>
+                    ))}
+                  </Select>
+                </div>
+              </Col>
+              <Col span={12}>
+                <div style={{ marginBottom: '16px' }}>
+                  <Typography.Text strong>GPON Status</Typography.Text>
+                  <Select
+                    style={{ width: '100%', marginTop: '8px' }}
+                    placeholder="Select GPON Status"
+                    value={gponType}
+                    onChange={setGponType}
+                  >
+                    {Object.entries(foxy_gpon).map(([value, label]) => (
+                      <Option key={value} value={Number(value)}>{label}</Option>
+                    ))}
+                  </Select>
+                </div>
+              </Col>
+            </Row>
+          )}
           
-          <Card
-            title="Location View"
-            extra={
-              <Space>
-                <Button type="link" onClick={() => setMapType('roadmap')}>Map</Button>
-                <Button type="link" onClick={() => setMapType('satellite')}>Satellite</Button>
-                <Button type="link" onClick={() => setMapType('hybrid')}>Hybrid</Button>
-              </Space>
-            }
-          >
-            <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              center={selectedLocation || defaultCenter}
-              zoom={selectedLocation ? 18 : 4}
-              mapTypeId={mapType}
-            >
-              {selectedLocation && (
-                <Marker
-                  position={selectedLocation}
-                />
-              )}
-            </GoogleMap>
-          </Card>
+          {selectedLocation && (
+            <Row gutter={16}>
+              <Col span={12}>
+                <Card
+                  title="Map View"
+                  extra={
+                    <Space>
+                      <Button type="link" onClick={() => setMapType('roadmap')}>Map</Button>
+                      <Button type="link" onClick={() => setMapType('satellite')}>Satellite</Button>
+                      <Button type="link" onClick={() => setMapType('hybrid')}>Hybrid</Button>
+                    </Space>
+                  }
+                >
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={selectedLocation}
+                    zoom={18}
+                    mapTypeId={mapType}
+                  >
+                    <Marker position={selectedLocation} />
+                  </GoogleMap>
+                </Card>
+              </Col>
+              <Col span={12}>
+                <Card title="Street View">
+                  <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={selectedLocation}
+                    zoom={18}
+                    options={{
+                      streetViewControl: true,
+                      mapTypeControl: false,
+                      fullscreenControl: false,
+                      zoomControl: false,
+                    }}
+                    onLoad={(map) => {
+                      const panorama = map.getStreetView();
+                      panorama.setPosition(selectedLocation);
+                      panorama.setVisible(true);
+                    }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          )}
         </Space>
       </Card>
     </Space>
