@@ -10,6 +10,7 @@ import { msalInstance, initializeMsal } from './auth/authConfig';
 import { Link } from 'react-router-dom';
 import QuoteList from './pages/QuoteList';
 import { checkUserAccess } from './auth/authService';
+import AddBuilding from './pages/AddBuilding';
 import './styles/tables.css';
 
 const { Content } = Layout;
@@ -200,6 +201,10 @@ function App() {
               <Route
                 path="/quotes"
                 element={<LayoutWrapper element={<QuoteList />} />}
+              />
+              <Route
+                path="/add-building"
+                element={<AddBuilding />}
               />
               {/* Redirect root to quotes */}
               <Route 

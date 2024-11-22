@@ -31,7 +31,11 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
   }, []);
 
   const getMenuItems = (): Required<MenuProps>['items'] => {
-    const baseItems: Required<MenuProps>['items'] = [
+    if (!id) {
+      return [];
+    }
+
+    return [
       {
         key: 'view-in-crm',
         label: (
@@ -44,24 +48,26 @@ const AppHeader: React.FC<AppHeaderProps> = () => {
         icon: <TeamOutlined />,
       }
     ];
-
-    return baseItems;
   };
+
+  const menuItems = getMenuItems();
 
   return (
     <Header className="app-header">
       {/* Menu and Logo section */}
       <div className="header-left">
-        <Dropdown 
-          menu={{ items: getMenuItems() }}
-          trigger={['click']}
-          placement="bottomLeft"
-          onOpenChange={setIsMenuOpen}
-        >
-          <div className={`menu-icon ${isMenuOpen ? 'open' : ''}`}>
-            <AppstoreOutlined />
-          </div>
-        </Dropdown>
+        {menuItems.length > 0 && (
+          <Dropdown 
+            menu={{ items: menuItems }}
+            trigger={['click']}
+            placement="bottomLeft"
+            onOpenChange={setIsMenuOpen}
+          >
+            <div className={`menu-icon ${isMenuOpen ? 'open' : ''}`}>
+              <AppstoreOutlined />
+            </div>
+          </Dropdown>
+        )}
         <div className="logo-container">
           <img src="/foxylogo.png" alt="Foxy Logo" className="logo-image" />
           <span className="logo-text">CPQ</span>
