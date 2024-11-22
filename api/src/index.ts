@@ -12,6 +12,7 @@ import "./functions/opportunities/listOpportunityRows";
 import "./functions/listProductByRow";
 import "./functions/quotes/listQuoteLineItemByRow";
 import "./functions/quotes/listQuoteLocationRows";
+import "./functions/ledger/listWonServices";
 import "./functions/quotes/createQuoteLineItem";
 import "./functions/quotes/updateQuoteLineItem";
 import "./functions/quotes/createQuoteRequest";
@@ -25,7 +26,6 @@ import "./functions/storage/getBlobSasToken";
 import "./functions/quotes/listQuoteRequests";
 import "./functions/quotes/updateQuoteRequest";
 import "./functions/checkDuplicateBuildings";
-import "./functions/ledger/listWonServicesForComp";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -39,6 +39,7 @@ export * from "./functions/opportunities/listOpportunityRows";
 export * from "./functions/listProductByRow";
 export * from "./functions/quotes/listQuoteLineItemByRow";
 export * from "./functions/quotes/listQuoteLocationRows";
+export * from "./functions/ledger/listWonServices";
 export * from "./functions/quotes/createQuoteLineItem";
 export * from "./functions/quotes/updateQuoteLineItem";
 export * from "./functions/quotes/createQuoteRequest";
@@ -52,7 +53,6 @@ export * from "./functions/storage/getBlobSasToken";
 export * from "./functions/quotes/listQuoteRequests";
 export * from "./functions/quotes/updateQuoteRequest";
 export * from "./functions/checkDuplicateBuildings";
-export * from "./functions/ledger/listWonServicesForComp";
 
 // Export the app instance
 export default app;
