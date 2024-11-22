@@ -117,14 +117,16 @@ export async function createCrc9fResidualScrubAudit(request: HttpRequest, contex
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
+    } catch (error: unknown) {
         context.log(`Error creating residual scrub audit: ${error}`);
         if (axios.isAxiosError(error)) {
             context.log('Error response status:', error.response?.status);
             context.log('Error response data:', JSON.stringify(error.response?.data));
         }
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
-        const message = axios.isAxiosError(error) ? error.response?.data?.error?.message || error.message : error.message;
+        const message = axios.isAxiosError(error) 
+            ? error.response?.data?.error?.message || error.message 
+            : error instanceof Error ? error.message : 'An unknown error occurred';
         return { 
             ...corsResponse,
             status, 

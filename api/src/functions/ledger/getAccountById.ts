@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import axios from "axios";
-import { dataverseUrl, getDataverseHeaders } from "../shared/dataverseAuth";
-import { corsHandler } from "../shared/cors";
+import { dataverseUrl, getDataverseHeaders } from "../../shared/dataverseAuth";
+import { corsHandler } from "../../shared/cors";
 
 // Define the function
 const httpFunction = async function(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -49,7 +49,7 @@ const httpFunction = async function(request: HttpRequest, context: InvocationCon
                 ...corsResponse?.headers
             }
         };
-    } catch (error) {
+    } catch (error: unknown) {
         context.error('Error in getAccountById:', error);
         if (axios.isAxiosError(error)) {
             context.log('Axios error response:', error.response?.data);
@@ -66,7 +66,7 @@ const httpFunction = async function(request: HttpRequest, context: InvocationCon
             ...corsResponse,
             status: 500, 
             body: JSON.stringify({
-                error: (error as Error).message
+                error: error instanceof Error ? error.message : 'An unknown error occurred'
             })
         };
     }
