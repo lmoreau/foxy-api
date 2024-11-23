@@ -6,7 +6,7 @@ import axios from "axios";
 const JIRA_DOMAIN = "infusionit.atlassian.net";
 const JIRA_EMAIL = "sxkgghgcgs@privaterelay.appleid.com";
 const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN;
-const PROJECT_KEY = "BT";
+const PROJECT_KEY = "FBT";
 
 interface BugReport {
     title: string;
@@ -73,7 +73,7 @@ async function getIssueTypeId(context: InvocationContext): Promise<string> {
             throw new Error(`Project ${PROJECT_KEY} not found`);
         }
 
-        const taskIssueType = project.issuetypes.find(type => type.id === '10007');
+        const taskIssueType = project.issuetypes.find(type => type.id === '10006');
         if (!taskIssueType) {
             throw new Error('Task issue type (10007) not found for this project');
         }
