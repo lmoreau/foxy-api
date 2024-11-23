@@ -35,6 +35,11 @@ import "./functions/ledger/listIncomingWirelinePayments";
 import "./functions/ledger/listMasterResidualRows";
 import "./functions/ledger/listWirelineResidualRows";
 import "./functions/ledger/updateWonService";
+import "./functions/ledger/updateIncomingPayment";
+import "./functions/ledger/updateAccountWirelineResiduals";
+import "./functions/ledger/listRogersWirelineRecords";
+import "./functions/ledger/listMasterResidualBillingRows";
+import "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -71,6 +76,11 @@ export * from "./functions/ledger/listIncomingWirelinePayments";
 export * from "./functions/ledger/listMasterResidualRows";
 export * from "./functions/ledger/listWirelineResidualRows";
 export * from "./functions/ledger/updateWonService";
+export * from "./functions/ledger/updateIncomingPayment";
+export * from "./functions/ledger/updateAccountWirelineResiduals";
+export * from "./functions/ledger/listRogersWirelineRecords";
+export * from "./functions/ledger/listMasterResidualBillingRows";
+export * from "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 
 // Export the app instance
 export default app;
