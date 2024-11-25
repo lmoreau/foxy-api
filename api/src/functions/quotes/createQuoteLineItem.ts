@@ -21,6 +21,47 @@ interface QuoteLineItemBody {
     [key: string]: any; // Allow for additional fields
 }
 
+const MAX_RETRIES = 3;
+const INITIAL_TIMEOUT = 30000; // 30 seconds
+
+async function attemptDataverseRequest(
+    url: string, 
+    data: any, 
+    headers: any, 
+    context: InvocationContext, 
+    attempt: number = 1
+): Promise<any> {
+    try {
+        context.log(`Attempt ${attempt} to create line item`);
+        const response = await axios.post(url, data, {
+            headers,
+            timeout: INITIAL_TIMEOUT * attempt // Increase timeout with each retry
+        });
+        context.log(`Attempt ${attempt} successful`);
+        return response;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            context.log(`Attempt ${attempt} failed:`, {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                code: error.code,
+                message: error.message
+            });
+
+            // If it's a timeout or network error and we haven't exceeded retries
+            if ((error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT' || error.message.includes('socket hang up')) 
+                && attempt < MAX_RETRIES) {
+                context.log(`Retrying after failure (${error.message})`);
+                // Wait before retrying, with exponential backoff
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                return attemptDataverseRequest(url, data, headers, context, attempt + 1);
+            }
+        }
+        throw error;
+    }
+}
+
 export async function createQuoteLineItem(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
@@ -44,6 +85,15 @@ export async function createQuoteLineItem(request: HttpRequest, context: Invocat
                 ...corsResponse,
                 status: 400, 
                 body: "Please provide request body" 
+            };
+        }
+
+        // Validate required fields
+        if (!requestBody._foxy_foxyquoterequestlocation_value || !requestBody._foxy_product_value) {
+            return {
+                ...corsResponse,
+                status: 400,
+                body: "Location and Product IDs are required"
             };
         }
 
@@ -75,16 +125,17 @@ export async function createQuoteLineItem(request: HttpRequest, context: Invocat
         const accessToken = userToken.replace('Bearer ', '');
         const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_foxyquoterequestlineitems`;
 
-        const response = await axios.post(apiUrl, modifiedRequestBody, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'OData-MaxVersion': '4.0',
-                'OData-Version': '4.0',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json; charset=utf-8',
-                'Prefer': 'return=representation'
-            }
-        });
+        const headers = {
+            'Authorization': `Bearer ${accessToken}`,
+            'OData-MaxVersion': '4.0',
+            'OData-Version': '4.0',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+            'Prefer': 'return=representation'
+        };
+
+        // Attempt the request with retry logic
+        const response = await attemptDataverseRequest(apiUrl, modifiedRequestBody, headers, context);
 
         // Log the response
         context.log('Response status:', response.status);
@@ -102,8 +153,13 @@ export async function createQuoteLineItem(request: HttpRequest, context: Invocat
     } catch (error: unknown) {
         context.log(`Error creating quote line item: ${error}`);
         if (axios.isAxiosError(error)) {
-            context.log('Error response status:', error.response?.status);
-            context.log('Error response data:', JSON.stringify(error.response?.data));
+            context.log('Error details:', {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                code: error.code,
+                message: error.message
+            });
         }
         const status = axios.isAxiosError(error) ? error.response?.status || 500 : 500;
         const message = axios.isAxiosError(error) 
@@ -112,7 +168,14 @@ export async function createQuoteLineItem(request: HttpRequest, context: Invocat
         return { 
             ...corsResponse,
             status, 
-            body: `Error creating quote line item: ${message}`
+            body: JSON.stringify({
+                error: `Error creating quote line item: ${message}`,
+                details: axios.isAxiosError(error) ? error.response?.data : null
+            }),
+            headers: { 
+                "Content-Type": "application/json",
+                ...corsResponse?.headers
+            }
         };
     }
 }
@@ -121,4 +184,4 @@ app.http('createQuoteLineItem', {
     methods: ['POST', 'OPTIONS'],
     authLevel: 'anonymous',
     handler: createQuoteLineItem
-}); 
+});
