@@ -42,8 +42,6 @@ import "./functions/ledger/listRogersWirelineRecords";
 import "./functions/ledger/listMasterResidualBillingRows";
 import "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 import "./functions/bugs/createJiraIssue";
-import "./functions/listWirelessPlansByRow";
-import "./functions/quotes/listWirelessQuoteLineItems";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -87,8 +85,6 @@ export * from "./functions/ledger/listRogersWirelineRecords";
 export * from "./functions/ledger/listMasterResidualBillingRows";
 export * from "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 export * from "./functions/bugs/createJiraIssue";
-export * from "./functions/listWirelessPlansByRow";
-export * from "./functions/quotes/listWirelessQuoteLineItems";
 
 // Export the app instance
 export default app;

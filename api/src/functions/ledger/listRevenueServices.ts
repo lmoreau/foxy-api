@@ -118,3 +118,9 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
         };
     }
 }
+
+app.http('listRevenueServices', {
+    methods: ['GET', 'OPTIONS'],
+    authLevel: 'anonymous',
+    handler: listRevenueServices
+});
