@@ -4,14 +4,20 @@ import { dataverseUrl, getDataverseHeaders } from "../../shared/dataverseAuth";
 import { corsHandler } from "../../shared/cors";
 
 export async function listRevenueServices(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+    context.log('🟦 listRevenueServices function triggered');
+    context.log(`🟦 Request URL: ${request.url}`);
+    context.log(`🟦 Request method: ${request.method}`);
+
     const corsResponse = corsHandler(request, context);
     if (corsResponse && request.method === 'OPTIONS') {
+        context.log('🟦 Handling CORS preflight request');
         return corsResponse;
     }
 
     // Get authorization header from request
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
+        context.log('🔴 Missing authorization header');
         return { 
             ...corsResponse,
             status: 401, 
@@ -22,6 +28,7 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
     try {
         const searchParams = new URL(request.url).searchParams;
         const filter = searchParams.get('filter') || '';
+        context.log(`🟦 Received filter parameter: ${filter}`);
 
         const headers = getDataverseHeaders(authHeader);
         const selectFields = [
@@ -65,7 +72,11 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
             apiUrl += `&$filter=${filter}`;
         }
 
+        context.log(`🟦 Making Dataverse request to: ${apiUrl}`);
         const response = await axios.get(apiUrl, { headers });
+        context.log(`🟦 Dataverse response status: ${response.status}`);
+        context.log(`🟦 Records returned: ${response.data.value?.length || 0}`);
+        context.log(`🟦 Sample record disposition: ${response.data.value?.[0]?.foxy_renewaldisposition}`);
 
         return { 
             ...corsResponse,
@@ -76,8 +87,9 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
             }
         };
     } catch (error) {
-        context.error('Error in listRevenueServices:', error);
+        context.error('🔴 Error in listRevenueServices:', error);
         if (axios.isAxiosError(error)) {
+            context.error('🔴 Dataverse error response:', error.response?.data);
             return {
                 ...corsResponse,
                 status: error.response?.status || 500,
