@@ -21,9 +21,9 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
 
     try {
         const searchParams = new URL(request.url).searchParams;
+        const filter = searchParams.get('filter') || '';
+
         const headers = getDataverseHeaders(authHeader);
-        
-        // Define the base fields we always want to select
         const selectFields = [
             'crc9f_existingmrr',
             'crc9f_expectedcompbreakdown',
@@ -52,39 +52,17 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
             'foxy_inpaymentstatus',
             'foxy_mrruptick',
             'foxy_totalinpayments',
+            'foxy_renewaleligible',
             'foxy_expectedcomp',
             'foxyflow_claimnotes',
             'crc9f_claimid'
         ];
 
-        // Build the base URL with expansions
+        // Build the URL with optional filter
         let apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices?$select=${selectFields.join(',')}&$expand=foxy_Product($select=name),foxy_Account($select=name),foxy_Opportunity($select=name,foxy_sfdcoppid,actualclosedate,actualvalue),foxy_AccountLocation($expand=foxy_Building($select=foxy_fulladdress))`;
-
-        // Build dynamic filters based on query parameters
-        const filters: string[] = [];
-        searchParams.forEach((value, key) => {
-            if (value && key !== 'select' && key !== 'expand' && key !== 'orderby') {
-                // Handle date fields specifically
-                if (key.toLowerCase().includes('date')) {
-                    if (key.startsWith('min')) {
-                        const fieldName = key.replace('min', '');
-                        filters.push(`${fieldName} ge ${value}`);
-                    } else if (key.startsWith('max')) {
-                        const fieldName = key.replace('max', '');
-                        filters.push(`${fieldName} le ${value}`);
-                    } else {
-                        filters.push(`${key} eq ${value}`);
-                    }
-                } else {
-                    // Handle non-date fields
-                    filters.push(`${key} eq ${value}`);
-                }
-            }
-        });
-
-        // Add filters to URL if any exist
-        if (filters.length > 0) {
-            apiUrl += `&$filter=${filters.join(' and ')}`;
+        
+        if (filter) {
+            apiUrl += `&$filter=${filter}`;
         }
 
         const response = await axios.get(apiUrl, { headers });
