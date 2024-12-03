@@ -10,6 +10,7 @@ import "./functions/quotes/getQuoteRequestById";
 import "./functions/accounts/listAccountLocationRows";
 import "./functions/opportunities/listOpportunityRows";
 import "./functions/listProductByRow";
+import "./functions/listWirelessProductByRow";
 import "./functions/quotes/listQuoteLineItemByRow";
 import "./functions/quotes/listQuoteLocationRows";
 import "./functions/ledger/listWonServices";
@@ -41,6 +42,7 @@ import "./functions/ledger/listRogersWirelineRecords";
 import "./functions/ledger/listMasterResidualBillingRows";
 import "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 import "./functions/bugs/createJiraIssue";
+import "./functions/ledger/listRevenueServices";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -52,6 +54,7 @@ export * from "./functions/quotes/getQuoteRequestById";
 export * from "./functions/accounts/listAccountLocationRows";
 export * from "./functions/opportunities/listOpportunityRows";
 export * from "./functions/listProductByRow";
+export * from "./functions/listWirelessProductByRow";
 export * from "./functions/quotes/listQuoteLineItemByRow";
 export * from "./functions/quotes/listQuoteLocationRows";
 export * from "./functions/ledger/listWonServices";
@@ -83,6 +86,7 @@ export * from "./functions/ledger/listRogersWirelineRecords";
 export * from "./functions/ledger/listMasterResidualBillingRows";
 export * from "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 export * from "./functions/bugs/createJiraIssue";
+export * from "./functions/ledger/listRevenueServices";
 
 // Export the app instance
 export default app;
