@@ -28,7 +28,7 @@ export function getDataverseHeaders(authHeader: string): DataverseHeaders {
         'OData-Version': '4.0',
         'Accept': 'application/json',
         'Content-Type': 'application/json; charset=utf-8',
-        'Prefer': 'odata.maxpagesize=1000,return=representation',
+        'Prefer': 'return=representation',
         'Cache-Control': 'no-cache, no-store, must-revalidate'
     };
 }

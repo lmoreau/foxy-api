@@ -21,40 +21,8 @@ export async function listRevenueServices(request: HttpRequest, context: Invocat
 
     try {
         const headers = getDataverseHeaders(authHeader);
-        const selectFields = [
-            'crc9f_existingmrr',
-            'crc9f_expectedcompbreakdown',
-            'foxy_renewaldisposition',
-            'statuscode',
-            'foxyflow_internalnotes',
-            'foxy_infusionpaymentstatus',
-            'foxy_renewaltype',
-            'foxy_access',
-            'foxy_contractstart',
-            'foxy_monthtotermend',
-            'foxy_quantity',
-            'foxy_mrr',
-            'foxy_tcv',
-            'foxy_comprate',
-            'foxy_wonserviceid',
-            'foxy_serviceid',
-            'foxy_sololine',
-            'statecode',
-            'foxy_upselltype',
-            'foxy_renewaloverridereason',
-            'foxy_revenuetype',
-            'foxy_linemargin',
-            'foxy_contractend',
-            'foxy_term',
-            'foxy_inpaymentstatus',
-            'foxy_mrruptick',
-            'foxy_totalinpayments',
-            'foxy_expectedcomp',
-            'foxyflow_claimnotes',
-            'crc9f_claimid'
-        ];
-
-        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices?$select=${selectFields.join(',')}&$expand=foxy_Product($select=name),foxy_Account($select=name),foxy_Opportunity($select=name,foxy_sfdcoppid,actualclosedate,actualvalue),foxy_AccountLocation($select=_foxy_account_value;$expand=foxy_Building($select=foxy_fulladdress))`;
+        const queryParams = request.url.split('?')[1] || '';
+        const apiUrl = `${dataverseUrl}/api/data/v9.2/foxy_wonservices${queryParams ? '?' + queryParams : ''}`;
 
         const response = await axios.get(apiUrl, { headers });
 
