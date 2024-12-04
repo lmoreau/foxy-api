@@ -43,6 +43,7 @@ import "./functions/ledger/listMasterResidualBillingRows";
 import "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 import "./functions/bugs/createJiraIssue";
 import "./functions/ledger/listRevenueServices";
+import "./functions/ledger/updateRenewalDisposition";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -87,6 +88,7 @@ export * from "./functions/ledger/listMasterResidualBillingRows";
 export * from "./functions/ledger/listIncomingWirelinePaymentsByWonService";
 export * from "./functions/bugs/createJiraIssue";
 export * from "./functions/ledger/listRevenueServices";
+export * from "./functions/ledger/updateRenewalDisposition";
 
 // Export the app instance
 export default app;
