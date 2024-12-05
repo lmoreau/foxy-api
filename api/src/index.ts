@@ -45,6 +45,7 @@ import "./functions/bugs/createJiraIssue";
 import "./functions/ledger/listRevenueServices";
 import "./functions/ledger/updateRenewalDisposition";
 import "./functions/ledger/updateRapidPlanalyzer";
+import "./functions/ledger/getRapidPlanalyzer";
 
 // Export all other functions
 export * from "./functions/quotes/deleteQuoteLocation";
@@ -91,6 +92,7 @@ export * from "./functions/bugs/createJiraIssue";
 export * from "./functions/ledger/listRevenueServices";
 export * from "./functions/ledger/updateRenewalDisposition";
 export * from "./functions/ledger/updateRapidPlanalyzer";
+export * from "./functions/ledger/getRapidPlanalyzer";
 
 // Export the app instance
 export default app;
